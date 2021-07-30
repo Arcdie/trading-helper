@@ -1,0 +1,15 @@
+/node_modules/
+/.git/
+/**/package-lock.json
+/**/Thumbs.db
+/**/*.DS_Store
+/.vscode/
+/.idea/
+.idea/
+.vscode/
+.git/
+.DS_Store
+Thumbs.db
+
+/logs
+.env
