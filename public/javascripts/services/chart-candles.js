@@ -24,9 +24,9 @@ class ChartCandles {
         mode: 0,
       },
 
-      timeScale: {
-        visible: false,
-      },
+      // timeScale: {
+      //   visible: false,
+      // },
     });
 
     this.series = this.chart.addCandlestickSeries({
@@ -36,11 +36,7 @@ class ChartCandles {
       wickColor: '#000000',
     });
 
-    this.seriesPaint = this.chart.addLineSeries({
-      lineWidth: 1,
-      priceLineVisible: false,
-      priceLineSource: false,
-    });
+    this.markers = [];
   }
 
   drawSeries(data) {
@@ -59,5 +55,19 @@ class ChartCandles {
     this.series.applyOptions({
       visible: true,
     });
+  }
+
+  drawMarkers() {
+    this.series.setMarkers(this.markers.map(marker => ({
+      time: marker.time,
+      color: marker.color,
+      text: marker.text,
+      position: 'aboveBar',
+      shape: 'arrowDown',
+    })));
+  }
+
+  addMarker(data) {
+    this.markers.push(data);
   }
 }

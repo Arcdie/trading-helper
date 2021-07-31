@@ -14,6 +14,7 @@ const $chartsViewElements = $('#charts-view div');
 // Constants
 
 let stocksData = [];
+let stocksRSIData = [];
 
 const chartRSI = new ChartRSI();
 const chartADX = new ChartADX();
@@ -46,7 +47,7 @@ const handlerShowOrHideSeries = (seriesType, isActive) => {
 };
 
 $(document).ready(async () => {
-  const resultGetData = await getStocksData('baba-16-21');
+  const resultGetData = await getStocksData('mu-16-21');
 
   resultGetData.data
     .sort((a, b) => {
@@ -69,10 +70,12 @@ $(document).ready(async () => {
 
   chartCandles.drawSeries(stocksData);
   // chartVolume.drawSeries(stocksData);
-  chartArea.drawSeries(chartArea.calculateData(stocksData));
+  // chartArea.drawSeries(chartArea.calculateData(stocksData));
   chartSMA.drawSeries(chartSMA.calculateData(stocksData));
-  chartRSI.drawSeries(chartRSI.calculateData(stocksData));
-  chartADX.drawSeries(chartADX.calculateData(stocksData));
+  // chartADX.drawSeries(chartADX.calculateData(stocksData));
+
+  stocksRSIData = chartRSI.calculateData(stocksData);
+  chartRSI.drawSeries(stocksRSIData);
 
   let isCrossHairMoving = false;
 
@@ -121,4 +124,6 @@ $(document).ready(async () => {
       $elem.toggleClass('active');
       handlerShowOrHideSeries($(this).data('type'), currentStatus);
     });
+
+  startAutoStrategy();
 });

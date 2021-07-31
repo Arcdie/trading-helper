@@ -26,9 +26,9 @@ class ChartRSI {
         mode: 0,
       },
 
-      timeScale: {
-        visible: false,
-      },
+      // timeScale: {
+      //   visible: false,
+      // },
     });
 
     this.series = this.chart.addLineSeries({

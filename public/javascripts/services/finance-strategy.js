@@ -1,8 +1,16 @@
+// $.JQuery
+const $strategy = $('.strategy');
+const $switch = $strategy.find('.switch .slider');
+const $balance = $strategy.find('.balance');
+const $numberBuys = $strategy.find('.number-buys');
+const $winBuys = $strategy.find('.win-buys');
+const $loseBuys = $strategy.find('.lose-buys');
+
 const strategyConstants = {
   startBalance: 1000,
 
-  stopLossPercent: 1,
-  takeProfitCoefficient: 2, // 1:?
+  stopLossPercent: 2,
+  takeProfitCoefficient: 3, // 1:?
 };
 
 class Strategy {
@@ -74,36 +82,83 @@ class Strategy {
     this.balance = Strategy.floatNum(this.balance);
   }
 
-  loseBuy() {
+  loseBuy(stockPrice) {
     const sumStockPrices = this.stockPrice * this.stocksToBuy;
+    const differenceBetweenPrices = Math.abs(stockPrice - this.stockPrice);
     const looses = Math.abs(this.stocksToBuy * (this.stockPrice - this.stopLoss));
 
     this.balance += (sumStockPrices - looses);
     this.balance = Strategy.floatNum(this.balance);
 
-    this.endBuy(this.stopLoss);
+    this.endBuy();
     this.loseBuys += 1;
 
     if (this.balance <= 0) {
       throw new Error('balance <= 0');
     }
+
+    return -differenceBetweenPrices;
   }
 
-  winBuy() {
+  winBuy(stockPrice) {
     const {
       takeProfitCoefficient,
     } = strategyConstants;
 
     const sumStockPrices = this.stockPrice * this.stocksToBuy;
+    const differenceBetweenPrices = Math.abs(stockPrice - this.stockPrice);
     const profit = Math.abs(((this.stockPrice - this.stopLoss) * takeProfitCoefficient) * this.stocksToBuy);
 
     this.balance = Strategy.floatNum(this.balance + (sumStockPrices + profit));
 
-    this.endBuy(this.takeProfit);
+    this.endBuy();
     this.winBuys += 1;
+
+    return differenceBetweenPrices;
   }
 
-  endBuy(stockPrice) {
+  manualSell(stockPrice) {
+    const sumStockPrices = this.stockPrice * this.stocksToBuy;
+    const differenceBetweenPrices = Math.abs(stockPrice - this.stockPrice);
+    const differenceForAllStocks = differenceBetweenPrices * this.stocksToBuy;
+
+    let result = 0;
+
+    this.balance += sumStockPrices;
+
+    if (this.typeGame === 1) {
+      // win
+      if (stockPrice > this.stockPrice) {
+        this.balance += differenceForAllStocks;
+        result += differenceBetweenPrices;
+        this.winBuys += 1;
+      } else {
+        // lose
+        this.balance -= differenceForAllStocks;
+        result -= differenceBetweenPrices;
+        this.loseBuys += 1;
+      }
+    } else if (this.typeGame === 2) {
+      // win
+      if (stockPrice < this.stockPrice) {
+        this.balance += differenceForAllStocks;
+        result += differenceBetweenPrices;
+        this.winBuys += 1;
+      } else {
+        // lose
+        this.balance -= differenceForAllStocks;
+        result -= differenceBetweenPrices;
+        this.loseBuys += 1;
+      }
+    }
+
+    this.balance = Strategy.floatNum(this.balance);
+    this.endBuy();
+
+    return result;
+  }
+
+  endBuy() {
     this.setTypeGame(0);
     this.setStopLoss(0);
     this.setTakeProfit(0);
@@ -112,10 +167,23 @@ class Strategy {
   }
 
   getInfo() {
-    console.log('endBalance', this.balance.toFixed(2));
-    console.log('numberBuys', this.loseBuys + this.winBuys);
-    console.log('loseBuys', this.loseBuys);
-    console.log('winBuys', this.winBuys);
+    const endBalance = this.balance.toFixed(2);
+    const numberBuys = this.loseBuys + this.winBuys;
+
+    const {
+      loseBuys,
+      winBuys,
+    } = this;
+
+    console.log('endBalance', endBalance);
+    console.log('numberBuys', numberBuys);
+    console.log('loseBuys', loseBuys);
+    console.log('winBuys', winBuys);
+
+    $balance.text(endBalance);
+    $numberBuys.text(numberBuys);
+    $loseBuys.text(loseBuys);
+    $winBuys.text(winBuys);
   }
 
   static floatNum(value) {

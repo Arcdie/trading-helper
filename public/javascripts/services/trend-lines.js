@@ -12,11 +12,15 @@ class TrendLines {
   addSeries({
     start,
     end,
+
+    options,
   }) {
-    const newSeries = this.chart.addLineSeries({
-      priceLineVisible: false,
-      priceLineSource: false,
-    });
+    options = options || {};
+
+    options.priceLineSource = false;
+    options.priceLineVisible = false;
+
+    const newSeries = this.chart.addLineSeries(options);
 
     this.setSeries.push({
       start,
