@@ -5,6 +5,7 @@ const $balance = $strategy.find('.balance');
 const $numberBuys = $strategy.find('.number-buys');
 const $winBuys = $strategy.find('.win-buys');
 const $loseBuys = $strategy.find('.lose-buys');
+const $percentFromStartBalance = $strategy.find('.percent-from-start-balance');
 
 const strategyConstants = {
   startBalance: 1000,
@@ -84,11 +85,13 @@ class Strategy {
 
   loseBuy(stockPrice) {
     const sumStockPrices = this.stockPrice * this.stocksToBuy;
-    const differenceBetweenPrices = Math.abs(stockPrice - this.stockPrice);
     const looses = Math.abs(this.stocksToBuy * (this.stockPrice - this.stopLoss));
 
     this.balance += (sumStockPrices - looses);
     this.balance = Strategy.floatNum(this.balance);
+
+    const differenceBetweenPrices = Math.abs(stockPrice - this.stockPrice);
+    const differenceMultiplyCound = differenceBetweenPrices * this.stocksToBuy;
 
     this.endBuy();
     this.loseBuys += 1;
@@ -97,7 +100,7 @@ class Strategy {
       throw new Error('balance <= 0');
     }
 
-    return -differenceBetweenPrices;
+    return -differenceMultiplyCound;
   }
 
   winBuy(stockPrice) {
@@ -106,15 +109,17 @@ class Strategy {
     } = strategyConstants;
 
     const sumStockPrices = this.stockPrice * this.stocksToBuy;
-    const differenceBetweenPrices = Math.abs(stockPrice - this.stockPrice);
     const profit = Math.abs(((this.stockPrice - this.stopLoss) * takeProfitCoefficient) * this.stocksToBuy);
 
     this.balance = Strategy.floatNum(this.balance + (sumStockPrices + profit));
 
+    const differenceBetweenPrices = Math.abs(stockPrice - this.stockPrice);
+    const differenceMultiplyCound = differenceBetweenPrices * this.stocksToBuy;
+
     this.endBuy();
     this.winBuys += 1;
 
-    return differenceBetweenPrices;
+    return differenceMultiplyCound;
   }
 
   manualSell(stockPrice) {
@@ -152,10 +157,12 @@ class Strategy {
       }
     }
 
+    const differenceMultiplyCound = result * this.stocksToBuy;
+
     this.balance = Strategy.floatNum(this.balance);
     this.endBuy();
 
-    return result;
+    return differenceMultiplyCound;
   }
 
   endBuy() {
@@ -169,6 +176,7 @@ class Strategy {
   getInfo() {
     const endBalance = this.balance.toFixed(2);
     const numberBuys = this.loseBuys + this.winBuys;
+    const percentFromStartBalance = (100 - (100 / (this.balance / strategyConstants.startBalance))).toFixed(2);
 
     const {
       loseBuys,
@@ -179,11 +187,13 @@ class Strategy {
     console.log('numberBuys', numberBuys);
     console.log('loseBuys', loseBuys);
     console.log('winBuys', winBuys);
+    console.log('percentFromStartBalance', percentFromStartBalance);
 
     $balance.text(endBalance);
     $numberBuys.text(numberBuys);
     $loseBuys.text(loseBuys);
     $winBuys.text(winBuys);
+    $percentFromStartBalance.text(percentFromStartBalance);
   }
 
   static floatNum(value) {

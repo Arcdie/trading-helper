@@ -15,7 +15,14 @@ const strategy = new Strategy();
 const lastBarsToIgnore = 2;
 const startBarsToIgnore = 0;
 
+let typeGame = 0;
+
+let doMustBuy = false;
 let isActiveOrder = false;
+
+// for rsi
+let isWithTopCase = false;
+let isWithBottomCase = true;
 
 const startAutoStrategy = () => {
   const newTrendLines = [];
@@ -25,11 +32,34 @@ const startAutoStrategy = () => {
     const candle = stocksData[i];
     const candleRSI = stocksRSIData[i];
 
-    if (candleRSI.value <= 30
-      && !isActiveOrder) {
+    if (!isActiveOrder) {
+      if (isWithBottomCase) {
+        if (candleRSI.value <= 35) {
+          const prevCandle = stocksRSIData[i - 1];
+
+          if (prevCandle.value < candleRSI.value) {
+            doMustBuy = true;
+            typeGame = 1;
+          }
+        }
+      }
+
+      if (isWithTopCase) {
+        if (candleRSI.value >= 70) {
+          const prevCandle = stocksRSIData[i - 1];
+
+          if (prevCandle.value > candleRSI.value) {
+            doMustBuy = true;
+            typeGame = 2;
+          }
+        }
+      }
+    }
+
+    if (!isActiveOrder && doMustBuy) {
       strategy.newBuy({
         stockPrice: candle.close,
-        typeGame: 1,
+        typeGame,
       });
 
       chartCandles.addMarker({
@@ -53,7 +83,9 @@ const startAutoStrategy = () => {
         },
       });
 
+      typeGame = 0;
       isActiveOrder = true;
+      doMustBuy = false;
 
       // because candle.close
       continue;
