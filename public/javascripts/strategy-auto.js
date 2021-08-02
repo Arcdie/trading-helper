@@ -7,7 +7,7 @@
 // Constants
 const strategy = new Strategy();
 
-const lastBarsToIgnore = 2;
+const lastBarsToIgnore = 5;
 const startBarsToIgnore = 50;
 
 // const lastBarsToIgnore = 0;
@@ -19,8 +19,8 @@ let doMustBuy = false;
 let isActiveOrder = false;
 
 // for rsi
-const isWithTopCase = false;
-const isWithBottomCase = false;
+const isWithTopCase = true;
+const isWithBottomCase = true;
 
 const startAutoStrategy = () => {
   const arrTPAndSL = [];
@@ -48,7 +48,7 @@ const startAutoStrategy = () => {
       }
 
       if (isWithTopCase) {
-        if (candleRSI.value >= 80) {
+        if (candleRSI.value >= 70) {
           const prevCandle = stocksRSIData[i - 1];
 
           if (prevCandle.value > candleRSI.value) {

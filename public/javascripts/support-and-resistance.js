@@ -1,6 +1,7 @@
 /* global
   moment, LightweightCharts,
-  chartCandles
+  chartCandles, chartDraw,
+  drawHorizontalLineHandler
 */
 
 // $.JQuery
@@ -39,12 +40,13 @@ const drawSupportAndResistanceLines = (data) => {
   volumes = volumes.filter(({ volume }) => volume > average);
 
   volumes.forEach(({ low }) => {
-    chartCandles.series.createPriceLine({
-      price: low,
-      color: 'black',
-      lineWidth: 1,
-      lineStyle: LightweightCharts.LineStyle.Solid,
-    });
+    const doesExistWithThisValue = chartDraw.setPriceLines.some(
+      ({ value }) => value === low,
+    );
+
+    if (!doesExistWithThisValue) {
+      drawHorizontalLineHandler(low);
+    }
   });
 
   return volumes;

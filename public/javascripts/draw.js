@@ -1,6 +1,6 @@
 /* global
   LightweightCharts, ChartDraw,
-  chartCandles,
+  chartCandles, chartDraw,
   listCharts,
   moment
 */
@@ -19,8 +19,6 @@ let isActivePaintMode = false;
 let targetSeriesForUpdate;
 
 const lineSettings = {};
-
-const chartDraw = new ChartDraw(chartCandles.chart, chartCandles.series);
 
 // Functions
 const changePaintMode = (type) => {

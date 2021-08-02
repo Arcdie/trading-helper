@@ -1,18 +1,11 @@
 /* global
-  chartCandles, chartArea, chartSMA, chartRSI, chartADX
-  moment, Strategy, stocksData, randNumber, chart
+  chartCandles, chartArea, chartSMA, chartRSI, chartADX, chartDraw
+  moment, Strategy, stocksData, chart,
+  $strategy, $switch, $numberBuys, $balance, $winBuys, $loseBuys
 */
 
 // $.JQuery
-const $strategy = $('.strategy');
-const $switch = $strategy.find('.switch .slider');
-const $balance = $strategy.find('.balance');
-const $numberBuys = $strategy.find('.number-buys');
-const $winBuys = $strategy.find('.win-buys');
-const $loseBuys = $strategy.find('.lose-buys');
-
 const $tradingActions = $('.trading-actions');
-// const $next = $tradingActions.find('.next');
 
 const $status = $tradingActions.find('.status');
 
@@ -50,6 +43,7 @@ const startStrategy = (stocksData) => {
 const nextStep = () => {
   const indexLocalStocksData = localStocksData.length;
   const nextData = stocksData[indexLocalStocksData];
+  const nextDataPlus = stocksData[indexLocalStocksData + 1];
 
   localStocksData.push(nextData);
 
@@ -66,31 +60,69 @@ const nextStep = () => {
       takeProfit,
     } = strategy;
 
-    if (typeGame === 1) {
-      if (nextData.low <= stopLoss) {
-        isActivePosition = false;
-        strategy.loseBuy(nextData.low);
-        $loseBuys.text(parseInt($loseBuys.text(), 10) + 1);
-      } else if (nextData.high >= takeProfit) {
-        isActivePosition = false;
-        strategy.winBuy(nextData.high);
-        $winBuys.text(parseInt($winBuys.text(), 10) + 1);
+    const result = strategy.nextStep(nextData);
+
+    if (result.isFinish) {
+      let text = result.result.toString();
+
+      if (result.result > 0) {
+        text += ` (1:${result.takeProfitCoefficient})`;
       }
-    } else {
-      if (nextData.high >= stopLoss) {
-        isActivePosition = false;
-        strategy.loseBuy(nextData.high);
-        $loseBuys.text(parseInt($loseBuys.text(), 10) + 1);
-      } else if (nextData.low <= takeProfit) {
-        isActivePosition = false;
-        strategy.winBuy(nextData.low);
-        $winBuys.text(parseInt($winBuys.text(), 10) + 1);
-      }
+
+      chartCandles.addMarker({
+        time: nextData.time,
+        color: '#FF5252',
+        text,
+      });
+
+      chartCandles.drawMarkers();
+
+      isActivePosition = false;
+
+      // $winBuys.text(strategy.winBuys);
+      // $loseBuys.text(strategy.loseBuys);
+      // $numberBuys.text(strategy.loseBuys + strategy.winBuys);
+    }
+
+    if (result.isNewTakeProfit) {
+      chartDraw.addSeries({
+        start: {
+          value: strategy.takeProfit,
+          time: nextData.time,
+        },
+
+        end: {
+          value: strategy.takeProfit,
+          time: nextDataPlus.time,
+        },
+
+        options: {
+          lineWidth: 1,
+          color: '#4CAF50',
+        },
+      });
+
+      chartDraw.addSeries({
+        start: {
+          value: strategy.stopLoss,
+          time: nextData.time,
+        },
+
+        end: {
+          value: strategy.stopLoss,
+          time: nextDataPlus.time,
+        },
+
+        options: {
+          lineWidth: 1,
+          color: '#FF5252',
+        },
+      });
     }
 
     if (!isActivePosition) {
-      $numberBuys.text(parseInt($numberBuys.text(), 10) + 1);
-      $balance.text(strategy.balance);
+      // $numberBuys.text(parseInt($numberBuys.text(), 10) + 1);
+      // $balance.text(strategy.balance);
       $status.removeClass('active');
       $buy.prop('disabled', false);
       $sell.prop('disabled', false);
@@ -126,6 +158,7 @@ $(document).ready(() => {
 
       if (!isActivePosition) {
         const candle = localStocksData[localStocksData.length - 1];
+        const nextCandle = stocksData[localStocksData.length];
 
         if (className === 'buy') {
           typeGame = 1;
@@ -141,34 +174,48 @@ $(document).ready(() => {
         });
 
         $status.addClass('active');
-        $balance.text(strategy.balance);
+        // $balance.text(strategy.balance);
 
-        const lineSeriesSL = chartCandles.chart.addLineSeries({
-          color: 'red',
-          lineWidth: 1,
-          priceLineVisible: false,
-          priceLineSource: false,
+        chartDraw.addSeries({
+          start: {
+            value: strategy.takeProfit,
+            time: candle.time,
+          },
+
+          end: {
+            value: strategy.takeProfit,
+            time: nextCandle.time,
+          },
+
+          options: {
+            lineWidth: 1,
+            color: '#4CAF50',
+          },
         });
 
-        const lineSeriesTP = chartCandles.chart.addLineSeries({
-          color: 'green',
-          lineWidth: 1,
-          priceLineVisible: false,
-          priceLineSource: false,
+        chartDraw.addSeries({
+          start: {
+            value: strategy.stopLoss,
+            time: candle.time,
+          },
+
+          end: {
+            value: strategy.stopLoss,
+            time: nextCandle.time,
+          },
+
+          options: {
+            lineWidth: 1,
+            color: '#FF5252',
+          },
         });
 
-        const currentDay = moment(candle.date);
-        const after5 = currentDay.add(5, 'days').format('YYYY-MM-DD');
+        chartCandles.addMarker({
+          time: candle.time,
+          color: '#4CAF50',
+        });
 
-        lineSeriesSL.setData([
-          { time: candle.time, value: strategy.stopLoss },
-          { time: after5.toString(), value: strategy.stopLoss },
-        ]);
-
-        lineSeriesTP.setData([
-          { time: candle.time, value: strategy.takeProfit },
-          { time: after5.toString(), value: strategy.takeProfit },
-        ]);
+        chartCandles.drawMarkers();
 
         isActivePosition = true;
       } else {

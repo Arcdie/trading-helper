@@ -1,5 +1,5 @@
 /* global
-  ChartCandles, ChartArea, ChartSMA, ChartVolume, ChartRSI, ChartADX, Strategy, moment
+  ChartCandles, ChartArea, ChartSMA, ChartVolume, ChartRSI, ChartADX, ChartDraw, Strategy, moment
   startAutoStrategy, drawSupportAndResistanceLines
 */
 
@@ -24,6 +24,8 @@ const chartSMA = new ChartSMA(chartCandles.chart);
 const chartArea = new ChartArea(chartCandles.chart);
 
 // const chartVolume = new ChartVolume();
+const chartDraw = new ChartDraw(chartCandles.chart, chartCandles.series);
+
 // const chartVolume = new ChartVolume(chartCandles.chart);
 
 const listCharts = [chartCandles, chartRSI, chartADX];
@@ -74,7 +76,7 @@ $(document).ready(async () => {
   chartCandles.drawSeries(stocksData);
   chartArea.drawSeries(chartArea.calculateData(stocksData));
   chartSMA.drawSeries(chartSMA.calculateData(stocksData));
-  chartADX.drawSeries(chartADX.calculateData(stocksData));
+  // chartADX.drawSeries(chartADX.calculateData(stocksData));
 
   // chartVolume.drawSeries(stocksData);
 

@@ -137,6 +137,8 @@ class Strategy {
         this.takeProfitCoefficient = strategyConstants.defaultTakeProfitCoefficient;
 
         this.balance = Strategy.floatNum(this.balance);
+
+        this.getInfo();
       } else if (high >= this.takeProfit) {
         const differenceBetweenTPAndHigh = high - this.takeProfit;
 
@@ -197,6 +199,8 @@ class Strategy {
         this.takeProfitCoefficient = strategyConstants.defaultTakeProfitCoefficient;
 
         this.balance = Strategy.floatNum(this.balance);
+
+        this.getInfo();
       } else if (low <= this.takeProfit) {
         const differenceBetweenTPAndLow = this.takeProfit - low;
 
