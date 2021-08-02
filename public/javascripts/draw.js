@@ -1,8 +1,8 @@
 /* global
-  TrendLines,
+  LightweightCharts, ChartDraw,
   chartCandles,
-  listCharts
-  moment,
+  listCharts,
+  moment
 */
 
 // $.JQuery
@@ -10,6 +10,7 @@ const $paintPanel = $('#paint-panel');
 const $paintObjects = $paintPanel.find('div');
 const $trendLine = $paintPanel.find('.trend-line');
 const $straightLine = $paintPanel.find('.straight-line');
+const $horizontalLine = $paintPanel.find('.horizontal-line');
 
 // Constants
 
@@ -19,7 +20,7 @@ let targetSeriesForUpdate;
 
 const lineSettings = {};
 
-const trendLines = new TrendLines(chartCandles.chart);
+const chartDraw = new ChartDraw(chartCandles.chart, chartCandles.series);
 
 // Functions
 const changePaintMode = (type) => {
@@ -33,6 +34,15 @@ const changePaintMode = (type) => {
   } else if (type === 'straight-line') {
     handlerFunc = drawStraightLineHandler;
     $straightLine.addClass('active');
+  } else if (type === 'horizontal-line') {
+    handlerFunc = drawHorizontalLineHandler;
+    $horizontalLine.addClass('active');
+
+    if (!isActivePaintMode) {
+      $paintObjects.removeClass('active');
+    }
+
+    return true;
   }
 
   if (isActivePaintMode) {
@@ -60,7 +70,7 @@ const drawStraightLineHandler = (param) => {
     time: moment(momentDate).add(1, 'month').format('YYYY-MM-DD'),
   };
 
-  trendLines.addSeries(lineSettings);
+  chartDraw.addSeries(lineSettings);
   targetSeriesForUpdate = false;
   changePaintMode();
 };
@@ -84,13 +94,20 @@ const drawTrendLineHandler = (param) => {
         time: param.time,
       };
 
-      trendLines.addSeries(lineSettings);
+      chartDraw.addSeries(lineSettings);
       changePaintMode();
     }
   }
 };
 
+const drawHorizontalLineHandler = (value) => {
+  chartDraw.addPriceLine(value, true);
+  changePaintMode();
+};
+
 $(document).ready(() => {
+  chartDraw.drawPriceLinesByHistory();
+
   $paintObjects
     .on('click', function () {
       changePaintMode($(this).data('type'));
@@ -105,22 +122,40 @@ $(document).ready(() => {
       changePaintMode('trend-line');
     } else if (charCode === 116) {
       changePaintMode('straight-line');
+    } else if (charCode === 104) {
+      changePaintMode('horizontal-line');
     } else if (charCode === 100) {
       if (targetSeriesForUpdate) {
-        trendLines.removeSeries(targetSeriesForUpdate.series);
+        chartDraw.removeSeries(targetSeriesForUpdate.series);
         targetSeriesForUpdate = false;
       }
     }
   });
 
   chartCandles.chart.subscribeClick((param) => {
+    const price = chartCandles.series.coordinateToPrice(param.point.y);
+
+    if ($horizontalLine.hasClass('active')) {
+      drawHorizontalLineHandler(price);
+    } else {
+      const allowedVariation = price / (100 / 1);
+      const valuePlusVariation = price + allowedVariation;
+      const valueMinusVariation = price - allowedVariation;
+
+      const doesExistPriceLine = chartDraw.setPriceLines.findIndex(
+        ({ value }) => value < valuePlusVariation && value > valueMinusVariation,
+      );
+
+      if (~doesExistPriceLine) {
+        chartDraw.removePriceLine(doesExistPriceLine);
+      }
+    }
+
     if (isActivePaintMode) {
       return false;
     }
 
     if (targetSeriesForUpdate) {
-      const price = chartCandles.series.coordinateToPrice(param.point.y);
-
       if (targetSeriesForUpdate.isStartPart) {
         targetSeriesForUpdate.start = {
           value: price,
@@ -133,7 +168,7 @@ $(document).ready(() => {
         };
       }
 
-      TrendLines.drawSeries(
+      ChartDraw.drawSeries(
         targetSeriesForUpdate.series,
         [targetSeriesForUpdate.start, targetSeriesForUpdate.end],
       );
@@ -146,7 +181,7 @@ $(document).ready(() => {
       const price = chartCandles.series.coordinateToPrice(param.point.y);
       const allowedVariation = price / (100 / 3);
 
-      trendLines.setSeries.forEach(({ series }, index) => {
+      chartDraw.setSeries.forEach(({ series }, index) => {
         const value = param.seriesPrices.get(series);
 
         if (value) {
@@ -155,7 +190,7 @@ $(document).ready(() => {
 
           if (price < valuePlusVariation
             && price > valueMinusVariation) {
-            targetSeriesForUpdate = trendLines.setSeries[index];
+            targetSeriesForUpdate = chartDraw.setSeries[index];
           }
 
           return false;

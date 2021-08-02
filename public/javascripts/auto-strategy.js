@@ -1,19 +1,17 @@
-/* global
-  moment,
-  Strategy,
-  chartCandles, stocksData, stocksRSIData, trendLines
-*/
+/* global moment, Strategy, chartCandles, stocksData, stocksRSIData, chartDraw, strategyConstants */
 
 // $.JQuery
 
 // Functions
 
 // Constants
-const balance = 1000;
 const strategy = new Strategy();
 
 const lastBarsToIgnore = 2;
-const startBarsToIgnore = 0;
+const startBarsToIgnore = 50;
+
+// const lastBarsToIgnore = 0;
+// const startBarsToIgnore = 0;
 
 let typeGame = 0;
 
@@ -21,11 +19,11 @@ let doMustBuy = false;
 let isActiveOrder = false;
 
 // for rsi
-let isWithTopCase = false;
-let isWithBottomCase = true;
+const isWithTopCase = false;
+const isWithBottomCase = false;
 
 const startAutoStrategy = () => {
-  const newTrendLines = [];
+  const arrTPAndSL = [];
 
   const lData = stocksData.length;
   for (let i = startBarsToIgnore; i < lData - lastBarsToIgnore; i += 1) {
@@ -33,6 +31,11 @@ const startAutoStrategy = () => {
     const candleRSI = stocksRSIData[i];
 
     if (!isActiveOrder) {
+      // if (i === 1) {
+      //   doMustBuy = true;
+      //   typeGame = 1;
+      // }
+
       if (isWithBottomCase) {
         if (candleRSI.value <= 35) {
           const prevCandle = stocksRSIData[i - 1];
@@ -45,7 +48,7 @@ const startAutoStrategy = () => {
       }
 
       if (isWithTopCase) {
-        if (candleRSI.value >= 70) {
+        if (candleRSI.value >= 80) {
           const prevCandle = stocksRSIData[i - 1];
 
           if (prevCandle.value > candleRSI.value) {
@@ -62,12 +65,14 @@ const startAutoStrategy = () => {
         typeGame,
       });
 
+      console.log('newBuyIndex', i);
+
       chartCandles.addMarker({
         time: candle.time,
         color: '#4CAF50',
       });
 
-      newTrendLines.push({
+      arrTPAndSL.push({
         candleIndex: i,
         value: strategy.stopLoss,
 
@@ -92,37 +97,41 @@ const startAutoStrategy = () => {
     }
 
     if (isActiveOrder) {
-      const {
-        typeGame,
-        stopLoss,
-        takeProfit,
-      } = strategy;
+      console.log('nextStep', i);
 
-      let result = 0;
+      const result = strategy.nextStep(candle);
 
-      if (typeGame === 1) {
-        if (candle.low <= stopLoss) {
-          isActiveOrder = false;
-          result = strategy.loseBuy(candle.low);
-        } else if (candle.high >= takeProfit) {
-          isActiveOrder = false;
-          result = strategy.winBuy(candle.high);
+      if (result.isFinish) {
+        let text = result.result.toString();
+
+        if (result.result > 0) {
+          text += ` (1:${result.takeProfitCoefficient})`;
         }
-      } else {
-        if (candle.high >= stopLoss) {
-          isActiveOrder = false;
-          result = strategy.loseBuy(candle.high);
-        } else if (candle.low <= takeProfit) {
-          isActiveOrder = false;
-          result = strategy.winBuy(candle.low);
-        }
-      }
 
-      if (!isActiveOrder) {
         chartCandles.addMarker({
           time: candle.time,
           color: '#FF5252',
-          text: result.toFixed(2).toString(),
+          text,
+        });
+
+        isActiveOrder = false;
+      }
+
+      if (result.isNewTakeProfit) {
+        arrTPAndSL.push({
+          candleIndex: i,
+          value: strategy.stopLoss,
+
+          options: {
+            color: '#FF5252',
+          },
+        }, {
+          candleIndex: i,
+          value: strategy.takeProfit,
+
+          options: {
+            color: '#4CAF50',
+          },
         });
       }
     }
@@ -146,10 +155,13 @@ const startAutoStrategy = () => {
   chartCandles.drawMarkers();
   strategy.getInfo();
 
-  if (newTrendLines.length) {
-    newTrendLines.forEach(data => {
+  if (arrTPAndSL.length) {
+    arrTPAndSL.forEach(data => {
       const candle = stocksData[data.candleIndex];
       const nextCandle = stocksData[data.candleIndex + 1];
+
+      const { options } = data;
+      options.lineWidth = 1;
 
       const newLine = {
         start: {
@@ -162,13 +174,10 @@ const startAutoStrategy = () => {
           time: nextCandle.time,
         },
 
-        options: {
-          ...data.options,
-          lineWidth: 1,
-        }
+        options,
       };
 
-      trendLines.addSeries(newLine);
+      chartDraw.addSeries(newLine);
     });
   }
 };

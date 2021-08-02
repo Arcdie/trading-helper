@@ -1,5 +1,6 @@
 /* global
   ChartCandles, ChartArea, ChartSMA, ChartVolume, ChartRSI, ChartADX, Strategy, moment
+  startAutoStrategy, drawSupportAndResistanceLines
 */
 
 // $.JQuery
@@ -21,7 +22,9 @@ const chartADX = new ChartADX();
 const chartCandles = new ChartCandles();
 const chartSMA = new ChartSMA(chartCandles.chart);
 const chartArea = new ChartArea(chartCandles.chart);
-const chartVolume = new ChartVolume(chartCandles.chart);
+
+// const chartVolume = new ChartVolume();
+// const chartVolume = new ChartVolume(chartCandles.chart);
 
 const listCharts = [chartCandles, chartRSI, chartADX];
 
@@ -69,10 +72,11 @@ $(document).ready(async () => {
   stocksData = resultGetData.data;
 
   chartCandles.drawSeries(stocksData);
-  // chartVolume.drawSeries(stocksData);
-  // chartArea.drawSeries(chartArea.calculateData(stocksData));
+  chartArea.drawSeries(chartArea.calculateData(stocksData));
   chartSMA.drawSeries(chartSMA.calculateData(stocksData));
-  // chartADX.drawSeries(chartADX.calculateData(stocksData));
+  chartADX.drawSeries(chartADX.calculateData(stocksData));
+
+  // chartVolume.drawSeries(stocksData);
 
   stocksRSIData = chartRSI.calculateData(stocksData);
   chartRSI.drawSeries(stocksRSIData);
@@ -125,5 +129,6 @@ $(document).ready(async () => {
       handlerShowOrHideSeries($(this).data('type'), currentStatus);
     });
 
-  startAutoStrategy();
+  // startAutoStrategy();
+  // drawSupportAndResistanceLines(stocksData);
 });
