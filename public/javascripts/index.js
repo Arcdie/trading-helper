@@ -52,7 +52,7 @@ const handlerShowOrHideSeries = (seriesType, isActive) => {
 };
 
 $(document).ready(async () => {
-  const resultGetData = await getStocksData('mu-16-21');
+  const resultGetData = await getStocksData('apple-16-21');
 
   resultGetData.data
     .sort((a, b) => {

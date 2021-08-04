@@ -25,7 +25,7 @@ body {
 #paint-panel {
   position: absolute;
   z-index: 999;
-  margin-top: 40px;
+  margin-top: 92px;
   margin-left: 10px;
 
   border-radius: 100px;
@@ -48,10 +48,37 @@ body {
       height: 100%;
     }
 
+#charts-periods {
+  position: absolute;
+  z-index: 999;
+  margin-top: 43px;
+  margin-left: 10px;
+}
+  #charts-periods div {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    box-sizing: border-box;
+    margin-right: 2px;
+    position: relative;
+    display: inline-block;
+    border: 1px dashed #d9d9d9;
+    background-color: white;
+  }
+    #charts-periods div.active {
+      border-color: #00bf20;
+    }
+
+    #charts-periods div span {
+      margin: 8px auto;
+      text-align: center;
+      display: block;
+    }
+
 #charts-view {
   position: absolute;
   z-index: 999;
-  margin-top: 87px;
+  margin-top: 142px;
   margin-left: 10px;
 }
   #charts-view div {
