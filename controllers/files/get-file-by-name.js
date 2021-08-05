@@ -18,7 +18,7 @@ module.exports = async (req, res, next) => {
 
   const resultParse = parseFromCSVToJSON({
     fileName: name,
-    filePeriod: 'day',
+    filePeriod: 'minute',
   }, (err, parsedFile) => {
     if (err) {
       logger.error(err);
@@ -49,12 +49,25 @@ module.exports = async (req, res, next) => {
         year,
       ] = date.split('/');
 
+      const [
+        hour,
+        minute,
+        second,
+      ] = time.split(':');
+
+      const momentDate = moment({
+        day,
+        month: parseInt(month, 10) - 1,
+        year: `20${year}`,
+
+        hour,
+        minute,
+        second,
+      });
+
       validFormat.push({
-        date: moment({
-          day,
-          month: parseInt(month, 10) - 1,
-          year: `20${year}`,
-        }),
+        date: momentDate,
+        time: moment(momentDate).unix(),
 
         open: parseFloat(open),
         close: parseFloat(close),
@@ -65,9 +78,20 @@ module.exports = async (req, res, next) => {
       });
     });
 
+    const sortedData = validFormat
+      .sort((a, b) => {
+        if (a.time < b.time) {
+          return -1;
+        } else if (a.time > b.time) {
+          return 1;
+        }
+
+        return 0;
+      });
+
     return res.json({
       status: true,
-      data: validFormat,
+      data: sortedData,
     });
   });
 };

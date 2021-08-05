@@ -1,6 +1,9 @@
 /* global
-  ChartCandles, ChartArea, ChartSMA, ChartVolume, ChartRSI, ChartADX, ChartDraw, Strategy, moment
-  startAutoStrategy, drawSupportAndResistanceLines
+  moment,
+  ChartPeriods, ChartDraw, Strategy,
+  ChartCandles, ChartArea, ChartSMA, ChartVolume, ChartRSI, ChartADX,
+  startAutoStrategy, drawSupportAndResistanceLines,
+  isHistoryModeActive, setPeriodForHistory
 */
 
 // $.JQuery
@@ -12,25 +15,56 @@ const $low = $legend.find('span.low');
 
 const $chartsViewElements = $('#charts-view div');
 
+const $chartPeriods = $('#charts-periods div');
+
 // Constants
 
-let stocksData = [];
-let stocksRSIData = [];
-
-const chartRSI = new ChartRSI();
-const chartADX = new ChartADX();
+// const chartRSI = new ChartRSI();
+// const chartADX = new ChartADX();
 const chartCandles = new ChartCandles();
 const chartSMA = new ChartSMA(chartCandles.chart);
 const chartArea = new ChartArea(chartCandles.chart);
 
 // const chartVolume = new ChartVolume();
+
+const chartPeriods = new ChartPeriods();
 const chartDraw = new ChartDraw(chartCandles.chart, chartCandles.series);
 
 // const chartVolume = new ChartVolume(chartCandles.chart);
 
-const listCharts = [chartCandles, chartRSI, chartADX];
+const listCharts = [chartCandles];
+// const listCharts = [chartCandles, chartRSI, chartADX];
+
+const getDefaultPeriod = () => {
+  for (let i = 0; i < $chartPeriods.length; i += 1) {
+    const $period = $($chartPeriods[i]);
+
+    if ($period.hasClass('active')) {
+      return $period.data('type');
+    }
+  }
+};
 
 // Functions
+const setPeriod = period => {
+  if (isHistoryModeActive) {
+    setPeriodForHistory(period);
+    return false;
+  }
+
+  const stocksData = chartPeriods.setPeriod(period);
+
+  chartCandles.drawSeries(stocksData);
+  chartArea.drawSeries(chartArea.calculateData(stocksData));
+  // chartSMA.drawSeries(chartSMA.calculateData(stocksData));
+  // chartADX.drawSeries(chartADX.calculateData(stocksData));
+
+  // chartVolume.drawSeries(stocksData);
+
+  // const stocksRSIData = chartRSI.calculateData(stocksData);
+  // chartRSI.drawSeries(stocksRSIData);
+};
+
 const getStocksData = async (name) => {
   const response = await fetch(`/files?name=${name}`, {
     method: 'GET',
@@ -52,36 +86,10 @@ const handlerShowOrHideSeries = (seriesType, isActive) => {
 };
 
 $(document).ready(async () => {
-  const resultGetData = await getStocksData('apple-16-21');
+  const resultGetData = await getStocksData('amd-16-17');
 
-  resultGetData.data
-    .sort((a, b) => {
-      const unixA = moment(a.date).unix();
-      const unixB = moment(b.date).unix();
-
-      if (unixA < unixB) {
-        return -1;
-      } else if (unixA > unixB) {
-        return 1;
-      }
-
-      return 0;
-    })
-    .forEach((candle) => {
-      candle.time = moment(candle.date).format('YYYY-MM-DD');
-    });
-
-  stocksData = resultGetData.data;
-
-  chartCandles.drawSeries(stocksData);
-  chartArea.drawSeries(chartArea.calculateData(stocksData));
-  chartSMA.drawSeries(chartSMA.calculateData(stocksData));
-  // chartADX.drawSeries(chartADX.calculateData(stocksData));
-
-  // chartVolume.drawSeries(stocksData);
-
-  stocksRSIData = chartRSI.calculateData(stocksData);
-  chartRSI.drawSeries(stocksRSIData);
+  chartPeriods.setOriginalData(resultGetData.data);
+  setPeriod(getDefaultPeriod());
 
   let isCrossHairMoving = false;
 
@@ -129,6 +137,15 @@ $(document).ready(async () => {
 
       $elem.toggleClass('active');
       handlerShowOrHideSeries($(this).data('type'), currentStatus);
+    });
+
+  $chartPeriods
+    .on('click', function () {
+      const $period = $(this);
+
+      $chartPeriods.removeClass('active');
+      $period.addClass('active');
+      setPeriod($period.data('type'));
     });
 
   // startAutoStrategy();

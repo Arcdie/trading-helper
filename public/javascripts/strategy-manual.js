@@ -1,6 +1,7 @@
 /* global
-  chartCandles, chartArea, chartSMA, chartRSI, chartADX, chartDraw
-  moment, Strategy, stocksData, chart,
+  moment,
+  ChartPeriods, chartDraw, Strategy
+  chartPeriods, chartCandles, chartArea, chartSMA, chartRSI, chartADX,
   $strategy, $switch, $numberBuys, $balance, $winBuys, $loseBuys
 */
 
@@ -15,43 +16,82 @@ const $actionButtons = $tradingActions.find('button');
 
 // constants
 let typeGame = 0;
-let localStocksData = [];
 let isActivePosition = false;
-let isStrategyActive = false;
+let isHistoryModeActive = false;
 
 const strategy = new Strategy();
+const chartPeriodsForHistory = new ChartPeriods();
 
 // Functions
+const setPeriodForHistory = period => {
+  const stocksData = chartPeriodsForHistory.setPeriod(period);
+
+  chartCandles.drawSeries(stocksData);
+
+  // chartArea.drawSeries(chartArea.calculateData(stocksData));
+  // chartSMA.drawSeries(chartSMA.calculateData(stocksData));
+  // chartADX.drawSeries(chartADX.calculateData(stocksData));
+
+  // chartVolume.drawSeries(stocksData);
+
+  // const stocksRSIData = chartRSI.calculateData(stocksData);
+  // chartRSI.drawSeries(stocksRSIData);
+};
+
 const startStrategy = (stocksData) => {
-  const startDate = stocksData[0].time.year;
-  const endDate = (stocksData[stocksData.length - 1].time.year - 1);
+  const startFrom = randNumber(1, chartPeriods.dayTimeFrameData.length);
+  const dayInCalendar = chartPeriods.dayTimeFrameData[startFrom];
+  const dayInCalendarUnix = moment(dayInCalendar.time).unix();
 
-  const numberYears = endDate - startDate;
-  const numberDays = numberYears * 365;
+  const indexForStartFrom = chartPeriods.originalData.findIndex(
+    data => data.time >= dayInCalendarUnix,
+  );
 
-  const startFrom = randNumber(1, numberDays);
+  if (!~indexForStartFrom) {
+    throw new Error('No index in original data');
+  }
 
-  localStocksData = stocksData.slice(0, startFrom);
+  const localStocksData = stocksData.slice(0, indexForStartFrom);
 
-  chartCandles.drawSeries(localStocksData);
-  chartArea.drawSeries(chartArea.calculateData(localStocksData));
-  chartSMA.drawSeries(chartSMA.calculateData(localStocksData));
-  chartRSI.drawSeries(chartRSI.calculateData(localStocksData));
-  chartADX.drawSeries(chartADX.calculateData(localStocksData));
+  chartCandles.removeChart();
+
+  chartCandles.addChart();
+  chartCandles.addSeries();
+
+  chartPeriodsForHistory.setOriginalData(localStocksData);
+  setPeriodForHistory(chartPeriods.period);
 };
 
 const nextStep = () => {
-  const indexLocalStocksData = localStocksData.length;
-  const nextData = stocksData[indexLocalStocksData];
-  const nextDataPlus = stocksData[indexLocalStocksData + 1];
+  let incrementValue;
 
-  localStocksData.push(nextData);
+  switch (chartPeriodsForHistory.period) {
+    case 'minute': incrementValue = 1; break;
+    case 'hour': incrementValue = 6; break;
+    case 'day': incrementValue = 39; break;
+    case 'month': incrementValue = 39; break;
+    default: throw new Error('Undefined period');
+  }
 
-  chartCandles.drawSeries(localStocksData);
-  chartArea.drawSeries(chartArea.calculateData(localStocksData));
-  chartSMA.drawSeries(chartSMA.calculateData(localStocksData));
-  chartRSI.drawSeries(chartRSI.calculateData(localStocksData));
-  chartADX.drawSeries(chartADX.calculateData(localStocksData));
+  const indexLocalStocksData = chartPeriodsForHistory.originalData.length;
+  const nextData = chartPeriods.originalData
+    .slice(indexLocalStocksData, indexLocalStocksData + 6);
+
+  const resultData = [
+    ...chartPeriodsForHistory.originalData,
+    ...nextData,
+  ];
+
+  chartPeriodsForHistory.setOriginalData(resultData);
+
+  const stocksData = chartPeriodsForHistory.getDataByPeriod(chartPeriodsForHistory.period);
+
+  chartCandles.drawSeries(stocksData);
+
+  // chartArea.drawSeries(chartArea.calculateData(localStocksData));
+  // chartSMA.drawSeries(chartSMA.calculateData(localStocksData));
+  // chartRSI.drawSeries(chartRSI.calculateData(localStocksData));
+  // chartADX.drawSeries(chartADX.calculateData(localStocksData));
 
   if (isActivePosition) {
     const {
@@ -137,14 +177,14 @@ $(document).ready(() => {
 
   $switch
     .on('click', () => {
-      isStrategyActive = !isStrategyActive;
+      isHistoryModeActive = !isHistoryModeActive;
 
-      if (!isStrategyActive) {
+      if (!isHistoryModeActive) {
         location.reload(true);
       }
 
       $tradingActions.toggleClass('active');
-      startStrategy(stocksData);
+      startStrategy(chartPeriods.originalData);
     });
 
   $(document).keydown(e => {

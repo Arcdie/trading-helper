@@ -10,32 +10,8 @@ class ChartCandles {
     this.containerWidth = this.containerDocument.clientWidth;
     this.containerHeight = this.containerDocument.clientHeight;
 
-    this.chart = LightweightCharts.createChart(this.containerDocument, {
-      width: this.containerWidth,
-      height: this.containerHeight,
-    });
-
-    this.chart.applyOptions({
-      layout: {
-        backgroundColor: '#F6FDFF',
-      },
-
-      crosshair: {
-        mode: 0,
-      },
-
-      // timeScale: {
-      //   visible: false,
-      // },
-    });
-
-    this.series = this.chart.addCandlestickSeries({
-      upColor: '#000FFF',
-      downColor: 'rgba(0, 0, 0, 0)',
-      borderDownColor: '#000FFF',
-      wickColor: '#000000',
-    });
-
+    this.addChart();
+    this.addSeries();
     this.markers = [];
   }
 
@@ -69,5 +45,45 @@ class ChartCandles {
 
   addMarker(data) {
     this.markers.push(data);
+  }
+
+  addChart() {
+    this.chart = LightweightCharts.createChart(this.containerDocument, {
+      width: this.containerWidth,
+      height: this.containerHeight,
+    });
+
+    this.chart.applyOptions({
+      layout: {
+        backgroundColor: '#F6FDFF',
+      },
+
+      crosshair: {
+        mode: 0,
+      },
+
+      timeScale: {
+        secondsVisible: false,
+      },
+    });
+  }
+
+  removeChart() {
+    this.removeSeries();
+    this.chart.remove();
+  }
+
+  addSeries() {
+    this.series = this.chart.addCandlestickSeries({
+      upColor: '#000FFF',
+      downColor: 'rgba(0, 0, 0, 0)',
+      borderDownColor: '#000FFF',
+      wickColor: '#000000',
+    });
+  }
+
+  removeSeries() {
+    this.chart.removeSeries(this.series);
+    this.series = false;
   }
 }
