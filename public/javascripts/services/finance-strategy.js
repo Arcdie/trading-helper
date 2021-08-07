@@ -29,7 +29,7 @@ class Strategy {
     this.startStopLoss = 0;
     this.stepBetweenSLAndTP = 0;
 
-    this.typeGame = 0; // 1: long, 2: short
+    this.typeGame = 1; // 1: long, 2: short
 
     this.winBuys = 0;
     this.loseBuys = 0;
@@ -46,6 +46,8 @@ class Strategy {
   newBuy({
     typeGame,
     stockPrice,
+    stopLoss,
+    stocksToBuy,
   }) {
     const {
       stopLossPercent,
@@ -54,19 +56,28 @@ class Strategy {
     this.setStockPrice(stockPrice);
     this.setTypeGame(typeGame);
 
-    this.stocksToBuy = parseInt(this.balance / this.stockPrice, 10);
-
-    if (this.typeGame === 1) {
-      this.stopLoss = (
-        this.stockPrice - ((this.balance * (stopLossPercent / 100)) / this.stocksToBuy)
-      );
+    if (stocksToBuy) {
+      this.stocksToBuy = stocksToBuy;
     } else {
-      this.stopLoss = (
-        this.stockPrice + ((this.balance * (stopLossPercent / 100)) / this.stocksToBuy)
-      );
+      this.stocksToBuy = parseInt(this.balance / this.stockPrice, 10);
     }
 
-    this.stopLoss = Strategy.floatNum(this.stopLoss);
+    if (stopLoss) {
+      this.stopLoss = stopLoss;
+    } else {
+      if (this.typeGame === 1) {
+        this.stopLoss = (
+          this.stockPrice - ((this.balance * (stopLossPercent / 100)) / this.stocksToBuy)
+        );
+      } else {
+        this.stopLoss = (
+          this.stockPrice + ((this.balance * (stopLossPercent / 100)) / this.stocksToBuy)
+        );
+      }
+
+      this.stopLoss = Strategy.floatNum(this.stopLoss);
+    }
+
     this.takeProfit = Strategy.floatNum(
       Math.abs(this.stockPrice + ((this.stockPrice - this.stopLoss) * this.takeProfitCoefficient)),
     );
@@ -74,11 +85,89 @@ class Strategy {
     this.startStopLoss = this.stopLoss;
     this.stepBetweenSLAndTP = Math.abs((this.takeProfit - this.stopLoss) / 2);
 
+    if (this.typeGame === 1) {
+      this.nextTakeProfit = Strategy.floatNum(this.takeProfit + this.stepBetweenSLAndTP);
+    } else {
+      this.nextTakeProfit = Strategy.floatNum(this.takeProfit - this.stepBetweenSLAndTP);
+    }
+
     this.balance -= (this.stocksToBuy * this.stockPrice);
     this.balance = Strategy.floatNum(this.balance);
+  }
 
-    const copyObj = { ...this };
-    console.log('this', copyObj);
+  manualSell({
+    low,
+    high,
+    open,
+    close,
+  }) {
+    const returnResult = {
+      isFinish: true,
+
+      // result: 0,
+      // isNewTakeProfit: 0,
+      // takeProfitCoefficient: 2,
+    };
+
+    if (this.typeGame === 1) {
+      const sumStockPrices = this.stockPrice * this.stocksToBuy;
+      const sumToReduce = close;
+
+      this.balance += sumStockPrices;
+
+      const differenceBetweenPrices = Math.abs(this.stockPrice - sumToReduce);
+      const commonSum = differenceBetweenPrices * this.stocksToBuy;
+
+      if (sumToReduce < this.stockPrice) {
+        this.loseBuys += 1;
+        this.balance -= commonSum;
+        returnResult.result = -commonSum.toFixed(2);
+      } else {
+        this.winBuys += 1;
+        this.balance += commonSum;
+        returnResult.result = commonSum.toFixed(2);
+      }
+    } else if (this.typeGame === 2) {
+      const sumStockPrices = this.stockPrice * this.stocksToBuy;
+      const sumToReduce = close;
+
+      this.balance += sumStockPrices;
+
+      const differenceBetweenPrices = Math.abs(sumToReduce - this.stockPrice);
+      const commonSum = differenceBetweenPrices * this.stocksToBuy;
+
+      if (sumToReduce > this.stockPrice) {
+        this.loseBuys += 1;
+        this.balance -= commonSum;
+        returnResult.result = -commonSum.toFixed(2);
+
+        console.log('loseBuy');
+      } else {
+        this.winBuys += 1;
+        this.balance += commonSum;
+        returnResult.result = commonSum.toFixed(2);
+
+        console.log('winBuy, several takeProfits');
+      }
+    }
+
+    returnResult.takeProfitCoefficient = this.takeProfitCoefficient;
+
+    this.setTypeGame(0);
+    this.setStockPrice(0);
+
+    this.stopLoss = 0;
+    this.takeProfit = 0;
+    this.nextTakeProfit = 0;
+    this.stocksToBuy = 0;
+    this.startStopLoss = 0;
+    this.takeProfitCoefficient = strategyConstants.defaultTakeProfitCoefficient;
+
+    this.balance = Strategy.floatNum(this.balance);
+
+    this.getInfo();
+
+    return returnResult;
   }
 
   nextStep({
@@ -87,8 +176,6 @@ class Strategy {
     open,
     close,
   }) {
-
-    console.log('high', high);
     const returnResult = {
       isFinish: false,
 
@@ -97,13 +184,15 @@ class Strategy {
       // takeProfitCoefficient: 2,
     };
 
+    console.log('open', open);
+    console.log('low', low);
+    console.log('this.stopLoss', this.stopLoss);
+
     if (this.typeGame === 1) {
       if (open <= this.stopLoss
         || low <= this.stopLoss) {
         const sumStockPrices = this.stockPrice * this.stocksToBuy;
         const sumToReduce = (open <= this.stopLoss) ? open : this.stopLoss; // if open less than stopLoss (gap)
-
-        console.log('sumToReduce', sumToReduce);
 
         this.balance += sumStockPrices;
 
@@ -132,6 +221,7 @@ class Strategy {
 
         this.stopLoss = 0;
         this.takeProfit = 0;
+        this.nextTakeProfit = 0;
         this.stocksToBuy = 0;
         this.startStopLoss = 0;
         this.takeProfitCoefficient = strategyConstants.defaultTakeProfitCoefficient;
@@ -152,10 +242,7 @@ class Strategy {
 
         this.takeProfitCoefficient += numberTransfers;
         this.takeProfit = this.startStopLoss + (this.stepBetweenSLAndTP * this.takeProfitCoefficient);
-        this.stopLoss = this.takeProfit - this.stepBetweenSLAndTP;
-
-        const copyObj = { ...this };
-        console.log('this', copyObj);
+        // this.stopLoss = this.takeProfit - this.stepBetweenSLAndTP;
 
         returnResult.isNewTakeProfit = true;
       }
@@ -194,6 +281,7 @@ class Strategy {
 
         this.stopLoss = 0;
         this.takeProfit = 0;
+        this.nextTakeProfit = 0;
         this.stocksToBuy = 0;
         this.startStopLoss = 0;
         this.takeProfitCoefficient = strategyConstants.defaultTakeProfitCoefficient;
@@ -214,10 +302,7 @@ class Strategy {
 
         this.takeProfitCoefficient += numberTransfers;
         this.takeProfit = this.startStopLoss - (this.stepBetweenSLAndTP * this.takeProfitCoefficient);
-        this.stopLoss = this.takeProfit + this.stepBetweenSLAndTP;
-
-        const copyObj = { ...this };
-        console.log('this', copyObj);
+        // this.stopLoss = this.takeProfit + this.stepBetweenSLAndTP;
 
         returnResult.isNewTakeProfit = true;
       }

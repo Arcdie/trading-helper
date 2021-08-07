@@ -5,7 +5,7 @@ class ChartSMA {
     this.chart = chart;
 
     this.settings = {
-      period: 14,
+      period: 50,
     };
 
     this.series = this.chart.addLineSeries({

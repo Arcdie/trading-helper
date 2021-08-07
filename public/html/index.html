@@ -47,15 +47,23 @@
       </div>
 
       <div class="trading-actions">
-        <button class="buy">Buy</button>
-        <button class="sell">Sell</button>
-        <span class="status"></span>
-        <!-- <button class="next">Next</button> -->
+        <div class="choice">
+          <button class="buy">Buy</button>
+          <button class="sell">Sell</button>
+          <span class="status"></span>
+        </div>
+
+        <div class="menu">
+          <div class="percent">Потери: <span>0</span>%</div>
+          <div class="number-stocks">К-во: <input type="text" placeholder="0"></div>
+          <div class="stop-loss">SL: <input type="text" placeholder="0"></div>
+          <button class="confirm">Подтвердить</div>
+        </div>
       </div>
 
       <div id="chart-candles"></div>
-      <!-- <div id="chart-rsi"></div>
-      <div id="chart-adx"></div> -->
+      <div id="chart-adx"></div>
+      <!-- <div id="chart-rsi"></div> -->
       <!-- <div id="chart-volume"></div> -->
 
       <div class="strategy">

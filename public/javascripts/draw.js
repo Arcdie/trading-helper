@@ -136,7 +136,7 @@ $(document).ready(() => {
     if ($horizontalLine.hasClass('active')) {
       drawHorizontalLineHandler(price);
     } else {
-      const allowedVariation = price / (100 / 1);
+      const allowedVariation = price / (100 / 0.1);
       const valuePlusVariation = price + allowedVariation;
       const valueMinusVariation = price - allowedVariation;
 

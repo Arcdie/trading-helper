@@ -1,10 +1,10 @@
-/* global LightweightCharts */
+/* global
+  LightweightCharts,
+  chartCandles
+*/
 
 class ChartDraw {
-  constructor(chart, series) {
-    this.chart = chart;
-    this.series = series;
-
+  constructor() {
     this.settings = {};
 
     this.setSeries = [];
@@ -22,7 +22,7 @@ class ChartDraw {
     options.priceLineSource = false;
     options.priceLineVisible = false;
 
-    const newSeries = this.chart.addLineSeries(options);
+    const newSeries = chartCandles.chart.addLineSeries(options);
 
     this.setSeries.push({
       start,
@@ -31,6 +31,8 @@ class ChartDraw {
     });
 
     ChartDraw.drawSeries(newSeries, [start, end]);
+
+    return newSeries;
   }
 
   addPriceLine(value, isAddToHistory = false) {
@@ -38,9 +40,9 @@ class ChartDraw {
       value,
     };
 
-    if (isAddToHistory) {
-      ChartDraw.addPriceLineToHistory(value);
-    }
+    // if (isAddToHistory) {
+    //   ChartDraw.addPriceLineToHistory(value);
+    // }
 
     const resultDraw = this.drawPriceLine(value);
     insertObj.priceLine = resultDraw;
@@ -51,7 +53,7 @@ class ChartDraw {
   removePriceLine(index) {
     const priceLineFromSet = this.setPriceLines[index];
 
-    this.series.removePriceLine(priceLineFromSet.priceLine);
+    chartCandles.series.removePriceLine(priceLineFromSet.priceLine);
 
     const setPriceLines = ChartDraw.getPriceLinesFromHistory();
 
@@ -64,7 +66,7 @@ class ChartDraw {
   }
 
   removeSeries(series) {
-    this.chart.removeSeries(series);
+    chartCandles.chart.removeSeries(series);
   }
 
   static drawSeries(series, data) {
@@ -72,7 +74,7 @@ class ChartDraw {
   }
 
   drawPriceLine(value) {
-    return this.series.createPriceLine({
+    return chartCandles.series.createPriceLine({
       price: value,
       color: 'black',
       lineWidth: 1,

@@ -20,7 +20,7 @@ const $chartPeriods = $('#charts-periods div');
 // Constants
 
 // const chartRSI = new ChartRSI();
-// const chartADX = new ChartADX();
+const chartADX = new ChartADX();
 const chartCandles = new ChartCandles();
 const chartSMA = new ChartSMA(chartCandles.chart);
 const chartArea = new ChartArea(chartCandles.chart);
@@ -32,8 +32,8 @@ const chartDraw = new ChartDraw(chartCandles.chart, chartCandles.series);
 
 // const chartVolume = new ChartVolume(chartCandles.chart);
 
-const listCharts = [chartCandles];
-// const listCharts = [chartCandles, chartRSI, chartADX];
+// const listCharts = [chartCandles];
+const listCharts = [chartCandles, chartADX];
 
 const getDefaultPeriod = () => {
   for (let i = 0; i < $chartPeriods.length; i += 1) {
@@ -56,8 +56,8 @@ const setPeriod = period => {
 
   chartCandles.drawSeries(stocksData);
   chartArea.drawSeries(chartArea.calculateData(stocksData));
-  // chartSMA.drawSeries(chartSMA.calculateData(stocksData));
-  // chartADX.drawSeries(chartADX.calculateData(stocksData));
+  chartSMA.drawSeries(chartSMA.calculateData(stocksData));
+  chartADX.drawSeries(chartADX.calculateData(stocksData));
 
   // chartVolume.drawSeries(stocksData);
 
@@ -86,7 +86,7 @@ const handlerShowOrHideSeries = (seriesType, isActive) => {
 };
 
 $(document).ready(async () => {
-  const resultGetData = await getStocksData('amd-16-17');
+  const resultGetData = await getStocksData('amd-12-21');
 
   chartPeriods.setOriginalData(resultGetData.data);
   setPeriod(getDefaultPeriod());

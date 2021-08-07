@@ -150,7 +150,7 @@ body {
       background-color: #00bf20;
     }
 
-  .trading-actions button {
+  .trading-actions .choice button {
     margin-bottom: 7px;
     width: 94px;
     text-align: left;
@@ -173,6 +173,51 @@ body {
     .trading-actions button.next {
       background-color: black;
     }
+
+  .trading-actions .menu {
+    font-size: 18px;
+    border: 1px solid black;
+    padding: 8px;
+    font-family: monospace;
+    background-color: white;
+  }
+    .trading-actions .menu div {
+      margin-bottom: 8px;
+    }
+      .trading-actions .menu div:last-child {
+        margin-bottom: 0;
+      }
+
+      .trading-actions .menu button {
+        margin: 0 auto;
+        display: block;
+        background-color: black;
+        color: white;
+        padding: 5px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        box-sizing: border-box;
+      }
+        .trading-actions .menu button:hover {
+          background-color: white;
+          color: black;
+          border: 1px solid black;
+        }
+
+      .trading-actions .menu div input {
+        width: 90px;
+        padding: 3px 0;
+        text-align: center;
+        float: right;
+      }
+
+      .trading-actions .menu p {
+
+      }
+        .trading-actions .menu p span {
+
+        }
 
 .strategy {
   border: 1px solid black;

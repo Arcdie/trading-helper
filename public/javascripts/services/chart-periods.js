@@ -55,6 +55,11 @@ class ChartPeriods {
   setOriginalData(stocksData) {
     this.originalData = stocksData;
 
+    this.minuteTimeFrameData = [];
+    this.hourTimeFrameData = [];
+    this.dayTimeFrameData = [];
+    this.monthTimeFrameData = [];
+
     this.calculateMinuteTimeFrameData();
     this.calculateHourTimeFrameData();
     this.calculateDayTimeFrameData();
