@@ -1,8 +1,10 @@
 /* global LightweightCharts */
 
 class ChartVolume {
-  constructor() {
+  constructor(rootContainer) {
     this.containerName = 'chart-volume';
+    this.appendChart(rootContainer);
+
     this.containerDocument = document.getElementById(this.containerName);
 
     this.settings = {};
@@ -36,6 +38,10 @@ class ChartVolume {
         type: 'volume',
       },
     });
+  }
+
+  appendChart(rootContainer) {
+    rootContainer.insertAdjacentHTML('beforeend', `<div id="${this.containerName}"></div>`);
   }
 
   drawSeries(data) {

@@ -6,6 +6,7 @@ const $numberBuys = $strategy.find('.number-buys');
 const $winBuys = $strategy.find('.win-buys');
 const $loseBuys = $strategy.find('.lose-buys');
 const $percentFromStartBalance = $strategy.find('.percent-from-start-balance');
+const $percentFromNumberBuys = $strategy.find('.percent-from-number-buys');
 
 const strategyConstants = {
   startBalance: 1000,
@@ -24,6 +25,7 @@ class Strategy {
 
     this.stopLoss = 0;
     this.takeProfit = 0;
+    this.breakeven = 0;
     this.takeProfitCoefficient = strategyConstants.defaultTakeProfitCoefficient;
 
     this.startStopLoss = 0;
@@ -55,6 +57,8 @@ class Strategy {
 
     this.setStockPrice(stockPrice);
     this.setTypeGame(typeGame);
+
+    this.breakeven = this.stockPrice;
 
     if (stocksToBuy) {
       this.stocksToBuy = stocksToBuy;
@@ -314,24 +318,30 @@ class Strategy {
   getInfo() {
     const endBalance = this.balance.toFixed(2);
     const numberBuys = this.loseBuys + this.winBuys;
-    const percentFromStartBalance = (100 - (100 / (this.balance / strategyConstants.startBalance))).toFixed(2);
+
+    const differenceBetweenOldBalanceAndNew = parseInt(this.balance - strategyConstants.startBalance, 10);
+    const percentFromStartBalance = (100 / (strategyConstants.startBalance / differenceBetweenOldBalanceAndNew)).toFixed(2);
 
     const {
       loseBuys,
       winBuys,
     } = this;
 
+    const percentFromNumberBuys = (100 / (numberBuys / winBuys)).toFixed(2);
+
     console.log('endBalance', endBalance);
     console.log('numberBuys', numberBuys);
     console.log('loseBuys', loseBuys);
     console.log('winBuys', winBuys);
     console.log('percentFromStartBalance', percentFromStartBalance);
+    console.log('percentFromNumberBuys', percentFromNumberBuys);
 
     $balance.text(endBalance);
     $numberBuys.text(numberBuys);
     $loseBuys.text(loseBuys);
     $winBuys.text(winBuys);
     $percentFromStartBalance.text(percentFromStartBalance);
+    $percentFromNumberBuys.text(percentFromNumberBuys);
   }
 
   static floatNum(value) {

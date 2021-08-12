@@ -1,8 +1,10 @@
 /* global LightweightCharts, RSI */
 
 class ChartRSI {
-  constructor() {
+  constructor(rootContainer) {
     this.containerName = 'chart-rsi';
+    this.appendChart(rootContainer);
+
     this.containerDocument = document.getElementById(this.containerName);
 
     this.settings = {
@@ -56,6 +58,10 @@ class ChartRSI {
       lineWidth: 2,
       lineStyle: LightweightCharts.LineStyle.Dashed,
     });
+  }
+
+  appendChart(rootContainer) {
+    rootContainer.insertAdjacentHTML('beforeend', `<div id="${this.containerName}"></div>`);
   }
 
   calculateData(inputData) {

@@ -34,6 +34,7 @@ let stocksToBuy = 0;
 
 let tmpTP = false;
 let tmpTP3 = false;
+let tmpBreakeven = false;
 let tmpSL = false;
 let previousSLAndTP = [];
 
@@ -46,15 +47,17 @@ const {
 const setPeriodForHistory = period => {
   const stocksData = chartPeriodsForHistory.setPeriod(period);
 
-  chartCandles.drawSeries(stocksData);
-  chartArea.drawSeries(chartArea.calculateData(stocksData));
-  chartSMA.drawSeries(chartSMA.calculateData(stocksData));
-  chartADX.drawSeries(chartADX.calculateData(stocksData));
+  chartCandles && chartCandles.drawSeries(stocksData);
+  chartArea && chartArea.drawSeries(chartArea.calculateData(stocksData));
+  chartSMA && chartSMA.drawSeries(chartSMA.calculateData(stocksData));
+  chartADX && chartADX.drawSeries(chartADX.calculateData(stocksData));
 
-  // chartVolume.drawSeries(stocksData);
+  chartVolume && chartVolume.drawSeries(stocksData);
 
-  // const stocksRSIData = chartRSI.calculateData(stocksData);
-  // chartRSI.drawSeries(stocksRSIData);
+  if (chartRSI) {
+    const stocksRSIData = chartRSI.calculateData(stocksData);
+    chartRSI.drawSeries(stocksRSIData);
+  }
 };
 
 const startStrategy = (stocksData) => {
@@ -91,22 +94,26 @@ const nextStep = () => {
 
     case 'hour': {
       const lastCandle = chartPeriodsForHistory.originalData[indexLocalStocksData - 1];
-      const hourOfLastCandle = new Date(lastCandle.time * 1000).getHours();
+      const nextCandle = chartPeriods.originalData[indexLocalStocksData];
 
-      let i = 0;
-      let targetHour;
+      const lastCandleUnix = lastCandle.time;
+      const currentDay = new Date(lastCandle.time * 1000).getDate();
+      const nextCandleDay = new Date(nextCandle.time * 1000).getDate();
+
+      let nextUnix;
+
+      if (currentDay !== nextCandleDay) {
+        nextUnix = nextCandle.time + 3599;
+      } else {
+        nextUnix = lastCandleUnix + 3600;
+      }
 
       while (1) {
-        const nextCandle = chartPeriods.originalData[indexLocalStocksData + i];
-        const hourOfNextCandle = new Date(nextCandle.time * 1000).getHours();
+        const nextCandleInDay = chartPeriods.originalData[indexLocalStocksData + incrementValue];
+        const nextCandleUnix = nextCandleInDay.time;
 
-        if (i === 0) {
-          targetHour = hourOfNextCandle;
-        }
-
-        if (targetHour === hourOfNextCandle) {
+        if (nextCandleUnix <= nextUnix) {
           incrementValue += 1;
-          i += 1;
         } else {
           break;
         }
@@ -185,12 +192,17 @@ const nextStep = () => {
   const lastCandle = historyStocksData[historyStocksData.length - 1];
   const nextCandle = originalStocksData[historyStocksData.length];
 
-  chartCandles.drawSeries(historyStocksData);
+  chartCandles && chartCandles.drawSeries(historyStocksData);
+  chartArea && chartArea.drawSeries(chartArea.calculateData(historyStocksData));
+  chartSMA && chartSMA.drawSeries(chartSMA.calculateData(historyStocksData));
+  chartADX && chartADX.drawSeries(chartADX.calculateData(historyStocksData));
 
-  chartArea.drawSeries(chartArea.calculateData(historyStocksData));
-  chartSMA.drawSeries(chartSMA.calculateData(historyStocksData));
-  // chartRSI.drawSeries(chartRSI.calculateData(localStocksData));
-  chartADX.drawSeries(chartADX.calculateData(historyStocksData));
+  chartVolume && chartVolume.drawSeries(historyStocksData);
+
+  if (chartRSI) {
+    const stocksRSIData = chartRSI.calculateData(historyStocksData);
+    chartRSI.drawSeries(stocksRSIData);
+  }
 
   if (isActivePosition) {
     const {
@@ -200,8 +212,6 @@ const nextStep = () => {
     } = strategy;
 
     const result = strategy.nextStep(lastCandle);
-
-    console.log('result', result);
 
     if (result.isFinish) {
       let text = result.result.toString();
@@ -315,10 +325,12 @@ const calculateSLAndTP = () => {
     chartDraw.removeSeries(tmpTP);
     chartDraw.removeSeries(tmpTP3);
     chartDraw.removeSeries(tmpSL);
+    chartDraw.removeSeries(tmpBreakeven);
 
     tmpTP = false;
     tmpTP3 = false;
     tmpSL = false;
+    tmpBreakeven = false;
   }
 
   tmpTP = chartDraw.addSeries({
@@ -335,6 +347,23 @@ const calculateSLAndTP = () => {
     options: {
       lineWidth: 1,
       color: '#4CAF50',
+    },
+  });
+
+  tmpBreakeven = chartDraw.addSeries({
+    start: {
+      value: stockPrice,
+      time: currentCandle.time,
+    },
+
+    end: {
+      value: stockPrice,
+      time: nextCandle.time,
+    },
+
+    options: {
+      lineWidth: 1,
+      color: '#ffbb00',
     },
   });
 
@@ -491,10 +520,12 @@ $(document).ready(() => {
           chartDraw.removeSeries(tmpTP);
           chartDraw.removeSeries(tmpTP3);
           chartDraw.removeSeries(tmpSL);
+          chartDraw.removeSeries(tmpBreakeven);
 
           tmpTP = false;
           tmpTP3 = false;
           tmpSL = false;
+          tmpBreakeven = false;
         }
 
         const tp = chartDraw.addSeries({
@@ -548,7 +579,24 @@ $(document).ready(() => {
           },
         });
 
-        previousSLAndTP.push(tp, tp2, sl);
+        const breakeven = chartDraw.addSeries({
+          start: {
+            value: strategy.breakeven,
+            time: candle.time,
+          },
+
+          end: {
+            value: strategy.breakeven,
+            time: nextCandle.time,
+          },
+
+          options: {
+            lineWidth: 1,
+            color: '#ffbb00',
+          },
+        });
+
+        previousSLAndTP.push(tp, tp2, sl, breakeven);
 
         chartCandles.addMarker({
           time: candle.time,

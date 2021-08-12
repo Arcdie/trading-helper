@@ -1,8 +1,10 @@
 /* global LightweightCharts */
 
 class ChartCandles {
-  constructor() {
+  constructor(rootContainer) {
     this.containerName = 'chart-candles';
+    this.appendChart(rootContainer);
+
     this.containerDocument = document.getElementById(this.containerName);
 
     this.settings = {};
@@ -13,6 +15,10 @@ class ChartCandles {
     this.addChart();
     this.addSeries();
     this.markers = [];
+  }
+
+  appendChart(rootContainer) {
+    rootContainer.insertAdjacentHTML('beforeend', `<div id="${this.containerName}"></div>`);
   }
 
   drawSeries(data) {

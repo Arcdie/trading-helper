@@ -1,8 +1,10 @@
 /* global LightweightCharts, ADX */
 
 class ChartADX {
-  constructor() {
+  constructor(rootContainer) {
     this.containerName = 'chart-adx';
+    this.appendChart(rootContainer);
+
     this.containerDocument = document.getElementById(this.containerName);
 
     this.settings = {
@@ -55,6 +57,10 @@ class ChartADX {
       lineWidth: 2,
       lineStyle: LightweightCharts.LineStyle.Dashed,
     });
+  }
+
+  appendChart(rootContainer) {
+    rootContainer.insertAdjacentHTML('beforeend', `<div id="${this.containerName}"></div>`);
   }
 
   calculateData(inputData) {
