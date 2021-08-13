@@ -1,0 +1,18 @@
+.trading-strategy {
+  border: 1px solid black;
+  padding: 15px;
+  position: relative;
+}
+  .trading-strategy .switch {
+    position: absolute;
+    right: 15px;
+  }
+
+  .trading-strategy p {
+    font-family: monospace;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+    .trading-strategy p:last-child {
+      margin-bottom: 0;
+    }

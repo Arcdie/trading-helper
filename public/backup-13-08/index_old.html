@@ -1,0 +1,120 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Trading System</title>
+
+    <link rel="stylesheet" type="text/css" href="/stylesheets/index.css">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/switchers.css">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="tabs"></div>
+
+      <div id="legend">
+        <p class="values">
+          ОТКР<span class="open">0</span>
+          МАКС<span class="high">0</span>
+          МИН<span class="low">0</span>
+          ЗАКР<span class="close">0</span>
+        </p>
+      </div>
+
+      <div id="paint-panel">
+        <div class="trend-line" data-type="trend-line">
+          <img src="/images/trend-line.png" alt="trend-line">
+        </div>
+
+        <div class="straight-line" data-type="straight-line">
+          <img src="/images/line.png" alt="line">
+        </div>
+
+        <div class="horizontal-line" data-type="horizontal-line">
+          <img src="/images/horizontal-line.png" alt="-horizontal-line">
+        </div>
+      </div>
+
+      <div id="charts-periods">
+        <div class="minute" data-type="minute"><span>10M</span></div>
+        <div class="hour" data-type="hour"><span>1Ч</span></div>
+        <div class="day active" data-type="day"><span>Д</span></div>
+        <div class="month" data-type="month"><span>Мес</span></div>
+      </div>
+
+      <div id="charts-view">
+        <div class="chart-area" data-type="chart-area" title="area">a</div>
+        <div class="chart-candles active" data-type="chart-candles" title="candles">c</div>
+      </div>
+
+      <div class="trading-actions">
+        <div class="choice">
+          <button class="buy">Buy</button>
+          <button class="sell">Sell</button>
+          <span class="status"></span>
+        </div>
+
+        <div class="menu">
+          <div class="percent">Потери: <span>0</span>%</div>
+          <div class="number-stocks">К-во: <input type="text" placeholder="0"></div>
+          <div class="stop-loss">SL: <input type="text" placeholder="0"></div>
+          <button class="confirm">Подтвердить</div>
+        </div>
+      </div>
+
+      <div id="charts">
+        <!-- <div id="chart-candles"></div>
+        <div id="chart-adx"></div>
+        <div id="chart-rsi"></div>
+        <div id="chart-volume"></div> -->
+      </div>
+
+      <div class="strategy">
+        <label class="switch">
+          <input type="checkbox">
+          <span class="slider round"></span>
+        </label>
+
+        <p>Balance: <span class="balance">0</span> (<span class="percent-from-start-balance">0</span>%)</p>
+        <p>Buys: <span class="number-buys">0</span></p>
+        <p>Win buys: <span class="win-buys">0</span> (<span class="percent-from-number-buys">0</span>%)</p>
+        <p>Lose buys: <span class="lose-buys">0</span></p>
+      </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="http://localhost:35729/livereload.js"></script>
+    <script src="https://momentjs.com/downloads/moment.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="/libs/trading-view-charts.js"></script>
+    <script src="/libs/technical-indicators.js"></script>
+
+    <!-- services -->
+    <script src="/javascripts/services/chart-periods.js"></script>
+    <script src="/javascripts/services/chart-candles.js"></script>
+    <script src="/javascripts/services/chart-area.js"></script>
+    <script src="/javascripts/services/chart-sma.js"></script>
+    <script src="/javascripts/services/chart-volume.js"></script>
+    <script src="/javascripts/services/chart-rsi.js"></script>
+    <script src="/javascripts/services/chart-adx.js"></script>
+    <script src="/javascripts/services/chart-draw.js"></script>
+    <script src="/javascripts/services/finance-strategy.js"></script>
+
+    <!-- Constants -->
+    <script src="/javascripts/constants.js"></script>
+
+    <!-- Theories -->
+    <!-- <script src="/javascripts/patterns/index.js"></script> -->
+    <!-- <script src="/javascripts/theories/get-gaps.js"></script> -->
+
+    <!-- Main Logic -->
+    <!-- <script src="/javascripts/support-and-resistance.js"></script> -->
+    <script src="/javascripts/index.js"></script>
+    <script src="/javascripts/draw.js"></script>
+
+    <!-- Strategies -->
+    <!-- <script src="/javascripts/strategy-auto.js"></script> -->
+    <script src="/javascripts/strategy-manual.js"></script>
+
+  </body>
+</html>

@@ -1,4 +1,11 @@
-/* global */
+/* global LightweightCharts */
+
+/*
+this.settings = {
+  // period: 50,
+  period: 20,
+};
+*/
 
 class ChartSMA {
   constructor(chart, period) {

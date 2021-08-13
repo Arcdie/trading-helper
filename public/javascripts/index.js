@@ -1,85 +1,36 @@
 /* global
-  moment,
-  ChartPeriods, ChartDraw, Strategy,
-  ChartCandles, ChartArea, ChartSMA, ChartVolume, ChartRSI, ChartADX,
-  startAutoStrategy, drawSupportAndResistanceLines,
-  isHistoryModeActive, setPeriodForHistory
+  ChartMain, StockData
 */
 
-// $.JQuery
-const $rootContainer = document.getElementById('charts');
+/* Constants */
+const AVAILABLE_PERIODS = new Map([
+  ['MINUTE', 'minute'],
+  ['HOUR', 'hour'],
+  ['DAY', 'day'],
+  ['MONTH', 'month'],
+]);
 
-const $legend = $('#legend');
-const $open = $legend.find('span.open');
-const $close = $legend.find('span.close');
-const $high = $legend.find('span.high');
-const $low = $legend.find('span.low');
+const DEFAULT_PERIOD = AVAILABLE_PERIODS.get('DAY');
 
-const $chartsViewElements = $('#charts-view div');
-const $chartPeriods = $('#charts-periods div');
+/* JQuery */
+const $charts = $('.charts');
 
-// Constants
+/* Settings */
 
-const isActiveChartCandles = true;
-const isActiveChartArea = true;
-const isActiveChartSMALong = true;
-const isActiveChartSMAShort = true;
+const files = [{
+  stockName: 'amd-12-21',
+  isSingleMode: false,
 
-const isActiveChartRSI = true;
-const isActiveChartADX = true;
-const isActiveChartVolume = false;
+  settings: {
+    isActiveADX: false,
+    isActiveRSI: false,
+    isActiveVolume: false,
+    isActiveLongSMA: true,
+    isActiveShortSMA: true,
+  },
+}];
 
-const chartCandles = isActiveChartCandles ? new ChartCandles($rootContainer) : false;
-const chartVolume = isActiveChartVolume ? new ChartVolume($rootContainer) : false;
-const chartRSI = isActiveChartRSI ? new ChartRSI($rootContainer) : false;
-const chartADX = isActiveChartADX ? new ChartADX($rootContainer) : false;
-
-const chartSMALong = isActiveChartSMALong ? new ChartSMA(chartCandles.chart, 50) : false;
-const chartSMAShort = isActiveChartSMAShort ? new ChartSMA(chartCandles.chart, 20) : false;
-
-const chartArea = isActiveChartArea ? new ChartArea(chartCandles.chart) : false;
-
-const chartPeriods = new ChartPeriods();
-const chartDraw = new ChartDraw(chartCandles.chart, chartCandles.series);
-
-const listCharts = [];
-
-[chartCandles, chartRSI, chartADX, chartVolume]
-  .forEach(chart => chart && listCharts.push(chart));
-
-const getDefaultPeriod = () => {
-  for (let i = 0; i < $chartPeriods.length; i += 1) {
-    const $period = $($chartPeriods[i]);
-
-    if ($period.hasClass('active')) {
-      return $period.data('type');
-    }
-  }
-};
-
-// Functions
-const setPeriod = period => {
-  if (isHistoryModeActive) {
-    setPeriodForHistory(period);
-    return false;
-  }
-
-  const stocksData = chartPeriods.setPeriod(period);
-
-  chartCandles && chartCandles.drawSeries(stocksData);
-  chartArea && chartArea.drawSeries(chartArea.calculateData(stocksData));
-  chartSMALong && chartSMALong.drawSeries(chartSMALong.calculateData(stocksData));
-  chartSMAShort && chartSMAShort.drawSeries(chartSMAShort.calculateData(stocksData));
-  chartADX && chartADX.drawSeries(chartADX.calculateData(stocksData));
-
-  chartVolume && chartVolume.drawSeries(stocksData);
-
-  if (chartRSI) {
-    const stocksRSIData = chartRSI.calculateData(stocksData);
-    chartRSI.drawSeries(stocksRSIData);
-  }
-};
-
+/* Functions */
 const getStocksData = async (name) => {
   const response = await fetch(`/files?name=${name}`, {
     method: 'GET',
@@ -92,77 +43,245 @@ const getStocksData = async (name) => {
   return result;
 };
 
-const handlerShowOrHideSeries = (seriesType, isActive) => {
-  if (seriesType === 'chart-candles') {
-    isActive ? chartCandles.hideSeries() : chartCandles.showSeries();
-  } else if (seriesType === 'chart-area') {
-    isActive ? chartArea.hideSeries() : chartArea.showSeries();
-  }
-};
-
 $(document).ready(async () => {
-  const resultGetData = await getStocksData('sber-12-21');
+  let appendedElements = '';
+  const heightStockElements = files.length > 1 ? 50 : 100;
 
-  chartPeriods.setOriginalData(resultGetData.data);
-  setPeriod(getDefaultPeriod());
+  files.forEach(file => {
+    const { settings } = file;
+    appendedElements += `<div class="stock" style="height: ${heightStockElements}%" id="${file.stockName}">`;
 
-  let isCrossHairMoving = false;
+    if (file.isSingleMode) {
+      const uniqId = `${file.stockName}-${DEFAULT_PERIOD}`;
 
-  listCharts.forEach(elem => {
-    const otherCharts = listCharts.filter(chart => chart.containerName !== elem.containerName);
+      appendedElements += `<div class="container" data-type="${DEFAULT_PERIOD}">
+        <div class="menu">
+          <div class="legend">
+            <p class="values">
+              ОТКР<span class="open">0</span>
+              МАКС<span class="high">0</span>
+              МИН<span class="low">0</span>
+              ЗАКР<span class="close">0</span>
+            </p>
+          </div>
 
-    elem.chart.subscribeCrosshairMove(param => {
-      if (!param.point || !param.time || isCrossHairMoving) {
-        return true;
+          <div class="periods">
+            <div class="minute ${AVAILABLE_PERIODS.get('MINUTE') === DEFAULT_PERIOD && 'active'}" data-type="minute"><span>10M</span></div>
+            <div class="hour ${AVAILABLE_PERIODS.get('HOUR') === DEFAULT_PERIOD && 'active'}" data-type="hour"><span>1Ч</span></div>
+            <div class="day ${AVAILABLE_PERIODS.get('DAY') === DEFAULT_PERIOD && 'active'}" data-type="day"><span>Д</span></div>
+            <div class="month ${AVAILABLE_PERIODS.get('MONTH') === DEFAULT_PERIOD && 'active'}" data-type="month"><span>Мес</span></div>
+          </div>
+
+          <div class="paint-panel">
+            <div class="trend-line" data-type="trend-line">
+              <img src="/images/trend-line.png" alt="trend-line">
+            </div>
+
+            <div class="horizontal-line" data-type="horizontal-line">
+              <img src="/images/horizontal-line.png" alt="-horizontal-line">
+            </div>
+          </div>
+        </div>
+
+        <div class="major chart" id="${uniqId}-candles"></div>`;
+
+      if (settings.isActiveVolume) {
+        appendedElements += `<div class="chart" id="${uniqId}-volume"></div>`;
       }
 
-      isCrossHairMoving = true;
-
-      otherCharts.forEach(innerElem => {
-        innerElem.chart.moveCrosshair(param.point);
-      });
-
-      isCrossHairMoving = false;
-
-      elem.chart.timeScale().subscribeVisibleLogicalRangeChange(range => {
-        otherCharts.forEach(innerElem => {
-          innerElem.chart.timeScale().setVisibleLogicalRange(range);
-        });
-      });
-    });
-  });
-
-  chartCandles.chart.subscribeCrosshairMove((param) => {
-    if (param.time) {
-      const price = param.seriesPrices.get(chartCandles.series);
-
-      if (price) {
-        $open.text(price.open);
-        $close.text(price.close);
-        $low.text(price.low);
-        $high.text(price.high);
+      if (settings.isActiveADX) {
+        appendedElements += `<div class="chart" id="${uniqId}-adx"></div>`;
       }
+
+      if (settings.isActiveRSI) {
+        appendedElements += `<div class="chart" id="${uniqId}-rsi"></div>`;
+      }
+
+      appendedElements += '</div>';
+    } else {
+      const periods = [AVAILABLE_PERIODS.get('DAY'), AVAILABLE_PERIODS.get('HOUR'), AVAILABLE_PERIODS.get('MINUTE')];
+      const widthCharts = 100 / periods.length;
+
+      periods.forEach(period => {
+        const uniqId = `${file.stockName}-${period}`;
+
+        let periodElement = '';
+
+        switch (period) {
+          case AVAILABLE_PERIODS.get('MINUTE'):
+            periodElement = '<div class="minute active" data-type="minute"><span>10M</span></div>'; break;
+          case AVAILABLE_PERIODS.get('HOUR'):
+            periodElement = '<div class="hour active" data-type="hour"><span>1Ч</span></div>'; break;
+          case AVAILABLE_PERIODS.get('DAY'):
+            periodElement = '<div class="day active" data-type="day"><span>Д</span></div>'; break;
+          case AVAILABLE_PERIODS.get('MONTH'):
+            periodElement = '<div class="month active" data-type="month"><span>Мес</span></div>'; break;
+          default: break;
+        }
+
+        appendedElements += `<div class="container not-single" style="width: ${widthCharts}%" data-type="${period}">
+          <div class="menu">
+            <div class="legend">
+              <p class="values">
+                ОТКР<span class="open">0</span>
+                МАКС<span class="high">0</span>
+                МИН<span class="low">0</span>
+                ЗАКР<span class="close">0</span>
+              </p>
+            </div>
+
+            <div class="periods">${periodElement}</div>
+
+            <div class="paint-panel">
+              <div class="trend-line" data-type="trend-line">
+                <img src="/images/trend-line.png" alt="trend-line">
+              </div>
+
+              <div class="horizontal-line" data-type="horizontal-line">
+                <img src="/images/horizontal-line.png" alt="-horizontal-line">
+              </div>
+            </div>
+          </div>
+
+          <div class="major chart" id="${uniqId}-candles"></div>`;
+
+        if (settings.isActiveVolume) {
+          appendedElements += `<div class="chart" id="${uniqId}-volume"></div>`;
+        }
+
+        if (settings.isActiveADX) {
+          appendedElements += `<div class="chart" id="${uniqId}-adx"></div>`;
+        }
+
+        if (settings.isActiveRSI) {
+          appendedElements += `<div class="chart" id="${uniqId}-rsi"></div>`;
+        }
+
+        appendedElements += '</div>';
+      });
     }
+
+    appendedElements += '</div>';
   });
 
-  $chartsViewElements
-    .on('click', function () {
-      const $elem = $(this);
-      const currentStatus = $elem.hasClass('active');
+  $charts.append(appendedElements);
 
-      $elem.toggleClass('active');
-      handlerShowOrHideSeries($(this).data('type'), currentStatus);
+  await Promise.all(files.map(async file => {
+    const stockData = new StockData();
+    const resultGetData = await getStocksData(file.stockName);
+    stockData.setOriginalData(resultGetData.data);
+
+    file.charts = [];
+    file.stockData = stockData;
+
+    if (file.isSingleMode) {
+      const chartMain = new ChartMain({
+        stockName: file.stockName,
+        period: DEFAULT_PERIOD,
+
+        isActiveLongSMA: file.settings.isActiveLongSMA,
+        isActiveShortSMA: file.settings.isActiveShortSMA,
+      });
+
+      file.charts.push(chartMain);
+
+      const stocksData = file.stockData.getDataByPeriod(DEFAULT_PERIOD);
+
+      chartMain.drawSeries(stocksData);
+
+      chartMain.chartLongSMA && chartMain.chartLongSMA.drawSeries(
+        chartMain.chartLongSMA.calculateData(stocksData),
+      );
+
+      chartMain.chartShortSMA && chartMain.chartShortSMA.drawSeries(
+        chartMain.chartShortSMA.calculateData(stocksData),
+      );
+    } else {
+      const periods = [AVAILABLE_PERIODS.get('DAY'), AVAILABLE_PERIODS.get('HOUR'), AVAILABLE_PERIODS.get('MINUTE')];
+
+      periods.forEach(period => {
+        const chartMain = new ChartMain({
+          stockName: file.stockName,
+          period,
+
+          isActiveLongSMA: file.settings.isActiveLongSMA,
+          isActiveShortSMA: file.settings.isActiveShortSMA,
+        });
+
+        file.charts.push(chartMain);
+
+        const stocksData = file.stockData.getDataByPeriod(period);
+
+        chartMain.drawSeries(stocksData);
+
+        chartMain.chartLongSMA && chartMain.chartLongSMA.drawSeries(
+          chartMain.chartLongSMA.calculateData(stocksData),
+        );
+
+        chartMain.chartShortSMA && chartMain.chartShortSMA.drawSeries(
+          chartMain.chartShortSMA.calculateData(stocksData),
+        );
+      });
+    }
+  }));
+
+  files.forEach(file => {
+    file.charts.forEach(chartWrapper => {
+      chartWrapper.chart.subscribeCrosshairMove(param => {
+        if (param.time) {
+          const price = param.seriesPrices.get(chartWrapper.series);
+
+          if (price) {
+            const $legend = $(chartWrapper.containerDocument)
+              .prev()
+              .find('.legend');
+
+            const $open = $legend.find('.open');
+            const $close = $legend.find('.close');
+            const $low = $legend.find('.low');
+            const $high = $legend.find('.high');
+
+            $open.text(price.open);
+            $close.text(price.close);
+            $low.text(price.low);
+            $high.text(price.high);
+          }
+        }
+      });
     });
+  });
 
-  $chartPeriods
-    .on('click', function () {
+  $charts
+    .on('click', '.periods div', function () {
       const $period = $(this);
+      const $parent = $period.parent();
+      const $stock = $parent.closest('.stock');
 
-      $chartPeriods.removeClass('active');
+      $parent.find('div').removeClass('active');
       $period.addClass('active');
-      setPeriod($period.data('type'));
-    });
 
-  // startAutoStrategy();
-  // drawSupportAndResistanceLines(stocksData);
+      const stockName = $stock.attr('id');
+      const newPeriod = $period.data('type');
+
+      const targetStock = files.find(file => file.stockName === stockName);
+
+      if (!targetStock.isSingleMode) {
+        return false;
+      }
+
+      targetStock.charts.forEach(chartWrapper => {
+        chartWrapper.setPeriod(newPeriod);
+        const stocksData = targetStock.stockData.getDataByPeriod(newPeriod);
+
+        chartWrapper.drawSeries(stocksData);
+
+        chartWrapper.chartLongSMA && chartWrapper.chartLongSMA.drawSeries(
+          chartWrapper.chartLongSMA.calculateData(stocksData),
+        );
+
+        chartWrapper.chartShortSMA && chartWrapper.chartShortSMA.drawSeries(
+          chartWrapper.chartShortSMA.calculateData(stocksData),
+        );
+      });
+    });
 });

@@ -1,11 +1,18 @@
-/* global LightweightCharts */
+/* global
+  LightweightCharts,
+  ChartSMA,
+  AVAILABLE_PERIODS
+*/
 
-class ChartCandles {
-  constructor(rootContainer) {
-    this.containerName = 'chart-candles';
-    this.appendChart(rootContainer);
+class ChartMain {
+  constructor({
+    period,
+    stockName,
 
-    this.containerDocument = document.getElementById(this.containerName);
+    isActiveLongSMA,
+    isActiveShortSMA,
+  }) {
+    this.containerDocument = document.getElementById(`${stockName}-${period}-candles`);
 
     this.settings = {};
 
@@ -13,12 +20,35 @@ class ChartCandles {
     this.containerHeight = this.containerDocument.clientHeight;
 
     this.addChart();
+    this.setPeriod(period);
+
+    this.chartLongSMA = isActiveLongSMA ? new ChartSMA(this.chart, 50) : false;
+    this.chartShortSMA = isActiveShortSMA ? new ChartSMA(this.chart, 20) : false;
+
+    // this.area = isActiveArea ? new ChartArea(this.chart) : false;
+
     this.addSeries();
+
     this.markers = [];
   }
 
-  appendChart(rootContainer) {
-    rootContainer.insertAdjacentHTML('beforeend', `<div id="${this.containerName}"></div>`);
+  setPeriod(newPeriod) {
+    if (newPeriod === AVAILABLE_PERIODS.get('MINUTE')
+      || newPeriod === AVAILABLE_PERIODS.get('HOUR')) {
+      this.chart.applyOptions({
+        timeScale: {
+          timeVisible: true,
+        },
+      });
+    } else {
+      this.chart.applyOptions({
+        timeScale: {
+          timeVisible: false,
+        },
+      });
+    }
+
+    this.period = newPeriod;
   }
 
   drawSeries(data) {
@@ -74,11 +104,6 @@ class ChartCandles {
     });
   }
 
-  removeChart() {
-    this.removeSeries();
-    this.chart.remove();
-  }
-
   addSeries() {
     this.series = this.chart.addCandlestickSeries({
       upColor: '#000FFF',
@@ -86,6 +111,11 @@ class ChartCandles {
       borderDownColor: '#000FFF',
       wickColor: '#000000',
     });
+  }
+
+  removeChart() {
+    this.removeSeries();
+    this.chart.remove();
   }
 
   removeSeries() {
