@@ -1,7 +1,8 @@
 /* global
   moment,
   ChartPeriods, chartDraw, Strategy
-  chartPeriods, chartCandles, chartArea, chartSMA, chartRSI, chartADX,
+  chartPeriods, chartCandles, chartArea, chartSMALong, chartSMAShort,
+  chartRSI, chartADX, chartVolume,
   $strategy, $switch, $numberBuys, $balance, $winBuys, $loseBuys,
   strategyConstants, targetSeriesForUpdate, isActivePaintMode
 */
@@ -49,7 +50,8 @@ const setPeriodForHistory = period => {
 
   chartCandles && chartCandles.drawSeries(stocksData);
   chartArea && chartArea.drawSeries(chartArea.calculateData(stocksData));
-  chartSMA && chartSMA.drawSeries(chartSMA.calculateData(stocksData));
+  chartSMALong && chartSMALong.drawSeries(chartSMALong.calculateData(stocksData));
+  chartSMAShort && chartSMAShort.drawSeries(chartSMAShort.calculateData(stocksData));
   chartADX && chartADX.drawSeries(chartADX.calculateData(stocksData));
 
   chartVolume && chartVolume.drawSeries(stocksData);
@@ -61,7 +63,7 @@ const setPeriodForHistory = period => {
 };
 
 const startStrategy = (stocksData) => {
-  const startFrom = randNumber(1, chartPeriods.dayTimeFrameData.length);
+  const startFrom = randNumber(1, chartPeriods.dayTimeFrameData.length - 1);
   const dayInCalendar = chartPeriods.dayTimeFrameData[startFrom];
   const dayInCalendarUnix = moment(dayInCalendar.time).unix();
 
@@ -194,7 +196,8 @@ const nextStep = () => {
 
   chartCandles && chartCandles.drawSeries(historyStocksData);
   chartArea && chartArea.drawSeries(chartArea.calculateData(historyStocksData));
-  chartSMA && chartSMA.drawSeries(chartSMA.calculateData(historyStocksData));
+  chartSMALong && chartSMALong.drawSeries(chartSMALong.calculateData(historyStocksData));
+  chartSMAShort && chartSMAShort.drawSeries(chartSMAShort.calculateData(historyStocksData));
   chartADX && chartADX.drawSeries(chartADX.calculateData(historyStocksData));
 
   chartVolume && chartVolume.drawSeries(historyStocksData);

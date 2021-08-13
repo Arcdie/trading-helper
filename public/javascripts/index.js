@@ -22,7 +22,8 @@ const $chartPeriods = $('#charts-periods div');
 
 const isActiveChartCandles = true;
 const isActiveChartArea = true;
-const isActiveChartSMA = true;
+const isActiveChartSMALong = true;
+const isActiveChartSMAShort = true;
 
 const isActiveChartRSI = true;
 const isActiveChartADX = true;
@@ -33,7 +34,9 @@ const chartVolume = isActiveChartVolume ? new ChartVolume($rootContainer) : fals
 const chartRSI = isActiveChartRSI ? new ChartRSI($rootContainer) : false;
 const chartADX = isActiveChartADX ? new ChartADX($rootContainer) : false;
 
-const chartSMA = isActiveChartSMA ? new ChartSMA(chartCandles.chart) : false;
+const chartSMALong = isActiveChartSMALong ? new ChartSMA(chartCandles.chart, 50) : false;
+const chartSMAShort = isActiveChartSMAShort ? new ChartSMA(chartCandles.chart, 20) : false;
+
 const chartArea = isActiveChartArea ? new ChartArea(chartCandles.chart) : false;
 
 const chartPeriods = new ChartPeriods();
@@ -65,7 +68,8 @@ const setPeriod = period => {
 
   chartCandles && chartCandles.drawSeries(stocksData);
   chartArea && chartArea.drawSeries(chartArea.calculateData(stocksData));
-  chartSMA && chartSMA.drawSeries(chartSMA.calculateData(stocksData));
+  chartSMALong && chartSMALong.drawSeries(chartSMALong.calculateData(stocksData));
+  chartSMAShort && chartSMAShort.drawSeries(chartSMAShort.calculateData(stocksData));
   chartADX && chartADX.drawSeries(chartADX.calculateData(stocksData));
 
   chartVolume && chartVolume.drawSeries(stocksData);
@@ -97,7 +101,7 @@ const handlerShowOrHideSeries = (seriesType, isActive) => {
 };
 
 $(document).ready(async () => {
-  const resultGetData = await getStocksData('jd-14-21');
+  const resultGetData = await getStocksData('sber-12-21');
 
   chartPeriods.setOriginalData(resultGetData.data);
   setPeriod(getDefaultPeriod());
