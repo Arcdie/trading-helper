@@ -29,7 +29,8 @@ class ChartMain {
 
     this.addSeries();
 
-    this.markers = [];
+    this.setMarkers = [];
+    this.setPriceLines = [];
   }
 
   setPeriod(newPeriod) {
@@ -70,7 +71,7 @@ class ChartMain {
   }
 
   drawMarkers() {
-    this.series.setMarkers(this.markers.map(marker => ({
+    this.series.setMarkers(this.setMarkers.map(marker => ({
       time: marker.time,
       color: marker.color,
       text: marker.text,
@@ -79,8 +80,26 @@ class ChartMain {
     })));
   }
 
+  drawPriceLine(value) {
+    return this.series.createPriceLine({
+      price: value,
+      color: 'black',
+      lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Solid,
+    });
+  }
+
   addMarker(data) {
-    this.markers.push(data);
+    this.setMarkers.push(data);
+  }
+
+  addPriceLine(value) {
+    const insertObj = { value };
+
+    const resultDraw = this.drawPriceLine(value);
+    insertObj.priceLine = resultDraw;
+
+    this.setPriceLines.push(insertObj);
   }
 
   addChart() {
@@ -121,5 +140,21 @@ class ChartMain {
   removeSeries() {
     this.chart.removeSeries(this.series);
     this.series = false;
+  }
+
+  removePriceLine(value) {
+    const priceLineFromSet = this.setPriceLines.find(
+      priceLine => priceLine.value === value,
+    );
+
+    if (!priceLineFromSet) {
+      return false;
+    }
+
+    this.series.removePriceLine(priceLineFromSet.priceLine);
+
+    this.setPriceLines = this.setPriceLines.filter(
+      priceLine => priceLine.value !== value,
+    );
   }
 }

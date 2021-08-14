@@ -1,5 +1,6 @@
 /* global
-  ChartMain, StockData
+  ChartMain, StockData,
+  draw, strategyManual
 */
 
 /* Constants */
@@ -28,7 +29,31 @@ const files = [{
     isActiveLongSMA: true,
     isActiveShortSMA: true,
   },
+}, {
+  stockName: 'jd-14-21',
+  isSingleMode: true,
+
+  settings: {
+    isActiveADX: false,
+    isActiveRSI: false,
+    isActiveVolume: false,
+    isActiveLongSMA: true,
+    isActiveShortSMA: true,
+  },
 }];
+
+/* {
+  stockName: 'jd-14-21',
+  isSingleMode: true,
+
+  settings: {
+    isActiveADX: false,
+    isActiveRSI: false,
+    isActiveVolume: false,
+    isActiveLongSMA: true,
+    isActiveShortSMA: true,
+  },
+} */
 
 /* Functions */
 const getStocksData = async (name) => {
@@ -73,10 +98,6 @@ $(document).ready(async () => {
           </div>
 
           <div class="paint-panel">
-            <div class="trend-line" data-type="trend-line">
-              <img src="/images/trend-line.png" alt="trend-line">
-            </div>
-
             <div class="horizontal-line" data-type="horizontal-line">
               <img src="/images/horizontal-line.png" alt="-horizontal-line">
             </div>
@@ -99,7 +120,7 @@ $(document).ready(async () => {
 
       appendedElements += '</div>';
     } else {
-      const periods = [AVAILABLE_PERIODS.get('DAY'), AVAILABLE_PERIODS.get('HOUR'), AVAILABLE_PERIODS.get('MINUTE')];
+      const periods = [AVAILABLE_PERIODS.get('HOUR'), AVAILABLE_PERIODS.get('DAY')];
       const widthCharts = 100 / periods.length;
 
       periods.forEach(period => {
@@ -133,10 +154,6 @@ $(document).ready(async () => {
             <div class="periods">${periodElement}</div>
 
             <div class="paint-panel">
-              <div class="trend-line" data-type="trend-line">
-                <img src="/images/trend-line.png" alt="trend-line">
-              </div>
-
               <div class="horizontal-line" data-type="horizontal-line">
                 <img src="/images/horizontal-line.png" alt="-horizontal-line">
               </div>
@@ -197,7 +214,7 @@ $(document).ready(async () => {
         chartMain.chartShortSMA.calculateData(stocksData),
       );
     } else {
-      const periods = [AVAILABLE_PERIODS.get('DAY'), AVAILABLE_PERIODS.get('HOUR'), AVAILABLE_PERIODS.get('MINUTE')];
+      const periods = [AVAILABLE_PERIODS.get('HOUR'), AVAILABLE_PERIODS.get('DAY')];
 
       periods.forEach(period => {
         const chartMain = new ChartMain({
@@ -269,9 +286,13 @@ $(document).ready(async () => {
         return false;
       }
 
+      const targetStockData = (targetStock.isActiveHistoryMode)
+        ? targetStock.historyStockData : targetStock.stockData;
+
       targetStock.charts.forEach(chartWrapper => {
         chartWrapper.setPeriod(newPeriod);
-        const stocksData = targetStock.stockData.getDataByPeriod(newPeriod);
+
+        const stocksData = targetStockData.getDataByPeriod(newPeriod);
 
         chartWrapper.drawSeries(stocksData);
 
@@ -284,4 +305,8 @@ $(document).ready(async () => {
         );
       });
     });
+
+  // Init modules
+  draw(files);
+  strategyManual(files);
 });

@@ -1,211 +1,85 @@
 /* global
-  LightweightCharts, ChartDraw,
-  chartCandles, chartDraw,
-  listCharts,
-  moment
+  $charts
 */
 
-// $.JQuery
-const $paintPanel = $('#paint-panel');
-const $paintObjects = $paintPanel.find('div');
-const $trendLine = $paintPanel.find('.trend-line');
-const $straightLine = $paintPanel.find('.straight-line');
-const $horizontalLine = $paintPanel.find('.horizontal-line');
+/* Constants */
 
-// Constants
+/* JQuery */
 
-let numberClicks = 0;
-let isActivePaintMode = false;
-let targetSeriesForUpdate;
+/* Settings */
 
-const lineSettings = {};
+/* Functions */
 
-// Functions
-const changePaintMode = (type) => {
-  isActivePaintMode = !isActivePaintMode;
-
-  let handlerFunc;
-
-  if (type === 'trend-line') {
-    handlerFunc = drawTrendLineHandler;
-    $trendLine.addClass('active');
-  } else if (type === 'straight-line') {
-    handlerFunc = drawStraightLineHandler;
-    $straightLine.addClass('active');
-  } else if (type === 'horizontal-line') {
-    handlerFunc = drawHorizontalLineHandler;
-    $horizontalLine.addClass('active');
-
-    if (!isActivePaintMode) {
-      $paintObjects.removeClass('active');
-    }
-
-    return true;
-  }
-
-  if (isActivePaintMode) {
-    chartCandles.chart.subscribeClick(handlerFunc);
-  } else {
-    chartCandles.chart.unsubscribeClick(drawTrendLineHandler);
-    chartCandles.chart.unsubscribeClick(drawStraightLineHandler);
-
-    $paintObjects.removeClass('active');
-  }
-};
-
-const drawStraightLineHandler = (param) => {
-  const price = chartCandles.series.coordinateToPrice(param.point.y);
-
-  const momentDate = moment(param.time).add(-1, 'month');
-
-  lineSettings.start = {
-    value: price,
-    time: moment(momentDate).add(-1, 'month').format('YYYY-MM-DD'),
-  };
-
-  lineSettings.end = {
-    value: price,
-    time: moment(momentDate).add(1, 'month').format('YYYY-MM-DD'),
-  };
-
-  chartDraw.addSeries(lineSettings);
-  targetSeriesForUpdate = false;
-  changePaintMode();
-};
-
-const drawTrendLineHandler = (param) => {
-  if (param.time) {
-    const price = chartCandles.series.coordinateToPrice(param.point.y);
-
-    if (numberClicks === 0) {
-      lineSettings.start = {
-        value: price,
-        time: param.time,
-      };
-
-      numberClicks += 1;
-    } else {
-      numberClicks = 0;
-
-      lineSettings.end = {
-        value: price,
-        time: param.time,
-      };
-
-      chartDraw.addSeries(lineSettings);
-      changePaintMode();
-    }
-  }
-};
-
-const drawHorizontalLineHandler = (value) => {
-  chartDraw.addPriceLine(value, true);
-  changePaintMode();
-};
-
-$(document).ready(() => {
-  chartDraw.drawPriceLinesByHistory();
-
-  $paintObjects
-    .on('click', function () {
-      changePaintMode($(this).data('type'));
-    });
-
-  document.addEventListener('keypress', event => {
-    const {
-      charCode,
-    } = event;
-
-    if (charCode === 108) {
-      changePaintMode('trend-line');
-    } else if (charCode === 116) {
-      changePaintMode('straight-line');
-    } else if (charCode === 104) {
-      changePaintMode('horizontal-line');
-    } else if (charCode === 100) {
-      if (targetSeriesForUpdate) {
-        chartDraw.removeSeries(targetSeriesForUpdate.series);
-        targetSeriesForUpdate = false;
-      }
-    }
+const draw = (files) => {
+  files.forEach(file => {
+    file.modes = [{
+      name: 'horizontal-line',
+      isActive: false,
+    }];
   });
 
-  chartCandles.chart.subscribeClick((param) => {
-    const price = chartCandles.series.coordinateToPrice(param.point.y);
+  $charts
+    .on('click', '.paint-panel div', function () {
+      const $mode = $(this);
+      const $stock = $mode.closest('.stock');
 
-    if ($horizontalLine.hasClass('active')) {
-      drawHorizontalLineHandler(price);
-    } else {
-      const allowedVariation = price / (100 / 0.1);
-      const valuePlusVariation = price + allowedVariation;
-      const valueMinusVariation = price - allowedVariation;
+      const typeMode = $mode.data('type');
+      const stockName = $stock.attr('id');
+      const isActive = $mode.hasClass('active');
 
-      const doesExistPriceLine = chartDraw.setPriceLines.findIndex(
-        ({ value }) => value < valuePlusVariation && value > valueMinusVariation,
-      );
+      const targetStock = files.find(file => file.stockName === stockName);
 
-      if (~doesExistPriceLine) {
-        chartDraw.removePriceLine(doesExistPriceLine);
-      }
-    }
-
-    if (isActivePaintMode) {
-      return false;
-    }
-
-    if (targetSeriesForUpdate) {
-      if (targetSeriesForUpdate.isStartPart) {
-        targetSeriesForUpdate.start = {
-          value: price,
-          time: param.time,
-        };
-      } else {
-        targetSeriesForUpdate.end = {
-          value: price,
-          time: param.time,
-        };
-      }
-
-      ChartDraw.drawSeries(
-        targetSeriesForUpdate.series,
-        [targetSeriesForUpdate.start, targetSeriesForUpdate.end],
-      );
-
-      targetSeriesForUpdate = false;
-      return false;
-    }
-
-    if (param.seriesPrices.size > 1) {
-      const price = chartCandles.series.coordinateToPrice(param.point.y);
-      const allowedVariation = price / (100 / 3);
-
-      chartDraw.setSeries.forEach(({ series }, index) => {
-        const value = param.seriesPrices.get(series);
-
-        if (value) {
-          const valuePlusVariation = value + allowedVariation;
-          const valueMinusVariation = value - allowedVariation;
-
-          if (price < valuePlusVariation
-            && price > valueMinusVariation) {
-            targetSeriesForUpdate = chartDraw.setSeries[index];
-          }
-
-          return false;
-        }
+      targetStock.modes.forEach(mode => {
+        mode.isActive = false;
       });
 
-      if (!targetSeriesForUpdate) {
-        return false;
+      $stock
+        .find('.paint-panel div')
+        .removeClass('active');
+
+      if (!isActive) {
+        const targetMode = targetStock.modes.find(mode => mode.name === typeMode);
+        targetMode.isActive = true;
+
+        $stock
+          .find(`.paint-panel div.${typeMode}`)
+          .addClass('active');
       }
+    });
 
-      const valuePlusVariation = price + allowedVariation;
-      const valueMinusVariation = price - allowedVariation;
+  files.forEach(file => {
+    file.charts.forEach(chartWrapper => {
+      chartWrapper.chart.subscribeClick(param => {
+        const activeMode = file.modes.find(mode => mode.isActive);
 
-      const startValue = targetSeriesForUpdate.start.value;
+        const price = chartWrapper.series.coordinateToPrice(param.point.y);
 
-      targetSeriesForUpdate.isStartPart = (startValue < valuePlusVariation
-        && startValue > valueMinusVariation);
-    }
+        if (activeMode) {
+          if (activeMode.name === 'horizontal-line') {
+            file.charts.forEach(wrapper => {
+              wrapper.addPriceLine(price);
+            });
+
+            $(`#${file.stockName} .paint-panel .${activeMode.name}`)
+              .first()
+              .click();
+          }
+        } else {
+          const allowedVariation = price / (100 / 0.1);
+          const valuePlusVariation = price + allowedVariation;
+          const valueMinusVariation = price - allowedVariation;
+
+          const priceLine = chartWrapper.setPriceLines.find(
+            ({ value }) => value < valuePlusVariation && value > valueMinusVariation,
+          );
+
+          if (priceLine) {
+            file.charts.forEach(wrapper => {
+              wrapper.removePriceLine(priceLine.value);
+            });
+          }
+        }
+      });
+    });
   });
-});
+};
