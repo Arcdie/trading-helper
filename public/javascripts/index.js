@@ -18,8 +18,10 @@ const $charts = $('.charts');
 
 /* Settings */
 
+const isActiveCrosshairMode = true;
+
 const files = [{
-  stockName: 'amd-12-21',
+  stockName: 'amd-18-21',
   isSingleMode: false,
 
   settings: {
@@ -30,7 +32,7 @@ const files = [{
     isActiveShortSMA: true,
   },
 }, {
-  stockName: 'jd-14-21',
+  stockName: 'sandp500-18-21',
   isSingleMode: true,
 
   settings: {
@@ -43,7 +45,7 @@ const files = [{
 }];
 
 /* {
-  stockName: 'jd-14-21',
+  stockName: 'sandp500-12-21',
   isSingleMode: true,
 
   settings: {
@@ -130,13 +132,13 @@ $(document).ready(async () => {
 
         switch (period) {
           case AVAILABLE_PERIODS.get('MINUTE'):
-            periodElement = '<div class="minute active" data-type="minute"><span>10M</span></div>'; break;
+            periodElement = `<div class="minute ${AVAILABLE_PERIODS.get('MINUTE') === DEFAULT_PERIOD && 'active'}" data-type="minute"><span>10M</span></div>`; break;
           case AVAILABLE_PERIODS.get('HOUR'):
-            periodElement = '<div class="hour active" data-type="hour"><span>1Ч</span></div>'; break;
+            periodElement = `<div class="hour ${AVAILABLE_PERIODS.get('HOUR') === DEFAULT_PERIOD && 'active'}" data-type="hour"><span>1Ч</span></div>`; break;
           case AVAILABLE_PERIODS.get('DAY'):
-            periodElement = '<div class="day active" data-type="day"><span>Д</span></div>'; break;
+            periodElement = `<div class="day ${AVAILABLE_PERIODS.get('DAY') === DEFAULT_PERIOD && 'active'}" data-type="day"><span>Д</span></div>`; break;
           case AVAILABLE_PERIODS.get('MONTH'):
-            periodElement = '<div class="month active" data-type="month"><span>Мес</span></div>'; break;
+            periodElement = `<div class="month ${AVAILABLE_PERIODS.get('MONTH') === DEFAULT_PERIOD && 'active'}" data-type="month"><span>Мес</span></div>`; break;
           default: break;
         }
 
@@ -190,6 +192,7 @@ $(document).ready(async () => {
 
     file.charts = [];
     file.stockData = stockData;
+    file.mainPeriod = DEFAULT_PERIOD;
 
     if (file.isSingleMode) {
       const chartMain = new ChartMain({
@@ -274,17 +277,23 @@ $(document).ready(async () => {
       const $parent = $period.parent();
       const $stock = $parent.closest('.stock');
 
-      $parent.find('div').removeClass('active');
-      $period.addClass('active');
-
       const stockName = $stock.attr('id');
       const newPeriod = $period.data('type');
 
       const targetStock = files.find(file => file.stockName === stockName);
 
+      if (targetStock.stockName === stockName) {
+        targetStock.mainPeriod = newPeriod;
+      }
+
       if (!targetStock.isSingleMode) {
+        $stock.find('.periods div').removeClass('active');
+        $period.addClass('active');
         return false;
       }
+
+      $parent.find('div').removeClass('active');
+      $period.addClass('active');
 
       const targetStockData = (targetStock.isActiveHistoryMode)
         ? targetStock.historyStockData : targetStock.stockData;
@@ -305,6 +314,70 @@ $(document).ready(async () => {
         );
       });
     });
+
+
+  let isCrossHairMoving = false;
+
+  files.forEach(file => {
+    if (file.charts.length > 1) {
+      file.charts.forEach(chartWrapper => {
+        const otherCharts = file.charts.filter(
+          chart => chart.containerName !== chartWrapper.containerName,
+        );
+
+        chartWrapper.chart.subscribeCrosshairMove(param => {
+          if (!param.point || !param.time || isCrossHairMoving) {
+            return true;
+          }
+
+          const price = chartWrapper.series.coordinateToPrice(param.point.y);
+
+          isCrossHairMoving = true;
+
+          otherCharts.forEach(innerElem => {
+            const coordinateY = innerElem.series.priceToCoordinate(price);
+
+            innerElem.chart.moveCrosshair({
+              x: param.point.x,
+              y: coordinateY,
+            });
+          });
+
+          isCrossHairMoving = false;
+        });
+      });
+    }
+  });
+
+  const doFilesHaveNotSingleMode = files.some(file => !file.isSingleMode);
+
+  if (!doFilesHaveNotSingleMode && files.length > 1) {
+    const allOfCharts = [];
+
+    files.forEach(file => {
+      allOfCharts.push(...file.charts);
+    });
+
+    allOfCharts.forEach(chartWrapper => {
+      const otherCharts = allOfCharts.filter(
+        chart => chart.containerName !== chartWrapper.containerName,
+      );
+
+      chartWrapper.chart.subscribeCrosshairMove(param => {
+        if (!param.point || !param.time || isCrossHairMoving) {
+          return true;
+        }
+
+        isCrossHairMoving = true;
+
+        otherCharts.forEach(innerElem => {
+          innerElem.chart.moveCrosshair(param.point);
+        });
+
+        isCrossHairMoving = false;
+      });
+    });
+  }
 
   // Init modules
   draw(files);

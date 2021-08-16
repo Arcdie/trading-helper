@@ -12,7 +12,8 @@ class ChartMain {
     isActiveLongSMA,
     isActiveShortSMA,
   }) {
-    this.containerDocument = document.getElementById(`${stockName}-${period}-candles`);
+    this.containerName = `${stockName}-${period}-candles`;
+    this.containerDocument = document.getElementById(this.containerName);
 
     this.settings = {};
 
@@ -27,8 +28,9 @@ class ChartMain {
 
     // this.area = isActiveArea ? new ChartArea(this.chart) : false;
 
-    this.addSeries();
+    this.addMainSeries();
 
+    this.setSeries = [];
     this.setMarkers = [];
     this.setPriceLines = [];
   }
@@ -52,10 +54,10 @@ class ChartMain {
     this.period = newPeriod;
   }
 
-  drawSeries(data) {
+  drawSeries(data, series = this.series) {
     if (Array.isArray(data)) {
-      this.series.setData(data);
-    } else this.series.update(data);
+      series.setData(data);
+    } else series.update(data);
   }
 
   hideSeries() {
@@ -120,10 +122,14 @@ class ChartMain {
       timeScale: {
         secondsVisible: false,
       },
+
+      // priceScale: {
+      //   position: 'none',
+      // },
     });
   }
 
-  addSeries() {
+  addMainSeries() {
     this.series = this.chart.addCandlestickSeries({
       upColor: '#000FFF',
       downColor: 'rgba(0, 0, 0, 0)',
@@ -132,14 +138,36 @@ class ChartMain {
     });
   }
 
-  removeChart() {
-    this.removeSeries();
-    this.chart.remove();
+  addSeries({
+    start,
+    end,
+
+    options,
+  }) {
+    options = options || {};
+
+    options.priceLineSource = false;
+    options.priceLineVisible = false;
+
+    const newSeries = this.chart.addLineSeries(options);
+
+    this.setSeries.push({
+      start,
+      end,
+      series: newSeries,
+    });
+
+    this.drawSeries([start, end], newSeries);
+
+    return newSeries;
   }
 
-  removeSeries() {
-    this.chart.removeSeries(this.series);
-    this.series = false;
+  removeSeries(series, isMainSeries = false) {
+    if (isMainSeries) {
+      this.series = false;
+    }
+
+    this.chart.removeSeries(series);
   }
 
   removePriceLine(value) {
@@ -157,4 +185,11 @@ class ChartMain {
       priceLine => priceLine.value !== value,
     );
   }
+
+  /* deprecated
+  removeChart() {
+    this.removeSeries();
+    this.chart.remove();
+  }
+  */
 }

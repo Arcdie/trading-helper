@@ -29,6 +29,11 @@ class StockData {
   setOriginalData(stocksData) {
     this.originalData = stocksData;
 
+    // this.originalData = stocksData.filter(data => {
+    //   const dayOfWeek = new Date(data.time * 1000).getDay();
+    //   return dayOfWeek !== 6;
+    // });
+
     this.minuteTimeFrameData = [];
     this.hourTimeFrameData = [];
     this.dayTimeFrameData = [];

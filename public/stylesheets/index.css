@@ -38,6 +38,9 @@ body {
     .container.not-single .menu .paint-panel {
       float: left;
     }
+      .container.not-single .menu .paint-panel {
+        margin-left: 4px;
+      }
 
     .menu .legend {
       margin-top: 10px;
@@ -75,7 +78,7 @@ body {
 
     .menu .paint-panel {
       margin-top: 10px;
-      margin-left: 4px;
+      margin-left: 10px;
     }
       .menu .paint-panel div {
         width: 40px;

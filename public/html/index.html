@@ -13,6 +13,21 @@
   <body>
     <div class="charts"></div>
 
+    <div class="trading-actions">
+      <div class="choice">
+        <button class="buy">Buy</button>
+        <button class="sell">Sell</button>
+        <span class="status-trade"></span>
+      </div>
+
+      <div class="toolbar">
+        <div class="percent-from-current-balance">Потери: <span>0</span>%</div>
+        <div class="number-stocks-to-buy">К-во: <input type="text" placeholder="0"></div>
+        <div class="stop-loss">SL: <input type="text" placeholder="0"></div>
+        <button class="confirm">Подтвердить</button>
+      </div>
+    </div>
+
     <div class="trading-strategy">
       <label class="switch">
         <input type="checkbox">
@@ -36,12 +51,12 @@
     <script src="/javascripts/services/stock-data.js"></script>
     <script src="/javascripts/services/chart-main.js"></script>
     <script src="/javascripts/services/chart-sma.js"></script>
+    <script src="/javascripts/services/balance-activity.js"></script>
     <!-- <script src="/javascripts/services/chart-area.js"></script>
     <script src="/javascripts/services/chart-volume.js"></script>
     <script src="/javascripts/services/chart-rsi.js"></script>
     <script src="/javascripts/services/chart-adx.js"></script>
-    <script src="/javascripts/services/chart-draw.js"></script>
-    <script src="/javascripts/services/finance-strategy.js"></script> -->
+    <script src="/javascripts/services/chart-draw.js"></script>-->
 
     <!-- Main Logic -->
     <script src="/javascripts/draw.js"></script>
