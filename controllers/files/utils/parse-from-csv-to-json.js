@@ -10,17 +10,24 @@ const parseFromCSVToJSON = ({
 }, callback) => {
   const data = [];
 
-  fs.createReadStream(path.resolve(__dirname, `../../../files/${filePeriod}`, `${fileName}.csv`))
-    .pipe(csv.parse())
-    .on('error', error => ({
+  try {
+    fs.createReadStream(path.resolve(__dirname, `../../../files/${filePeriod}`, `${fileName}.csv`))
+      .pipe(csv.parse())
+      .on('error', error => ({
+        status: false,
+        message: error,
+      }))
+      .on('data', row => data.push(row))
+      .on('end', () => callback(null, {
+        status: true,
+        result: data,
+      }));
+  } catch (err) {
+    callback(null, {
       status: false,
-      message: error,
-    }))
-    .on('data', row => data.push(row))
-    .on('end', () => callback(null, {
-      status: true,
-      result: data,
-    }));
+      message: err.message,
+    });
+  }
 };
 
 module.exports = {

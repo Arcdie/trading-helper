@@ -1,6 +1,6 @@
 /* global
   ChartMain, StockData,
-  draw, strategyManual
+  draw, strategyManual, strategyAuto
 */
 
 /* Constants */
@@ -10,6 +10,12 @@ const AVAILABLE_PERIODS = new Map([
   ['DAY', 'day'],
   ['MONTH', 'month'],
 ]);
+
+const WORKING_PERIODS = [
+  // AVAILABLE_PERIODS.get('MINUTE'),
+  AVAILABLE_PERIODS.get('HOUR'),
+  AVAILABLE_PERIODS.get('DAY'),
+];
 
 const DEFAULT_PERIOD = AVAILABLE_PERIODS.get('DAY');
 
@@ -21,7 +27,7 @@ const $charts = $('.charts');
 const isActiveCrosshairMode = true;
 
 const files = [{
-  stockName: 'amd-18-21',
+  stockName: 'jd-14-21',
   isSingleMode: false,
 
   settings: {
@@ -29,17 +35,7 @@ const files = [{
     isActiveRSI: false,
     isActiveVolume: false,
     isActiveLongSMA: true,
-    isActiveShortSMA: true,
-  },
-}, {
-  stockName: 'sandp500-18-21',
-  isSingleMode: true,
-
-  settings: {
-    isActiveADX: false,
-    isActiveRSI: false,
-    isActiveVolume: false,
-    isActiveLongSMA: true,
+    isActiveMediumSMA: true,
     isActiveShortSMA: true,
   },
 }];
@@ -122,10 +118,9 @@ $(document).ready(async () => {
 
       appendedElements += '</div>';
     } else {
-      const periods = [AVAILABLE_PERIODS.get('HOUR'), AVAILABLE_PERIODS.get('DAY')];
-      const widthCharts = 100 / periods.length;
+      const widthCharts = 100 / WORKING_PERIODS.length;
 
-      periods.forEach(period => {
+      WORKING_PERIODS.forEach(period => {
         const uniqId = `${file.stockName}-${period}`;
 
         let periodElement = '';
@@ -200,6 +195,7 @@ $(document).ready(async () => {
         period: DEFAULT_PERIOD,
 
         isActiveLongSMA: file.settings.isActiveLongSMA,
+        isActiveMediumSMA: file.settings.isActiveMediumSMA,
         isActiveShortSMA: file.settings.isActiveShortSMA,
       });
 
@@ -213,18 +209,21 @@ $(document).ready(async () => {
         chartMain.chartLongSMA.calculateData(stocksData),
       );
 
+      chartMain.chartMediumSMA && chartMain.chartMediumSMA.drawSeries(
+        chartMain.chartMediumSMA.calculateData(stocksData),
+      );
+
       chartMain.chartShortSMA && chartMain.chartShortSMA.drawSeries(
         chartMain.chartShortSMA.calculateData(stocksData),
       );
     } else {
-      const periods = [AVAILABLE_PERIODS.get('HOUR'), AVAILABLE_PERIODS.get('DAY')];
-
-      periods.forEach(period => {
+      WORKING_PERIODS.forEach(period => {
         const chartMain = new ChartMain({
           stockName: file.stockName,
           period,
 
           isActiveLongSMA: file.settings.isActiveLongSMA,
+          isActiveMediumSMA: file.settings.isActiveMediumSMA,
           isActiveShortSMA: file.settings.isActiveShortSMA,
         });
 
@@ -236,6 +235,10 @@ $(document).ready(async () => {
 
         chartMain.chartLongSMA && chartMain.chartLongSMA.drawSeries(
           chartMain.chartLongSMA.calculateData(stocksData),
+        );
+
+        chartMain.chartMediumSMA && chartMain.chartMediumSMA.drawSeries(
+          chartMain.chartMediumSMA.calculateData(stocksData),
         );
 
         chartMain.chartShortSMA && chartMain.chartShortSMA.drawSeries(
@@ -307,6 +310,10 @@ $(document).ready(async () => {
 
         chartWrapper.chartLongSMA && chartWrapper.chartLongSMA.drawSeries(
           chartWrapper.chartLongSMA.calculateData(stocksData),
+        );
+
+        chartWrapper.chartMediumSMA && chartWrapper.chartMediumSMA.drawSeries(
+          chartWrapper.chartMediumSMA.calculateData(stocksData),
         );
 
         chartWrapper.chartShortSMA && chartWrapper.chartShortSMA.drawSeries(
@@ -382,4 +389,5 @@ $(document).ready(async () => {
   // Init modules
   draw(files);
   strategyManual(files);
+  strategyAuto(files[0]);
 });

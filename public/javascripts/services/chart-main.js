@@ -1,7 +1,7 @@
 /* global
   LightweightCharts,
   ChartSMA,
-  AVAILABLE_PERIODS
+  AVAILABLE_PERIODS, PERIOD_FOR_LONG_SMA, PERIOD_FOR_MEDIUM_SMA, PERIOD_FOR_SHORT_SMA
 */
 
 class ChartMain {
@@ -10,6 +10,7 @@ class ChartMain {
     stockName,
 
     isActiveLongSMA,
+    isActiveMediumSMA,
     isActiveShortSMA,
   }) {
     this.containerName = `${stockName}-${period}-candles`;
@@ -23,8 +24,9 @@ class ChartMain {
     this.addChart();
     this.setPeriod(period);
 
-    this.chartLongSMA = isActiveLongSMA ? new ChartSMA(this.chart, 50) : false;
-    this.chartShortSMA = isActiveShortSMA ? new ChartSMA(this.chart, 20) : false;
+    this.chartLongSMA = isActiveLongSMA ? new ChartSMA(this.chart, PERIOD_FOR_LONG_SMA) : false;
+    this.chartMediumSMA = isActiveMediumSMA ? new ChartSMA(this.chart, PERIOD_FOR_MEDIUM_SMA) : false;
+    this.chartShortSMA = isActiveShortSMA ? new ChartSMA(this.chart, PERIOD_FOR_SHORT_SMA) : false;
 
     // this.area = isActiveArea ? new ChartArea(this.chart) : false;
 

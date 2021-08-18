@@ -209,6 +209,10 @@ const nextStep = (files = []) => {
         chartWrapper.chartLongSMA.calculateData(targetStockData),
       );
 
+      chartWrapper.chartMediumSMA && chartWrapper.chartMediumSMA.drawSeries(
+        chartWrapper.chartMediumSMA.calculateData(chartWrapper),
+      );
+
       chartWrapper.chartShortSMA && chartWrapper.chartShortSMA.drawSeries(
         chartWrapper.chartShortSMA.calculateData(targetStockData),
       );
@@ -457,6 +461,10 @@ const strategyManual = (files) => {
 
           chartWrapper.chartLongSMA && chartWrapper.chartLongSMA.drawSeries(
             chartWrapper.chartLongSMA.calculateData(targetStockData),
+          );
+
+          chartWrapper.chartMediumSMA && chartWrapper.chartMediumSMA.drawSeries(
+            chartWrapper.chartMediumSMA.calculateData(chartWrapper),
           );
 
           chartWrapper.chartShortSMA && chartWrapper.chartShortSMA.drawSeries(
