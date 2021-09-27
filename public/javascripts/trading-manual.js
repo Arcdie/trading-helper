@@ -210,7 +210,7 @@ const nextStep = (files = []) => {
       );
 
       chartWrapper.chartMediumSMA && chartWrapper.chartMediumSMA.drawSeries(
-        chartWrapper.chartMediumSMA.calculateData(chartWrapper),
+        chartWrapper.chartMediumSMA.calculateData(targetStockData),
       );
 
       chartWrapper.chartShortSMA && chartWrapper.chartShortSMA.drawSeries(
@@ -405,7 +405,7 @@ const calculateSLAndTP = (file, newStopLoss = false) => {
 
 const randNumber = (min, max) => Math.floor(min + (Math.random() * ((max + 1) - min)));
 
-const strategyManual = (files) => {
+const tradingManual = (files) => {
   $balance.text(startBalance);
   resetBuySettings();
 
@@ -464,7 +464,7 @@ const strategyManual = (files) => {
           );
 
           chartWrapper.chartMediumSMA && chartWrapper.chartMediumSMA.drawSeries(
-            chartWrapper.chartMediumSMA.calculateData(chartWrapper),
+            chartWrapper.chartMediumSMA.calculateData(targetStockData),
           );
 
           chartWrapper.chartShortSMA && chartWrapper.chartShortSMA.drawSeries(

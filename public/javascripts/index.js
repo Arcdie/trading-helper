@@ -1,6 +1,6 @@
 /* global
   ChartMain, StockData,
-  draw, strategyManual, strategyAuto
+  draw, tradingAuto, tradingManual
 */
 
 /* Constants */
@@ -27,8 +27,20 @@ const $charts = $('.charts');
 const isActiveCrosshairMode = true;
 
 const files = [{
-  stockName: 'jd-14-21',
+  stockName: 'pint-19-21',
   isSingleMode: false,
+
+  settings: {
+    isActiveADX: false,
+    isActiveRSI: false,
+    isActiveVolume: false,
+    isActiveLongSMA: true,
+    isActiveMediumSMA: true,
+    isActiveShortSMA: true,
+  },
+}, {
+  stockName: 'sandp500-18-21',
+  isSingleMode: true,
 
   settings: {
     isActiveADX: false,
@@ -388,6 +400,6 @@ $(document).ready(async () => {
 
   // Init modules
   draw(files);
-  strategyManual(files);
-  strategyAuto(files[0]);
+  // tradingAuto(files[0]);
+  tradingManual(files);
 });

@@ -39,9 +39,9 @@ class ChartSMA {
       const sum = currentData.reduce((i, close) => i + close, 0);
       const average = sum / currentData.length;
 
-      if (usingData.length < this.period) {
-        return true;
-      }
+      // if (usingData.length < this.period) {
+      //   return true;
+      // }
 
       outputData.push({
         time: candle.time,
