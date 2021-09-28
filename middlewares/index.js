@@ -16,8 +16,11 @@ const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
 
 const log = require('../logger');
+const initServices = require('../services');
 
 const app = express();
+
+require('./mongodb');
 
 // Favicon
 app.use(favicon(path.join(__dirname, '../public/images', 'favicon.ico')));
@@ -56,5 +59,7 @@ process.on('uncaughtException', (err) => {
   log.error(err);
   process.exit(1);
 });
+
+initServices();
 
 module.exports = app;

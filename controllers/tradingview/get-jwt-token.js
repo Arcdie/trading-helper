@@ -10,25 +10,19 @@ module.exports = async (req, res, next) => {
   const {
     query: {
       userId,
-      quoteId,
     },
   } = req;
 
-  if (!quoteId) {
-    return res.json({
-      success: false,
-      text: 'No quoteId',
-    });
-  }
-
   if (!userId || !isMongoId(userId)) {
     return res.json({
-      success: false,
+      status: false,
       text: 'No or invalid userId',
     });
   }
 
   const userDoc = await User.findById(userId, {
+    tradingview_user_id: 1,
+    tradingview_chart_id: 1,
     tradingview_session_id: 1,
   }).exec();
 
@@ -39,17 +33,17 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const responseGetListInstruments = await axios({
+  const responseGetToken = await axios({
     method: 'get',
-    url: `https://ru.tradingview.com/api/v1/symbols_list/custom/${quoteId}`,
+    url: `https://ru.tradingview.com/chart-token/?image_url=${userDoc.tradingview_chart_id}&user_id=${userDoc.tradingview_user_id}`,
     headers: {
-      'content-type': 'application/json',
+      'Content-Type': 'application/json',
       Cookie: `sessionid=${userDoc.tradingview_session_id};`,
     },
   });
 
   return res.json({
     status: true,
-    result: responseGetListInstruments.data.symbols,
+    result: responseGetToken.data,
   });
 };

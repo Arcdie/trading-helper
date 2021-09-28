@@ -9,7 +9,7 @@ module.exports = async (req, res, next) => {
 
   if (!sessionId) {
     return res.json({
-      success: false,
+      status: false,
       text: 'No sessionId',
     });
   }
@@ -25,6 +25,6 @@ module.exports = async (req, res, next) => {
 
   return res.json({
     status: true,
-    data: responseGetQuotes.data,
+    result: responseGetQuotes.data,
   });
 };
