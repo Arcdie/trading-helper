@@ -6,6 +6,10 @@ const {
   checkCrossing,
 } = require('../controllers/user-level-bounds/utils/check-crossing');
 
+const {
+  sendData,
+} = require('./websocket-server');
+
 const Instrument = require('../models/Instrument');
 
 const instrumentsMapper = {};
@@ -77,6 +81,13 @@ module.exports = async () => {
   });
 
   client.on('message', bufferData => {
+    const parsedData = JSON.parse(bufferData.toString());
+
+    if (!parsedData.data || !parsedData.data.e) {
+      console.log('parsedData', parsedData);
+      return true;
+    }
+
     const {
       data: {
         e: actionName,
@@ -84,9 +95,15 @@ module.exports = async () => {
         b: bidPrice,
         a: askPrice,
       },
-    } = JSON.parse(bufferData.toString());
+    } = parsedData;
 
     instrumentsMapper[`${instrumentName}PERP`].bidPrice = bidPrice;
     instrumentsMapper[`${instrumentName}PERP`].askPrice = askPrice;
+
+    sendData(JSON.stringify({
+      actionName: 'newPrice',
+      instrumentName: `${instrumentName}PERP`,
+      newPrice: askPrice,
+    }));
   });
 };

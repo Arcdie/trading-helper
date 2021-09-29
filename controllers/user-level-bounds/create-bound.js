@@ -6,6 +6,7 @@ const {
   DEFAULT_INDENT_IN_PERCENTS,
 } = require('./constants');
 
+const Instrument = require('../../models/Instrument');
 const UserLevelBound = require('../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
@@ -38,6 +39,17 @@ module.exports = async (req, res, next) => {
     });
   }
 
+  const instrumentDoc = await Instrument.findById(instrumentId, {
+    price: 1,
+  }).exec();
+
+  if (!instrumentDoc) {
+    return res.json({
+      status: false,
+      text: 'No Instrument',
+    });
+  }
+
   const result = [];
 
   await Promise.all(prices.map(async price => {
@@ -55,15 +67,16 @@ module.exports = async (req, res, next) => {
       return null;
     }
 
-    const percentFromPrice = price * (DEFAULT_INDENT_IN_PERCENTS / 100);
+    const isLong = price > instrumentDoc.price;
 
     const newLevel = new UserLevelBound({
       user_id: userId,
       instrument_id: instrumentId,
 
+      is_long: isLong,
+
       price_original: price,
-      price_plus_indent: price + percentFromPrice,
-      price_minus_indent: price - percentFromPrice,
+      indent_in_percents: DEFAULT_INDENT_IN_PERCENTS,
     });
 
     await newLevel.save();

@@ -7,6 +7,11 @@ const Instrument = new mongoose.Schema({
     required: true,
   },
 
+  price: {
+    type: Number,
+    required: true,
+  },
+
   created_at: {
     type: Date,
     required: true,

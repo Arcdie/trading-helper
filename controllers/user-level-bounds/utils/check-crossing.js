@@ -14,51 +14,64 @@ const checkCrossing = async ({
   const targetBounds = await UserLevelBound.find({
     instrument_id: instrumentId,
     is_worked: false,
-
-    $or: [{
-      price_plus_indent: {
-        $gte: askPrice,
-      },
-
-      price_original: {
-        $lt: askPrice,
-      },
-    }, {
-      price_minus_indent: {
-        $lte: askPrice,
-      },
-
-      price_original: {
-        $gt: askPrice,
-      },
-    }],
   }).exec();
 
-  if (targetBounds && targetBounds.length) {
-    const boundsIds = [];
+  await Promise.all(targetBounds.map(async targetBound => {
+    let isCrossed = false;
 
-    targetBounds.forEach(bound => {
-      boundsIds.push(bound._id);
+    if (targetBound.is_long
+      && targetBound.price_original <= askPrice) {
+      isCrossed = true;
+    } else if (!targetBound.is_long
+      && targetBound.price_original >= askPrice) {
+      isCrossed = true;
+    }
 
-      const differenceBetweenPrices = Math.abs(bound.price_original - askPrice);
-      const percentPerPrice = 100 / (askPrice / differenceBetweenPrices);
-
+    if (isCrossed) {
       sendMessage(`${instrumentName}
-Уровень: ${bound.price_original}
-Осталось: ${percentPerPrice.toFixed(2)}%`);
-    });
+Уровень: ${targetBound.price_original} ${targetBound.is_long ? 'long' : 'short'}
+Осталось: Пересекло`);
 
-    await UserLevelBound.updateMany({
-      _id: {
-        $in: boundsIds,
-      },
-    }, {
-      $set: {
-        is_worked: true,
-        worked_at: new Date(),
-      },
-    });
-  }
+      targetBound.is_worked = true;
+      targetBound.is_sended_in_telegram = true;
+
+      targetBound.worked_at = new Date();
+
+      await targetBound.save();
+      return null;
+    }
+
+    if (!targetBound.is_sended_in_telegram) {
+      let priceWithIndent;
+      const percentPerOriginalPrice = targetBound.price_original * (targetBound.indent_in_percents / 100);
+
+      if (targetBound.is_long) {
+        priceWithIndent = targetBound.price_original - percentPerOriginalPrice;
+
+        if (priceWithIndent <= askPrice) {
+          isCrossed = true;
+        }
+      } else {
+        priceWithIndent = targetBound.price_original + percentPerOriginalPrice;
+
+        if (priceWithIndent >= askPrice) {
+          isCrossed = true;
+        }
+      }
+
+      if (isCrossed) {
+        const differenceBetweenOrinalPriceAndNewPrice = Math.abs(targetBound.price_original - askPrice);
+        const percentPerPrice = 100 / (askPrice / differenceBetweenOrinalPriceAndNewPrice);
+
+        sendMessage(`${instrumentName}
+  Уровень: ${bound.price_original} ${targetBound.is_long ? 'long' : 'short'}
+  Осталось: ${percentPerPrice.toFixed(2)}%`);
+
+        targetBound.is_sended_in_telegram = true;
+        await targetBound.save();
+      }
+    }
+  }));
 
   return {
     status: true,

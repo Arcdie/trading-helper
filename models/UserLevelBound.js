@@ -11,6 +11,7 @@ const UserLevelBound = new mongoose.Schema({
   },
 
   instrument_id: {
+    index: true,
     type: mongoose.Schema.ObjectId,
     required: true,
   },
@@ -20,25 +21,24 @@ const UserLevelBound = new mongoose.Schema({
     required: true,
   },
 
-  price_plus_indent: {
-    type: Number,
-    required: true,
-    index: true,
-  },
-
-  price_minus_indent: {
-    type: Number,
-    required: true,
-    index: true,
-  },
-
   indent_in_percents: {
     type: Number,
     required: true,
     default: DEFAULT_INDENT_IN_PERCENTS,
   },
 
+  is_long: {
+    type: Boolean,
+    required: true,
+  },
+
   is_worked: {
+    index: true,
+    type: Boolean,
+    default: false,
+  },
+
+  is_sended_in_telegram: {
     type: Boolean,
     default: false,
   },
