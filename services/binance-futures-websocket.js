@@ -1,37 +1,92 @@
-const WebSocketClient = require('websocket').client;
+const WebSocketClient = require('ws');
 
 const log = require('../logger');
 
-// log.error(err);
+const {
+  checkCrossing,
+} = require('../controllers/user-level-bounds/utils/check-crossing');
 
-module.exports = () => {
-  const client = new WebSocketClient();
+const Instrument = require('../models/Instrument');
 
-  client.on('connectFailed', error => {
-    log.warn(`.on('connectFailed') => ${error.toString()}`);
+const instrumentsMapper = {};
+
+module.exports = async () => {
+  const instrumentsDocs = await Instrument.find({}, {
+    name: 1,
+  }).exec();
+
+  if (instrumentsDocs && instrumentsDocs.length > 140) {
+    throw new Error('> 140 streams to binance');
+  }
+
+  log.info(`Count instruments: ${instrumentsDocs.length}`);
+
+  instrumentsDocs.forEach(doc => {
+    instrumentsMapper[doc.name] = {
+      instrumentId: doc._id,
+      askPrice: 0,
+      bidPrice: 0,
+    };
   });
 
-  client.on('connect', connection => {
-    console.log('WebSocket Client Connected');
+  let checkCrossingInterval;
+  let connectStr = 'wss://fstream.binance.com/stream?streams=';
 
-    connection.on('error', error => {
-      log.warn(`.on('error') => ${error.toString()}`);
-    });
+  instrumentsDocs.forEach(doc => {
+    const cutName = doc.name.toLowerCase().replace('perp', '');
+    connectStr += `${cutName}@bookTicker/`;
+  });
 
-    connection.on('close', () => {
-      log.info('Connection was closed');
-    });
+  // connectStr += 'ctkusdt@bookTicker';
 
-    connection.on('message', ({ utf8Data }) => {
-      const message = JSON.parse(utf8Data);
+  const client = new WebSocketClient(connectStr);
 
-      const {
+  client.on('open', () => {
+    log.info('Connection is opened');
+
+    checkCrossingInterval = setInterval(async () => {
+      await Promise.all(
+        Object
+          .keys(instrumentsMapper)
+          .map(async instrumentName => {
+            const {
+              bidPrice,
+              askPrice,
+              instrumentId,
+            } = instrumentsMapper[instrumentName];
+
+            if (bidPrice && askPrice) {
+              const resultCheck = await checkCrossing({
+                instrumentId,
+                instrumentName,
+                bidPrice: parseFloat(bidPrice),
+                askPrice: parseFloat(askPrice),
+              });
+            }
+          }));
+    }, 1000 * 10); // 10 seconds
+  });
+
+  client.on('ping', () => {
+    client.send('pong');
+  });
+
+  client.on('close', () => {
+    log.info('Connection is closed');
+    clearInterval(checkCrossingInterval);
+  });
+
+  client.on('message', bufferData => {
+    const {
+      data: {
         e: actionName,
-      } = message;
+        s: instrumentName,
+        b: bidPrice,
+        a: askPrice,
+      },
+    } = JSON.parse(bufferData.toString());
 
-      console.log(message);
-    });
+    instrumentsMapper[`${instrumentName}PERP`].bidPrice = bidPrice;
+    instrumentsMapper[`${instrumentName}PERP`].askPrice = askPrice;
   });
-
-  client.connect('wss://fstream.binance.com/ws/!bookTicker');
 };

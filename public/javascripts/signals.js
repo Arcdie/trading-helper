@@ -111,8 +111,48 @@ const getTradingviewToken = async ({
   return result;
 };
 
+const getTradingviewLevels = async ({
+  userId,
+  instrumentId,
+  jwtToken,
+}) => {
+  const response = await fetch(`/tradingview/levels?userId=${userId}&instrumentId=${instrumentId}&jwtToken=${jwtToken}`, {
+    method: 'get',
+
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  const result = await response.json();
+  return result;
+};
+
+const createUserLevelBounds = async ({
+  userId,
+  instrumentId,
+  prices,
+}) => {
+  const response = await fetch('/user-level-bounds', {
+    method: 'post',
+
+    headers: {
+      'Content-Type': 'application/json',
+    },
+
+    body: JSON.stringify({
+      userId,
+      instrumentId,
+      prices,
+    }),
+  });
+
+  const result = await response.json();
+  return result;
+};
+
 $(document).ready(async () => {
-  let namesOfInstruments = [];
+  let arrOfInstrumentsIds = [];
 
   if (doIHaveToGetInstrumentsFromTV) {
     const resultGetListFromTV = await getListInstrumentsData({
@@ -127,12 +167,8 @@ $(document).ready(async () => {
       const resultDoExistInstruments = await doExistInstruments({ arrOfNames });
 
       if (resultDoExistInstruments && resultDoExistInstruments.status) {
-        const arrOfInstrumentsIds = resultDoExistInstruments.result.map(
+        arrOfInstrumentsIds = resultDoExistInstruments.result.map(
           doc => doc._id.toString(),
-        );
-
-        namesOfInstruments = resultDoExistInstruments.result.map(
-          doc => doc.name.toString(),
         );
 
         const resultDoExistUserInstrumentBounds = await doExistUserInstrumentBounds({
@@ -147,19 +183,65 @@ $(document).ready(async () => {
     });
 
     if (resultGetUserInstrumentBounds && resultGetUserInstrumentBounds.status) {
-      namesOfInstruments = resultGetUserInstrumentBounds.result.map(
-        bound => bound.instrument_doc.name.toString(),
+      arrOfInstrumentsIds = resultGetUserInstrumentBounds.result.map(
+        bound => bound.instrument_id.toString(),
       );
     }
   }
 
-  if (namesOfInstruments && namesOfInstruments.length) {
+  if (arrOfInstrumentsIds && arrOfInstrumentsIds.length) {
     const resultGetToken = await getTradingviewToken({
       userId,
     });
 
     if (resultGetToken && resultGetToken.status) {
       const { token } = resultGetToken.result;
+
+      console.log('Started setup levels');
+
+      let indexOfInstrument = 0;
+      const lInstrumentsIds = arrOfInstrumentsIds.length;
+
+      const setLevelsInterval = setInterval(async () => {
+        if (indexOfInstrument === lInstrumentsIds) {
+          return clearInterval(setLevelsInterval);
+        }
+
+        const instrumentId = arrOfInstrumentsIds[indexOfInstrument];
+
+        const resultGetLevels = await getTradingviewLevels({
+          userId,
+          instrumentId,
+          jwtToken: token,
+        });
+
+        if (resultGetLevels && resultGetLevels.status) {
+          const prices = [];
+
+          const {
+            payload: {
+              sources,
+            },
+          } = resultGetLevels.result;
+
+          Object.keys(sources).forEach(key => {
+            const { points } = sources[key].state;
+            points.forEach(point => prices.push(point.price));
+          });
+
+          if (prices && prices.length) {
+            const resultAddLevels = await createUserLevelBounds({
+              userId,
+              instrumentId,
+              prices,
+            });
+          }
+        }
+
+        indexOfInstrument += 1;
+      }, 1000);
+
+      console.log('Ended setup levels');
     }
   }
 });

@@ -5,6 +5,7 @@ const {
 } = require('validator');
 
 const User = require('../../models/User');
+const Instrument = require('../../models/Instrument');
 
 module.exports = async (req, res, next) => {
   const {
@@ -40,6 +41,13 @@ module.exports = async (req, res, next) => {
     name: 1,
   }).exec();
 
+  if (!instrumentDoc) {
+    return res.json({
+      status: false,
+      text: 'No Instrument',
+    });
+  }
+
   const userDoc = await User.findById(userId, {
     tradingview_user_id: 1,
     tradingview_chart_id: 1,
@@ -53,9 +61,9 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const responseGetToken = await axios({
+  const responseGetLevels = await axios({
     method: 'get',
-    url: `https://charts-storage.tradingview.com/charts-storage/layout/${userDoc.tradingview_chart_id}/sources?chart_id=1&jwt=${jwtToken}&symbol=BINANCE:${}`,
+    url: `https://charts-storage.tradingview.com/charts-storage/layout/${userDoc.tradingview_chart_id}/sources?chart_id=1&jwt=${jwtToken}&symbol=BINANCE:${instrumentDoc.name}`,
     headers: {
       'Content-Type': 'application/json',
       Cookie: `sessionid=${userDoc.tradingview_session_id};`,
@@ -64,6 +72,6 @@ module.exports = async (req, res, next) => {
 
   return res.json({
     status: true,
-    result: responseGetToken.data,
+    result: responseGetLevels.data,
   });
 };

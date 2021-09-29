@@ -12,4 +12,9 @@ module.exports = {
       connectTimeoutMS: 30000,
     },
   },
+
+  telegramConf: {
+    secret: process.env.TELEGRAM_BOT_SECRET,
+    chatId: process.env.TELEGRAM_BOT_CHAT_ID,
+  },
 };
