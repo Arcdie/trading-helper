@@ -64,7 +64,7 @@ const checkCrossing = async ({
         const percentPerPrice = 100 / (askPrice / differenceBetweenOrinalPriceAndNewPrice);
 
         sendMessage(`${instrumentName}
-  Уровень: ${bound.price_original} ${targetBound.is_long ? 'long' : 'short'}
+  Уровень: ${targetBound.price_original} ${targetBound.is_long ? 'long' : 'short'}
   Осталось: ${percentPerPrice.toFixed(2)}%`);
 
         targetBound.is_sended_in_telegram = true;

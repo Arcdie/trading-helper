@@ -326,7 +326,6 @@ $(document).ready(async () => {
 });
 
 const renderLevels = () => {
-  console.log('renderLevels');
   userLevelBounds.forEach(bound => {
     const instrumentPrice = bound.instrument_doc.price;
 
@@ -345,41 +344,14 @@ const renderLevels = () => {
     bound.price_with_indent = priceWithIndent;
     bound.price_original_percent = (100 / (bound.price_original / differenceBetweenNewPriceAndOriginalPrice)).toFixed(2);
     bound.price_with_indent_percent = (100 / (bound.price_original / differenceBetweenNewPriceAndOPriceWithIndent)).toFixed(2);
-  });
 
-  userLevelBounds = userLevelBounds.sort((a, b) => {
-    if (parseFloat(a.price_original_percent) < parseFloat(b.price_original_percent)) {
-      return -1;
-    }
-
-    return 1;
-  });
-
-  $container.empty();
-
-  let appendStr = '';
-
-  userLevelBounds.forEach(bound => {
-    const instrumentPrice = bound.instrument_doc.price;
-
-    let hasPriceCrossedIndentPrice = false;
     let hasPriceCrossedOriginalPrice = false;
 
     if (bound.is_long) {
-      if (instrumentPrice > bound.price_with_indent
-      && instrumentPrice < bound.price_original) {
-        hasPriceCrossedIndentPrice = true;
-      }
-
       if (instrumentPrice >= bound.price_original) {
         hasPriceCrossedOriginalPrice = true;
       }
     } else {
-      if (instrumentPrice < bound.price_with_indent
-      && instrumentPrice > bound.price_original) {
-        hasPriceCrossedIndentPrice = true;
-      }
-
       if (instrumentPrice <= bound.price_original) {
         hasPriceCrossedOriginalPrice = true;
       }
@@ -387,7 +359,44 @@ const renderLevels = () => {
 
     if (hasPriceCrossedOriginalPrice) {
       // line crossed level
+      userLevelBounds = userLevelBounds.filter(
+        innerBound => innerBound.price_original !== bound.price_original
+          && innerBound.instrument_doc.name !== bound.instrument_doc.name,
+      );
+
       return true;
+    }
+  });
+
+  const softBounds = userLevelBounds
+    .filter(bound => parseFloat(bound.price_original_percent) <= 3)
+    .sort((a, b) => {
+      if (parseFloat(a.price_original_percent) < parseFloat(b.price_original_percent)) {
+        return -1;
+      }
+
+      return 1;
+    });
+
+  $container.empty();
+
+  let appendStr = '';
+
+  softBounds.forEach(bound => {
+    const instrumentPrice = bound.instrument_doc.price;
+
+    let hasPriceCrossedIndentPrice = false;
+
+    if (bound.is_long) {
+      if (instrumentPrice > bound.price_with_indent
+      && instrumentPrice < bound.price_original) {
+        hasPriceCrossedIndentPrice = true;
+      }
+    } else {
+      if (instrumentPrice < bound.price_with_indent
+      && instrumentPrice > bound.price_original) {
+        hasPriceCrossedIndentPrice = true;
+      }
     }
 
     const blockWithOriginalPrice = `<p class="price_original">
