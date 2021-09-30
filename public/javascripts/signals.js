@@ -305,7 +305,7 @@ $(document).ready(async () => {
         }
 
         indexOfInstrument += 1;
-      }, 1000);
+      }, 1500);
 
       console.log('Ended setup levels');
     }
