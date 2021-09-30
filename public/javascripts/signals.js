@@ -413,7 +413,7 @@ const renderLevels = () => {
       <span class="price">${instrumentPrice}</span></p>`;
 
     appendStr += `<div class="instrument ${bound.instrument_doc.name}">
-      <span class="instrument-name">${bound.instrument_doc.name} (${bound.is_long})</span>
+      <span class="instrument-name">${bound.instrument_doc.name} (${bound.is_long ? 'long' : 'short'})</span>
       <div class="levels">
         ${!bound.is_long && instrumentPrice > bound.price_with_indent ? blockWithInstrumentPrice : ''}
 
