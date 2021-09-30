@@ -9,10 +9,10 @@ const {
   },
 } = require('../config');
 
-const helperenok = new TeleBot(secret);
+// const helperenok = new TeleBot(secret);
 
 const sendMessage = message => {
-  helperenok.sendMessage(chatId, message);
+  // helperenok.sendMessage(chatId, message);
 };
 
 module.exports = {
