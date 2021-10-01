@@ -4,7 +4,7 @@
 
 const wsClient = new WebSocket('ws://localhost:8080');
 
-const URL_GET_USER_LEVEL_BOUNDS = '/api/user-level-bound';
+const URL_GET_USER_LEVEL_BOUNDS = '/api/user-level-bounds';
 
 let userLevelBounds = [];
 

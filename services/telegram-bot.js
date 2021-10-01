@@ -13,7 +13,7 @@ const User = require('../models/User');
 
 const helperenok = new TeleBot(secret);
 
-// helperenok.start();
+helperenok.start();
 helperenok.on('/start', msg => {
   sendMessage(msg.from.id, `Привет, ${msg.from.username || 'Пользователь'}. Напиши свой Nickname (логин, которым ты вошел в скринер) 🙂`);
 });

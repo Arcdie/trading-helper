@@ -11,7 +11,7 @@ require('dotenv').config({
   path: path.join(__dirname, `../${fileEnv}`),
 });
 
-const helmet = require('helmet');
+// const helmet = require('helmet');
 const express = require('express');
 const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
@@ -26,7 +26,7 @@ const initServices = require('../services');
 
 const app = express();
 
-app.use(helmet());
+// app.use(helmet());
 
 // Page Rendering
 app.set('views', path.join(__dirname, '../views'));

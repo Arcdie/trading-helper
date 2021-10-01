@@ -8,12 +8,12 @@ const Instrument = require('../models/Instrument');
 
 module.exports = async () => {
   const instrumentsDocs = await Instrument.find({}, {
-    name: 1,
+    name_futures: 1,
   }).exec();
 
   const instrumentsWithoutPERP = instrumentsDocs.map(doc => ({
     _id: doc._id,
-    name: doc.name.replace('PERP', ''),
+    name: doc.name_futures.replace('PERP', ''),
   }));
 
   setInterval(async () => {

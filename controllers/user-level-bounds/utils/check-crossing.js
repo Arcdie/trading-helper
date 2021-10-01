@@ -2,6 +2,9 @@ const {
   sendMessage,
 } = require('../../../services/telegram-bot');
 
+const log = require('../../../libs/logger');
+
+const User = require('../../../models/User');
 const UserLevelBound = require('../../../models/UserLevelBound');
 
 const checkCrossing = async ({
@@ -28,9 +31,25 @@ const checkCrossing = async ({
     }
 
     if (isCrossed) {
-      sendMessage(`${instrumentName}
+      const userDoc = await User.findById(targetBound.user_id, {
+        settings: 1,
+        telegram_user_id: 1,
+      }).exec();
+
+      if (!userDoc) {
+        log.warn('No User');
+        return null;
+      }
+
+      if (!userDoc.settings) {
+        userDoc.settings = {};
+      }
+
+      if (userDoc.settings.is_bounded_telegram && userDoc.telegram_user_id) {
+        sendMessage(userDoc.telegram_user_id, `${instrumentName}
 Уровень: ${targetBound.price_original} ${targetBound.is_long ? 'long' : 'short'}
 Осталось: Пересекло`);
+      }
 
       targetBound.is_worked = true;
       targetBound.is_sended_in_telegram = true;
@@ -60,12 +79,28 @@ const checkCrossing = async ({
       }
 
       if (isCrossed) {
-        const differenceBetweenOrinalPriceAndNewPrice = Math.abs(targetBound.price_original - askPrice);
-        const percentPerPrice = 100 / (askPrice / differenceBetweenOrinalPriceAndNewPrice);
+        const userDoc = await User.findById(targetBound.user_id, {
+          settings: 1,
+          telegram_user_id: 1,
+        }).exec();
 
-        sendMessage(`${instrumentName}
-  Уровень: ${targetBound.price_original} ${targetBound.is_long ? 'long' : 'short'}
-  Осталось: ${percentPerPrice.toFixed(2)}%`);
+        if (!userDoc) {
+          log.warn('No User');
+          return null;
+        }
+
+        if (!userDoc.settings) {
+          userDoc.settings = {};
+        }
+
+        if (userDoc.settings.is_bounded_telegram && userDoc.telegram_user_id) {
+          const differenceBetweenOrinalPriceAndNewPrice = Math.abs(targetBound.price_original - askPrice);
+          const percentPerPrice = 100 / (askPrice / differenceBetweenOrinalPriceAndNewPrice);
+
+          sendMessage(userDoc.telegram_user_id, `${instrumentName}
+Уровень: ${targetBound.price_original} ${targetBound.is_long ? 'long' : 'short'}
+Осталось: ${percentPerPrice.toFixed(2)}%`);
+        }
 
         targetBound.is_sended_in_telegram = true;
         await targetBound.save();
