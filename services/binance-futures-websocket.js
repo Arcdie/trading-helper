@@ -18,7 +18,7 @@ module.exports = async () => {
   const instrumentsDocs = await Instrument.find({
     is_active: true,
   }, {
-    name: 1,
+    name_futures: 1,
   }).exec();
 
   if (instrumentsDocs && instrumentsDocs.length > 140) {
@@ -28,7 +28,7 @@ module.exports = async () => {
   log.info(`Count instruments: ${instrumentsDocs.length}`);
 
   instrumentsDocs.forEach(doc => {
-    instrumentsMapper[doc.name] = {
+    instrumentsMapper[doc.name_futures] = {
       instrumentId: doc._id,
       askPrice: 0,
       bidPrice: 0,
@@ -39,7 +39,7 @@ module.exports = async () => {
   let connectStr = 'wss://fstream.binance.com/stream?streams=';
 
   instrumentsDocs.forEach(doc => {
-    const cutName = doc.name.toLowerCase().replace('perp', '');
+    const cutName = doc.name_futures.toLowerCase().replace('perp', '');
     connectStr += `${cutName}@bookTicker/`;
   });
 

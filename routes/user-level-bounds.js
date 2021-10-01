@@ -1,9 +1,25 @@
 const router = require('express').Router();
 
+const getUser = require('../middlewares/get-user');
+const getAuthToken = require('../middlewares/get-auth-token');
+
 const userLevelBoundControllers = require('../controllers/user-level-bounds');
 
-router.get('/', userLevelBoundControllers.getUserLevelBounds);
+const commonMiddlewares = [
+  getAuthToken,
+  getUser,
+];
 
-router.post('/', userLevelBoundControllers.createBound);
+router.get('/', commonMiddlewares, userLevelBoundControllers.getUserLevelBounds);
+
+router.post('/add-levels-from-tradingview', commonMiddlewares, userLevelBoundControllers.getLevelsForEveryInstrumentFromTradingView);
+
+router.post('/remove-all-levels', commonMiddlewares, userLevelBoundControllers.removeAllLevels);
+router.post('/remove-levels-for-instrument', commonMiddlewares, userLevelBoundControllers.removeLevelsForInstrument);
+
+
+/* Deprecated
+  router.post('/', commonMiddlewares, userLevelBoundControllers.createBound);
+*/
 
 module.exports = router;

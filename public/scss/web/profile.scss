@@ -1,5 +1,18 @@
 .profile {
-  .settings-for-tradingview {
+  h1 {
+    display: inline-block;
+  }
+
+  .links {
+    float: right;
+
+    a {
+      margin-left: 10px;
+    }
+  }
+
+  .settings-for-tradingview,
+  .settings-for-profile {
     margin-top: 10px;
     padding: 10px 0;
     border-top: 1px solid black;
@@ -50,37 +63,6 @@
     }
   }
 
-  .settings-for-instruments {
-    margin-top: 10px;
-    padding: 10px 0;
-    border-top: 1px solid black;
-
-    button#load-lists {
-      margin-top: 5px;
-    }
-
-    .tradingview-lists {
-      margin-top: 10px;
-
-      p {
-        margin-bottom: 5px;
-      }
-
-      ul {
-        list-style: unset;
-        margin-left: 22px;
-
-        li {
-          margin-bottom: 5px;
-
-          button {
-            cursor: pointer;
-          }
-        }
-      }
-    }
-  }
-
   .settings-for-levels {
     margin-top: 10px;
     padding: 10px 0;
@@ -89,8 +71,28 @@
     button {
       margin-top: 5px;
 
-      &#remove-levels {
+      &#remove-all-levels {
         float: right;
+      }
+    }
+  }
+
+  .levels {
+    .instrument {
+      border: 1px solid black;
+      padding: 10px;
+      margin-bottom: 10px;
+
+      p {
+        &:last-child {
+          margin-bottom: 0px;
+        }
+
+        margin-bottom: 5px;
+
+        span {
+
+        }
       }
     }
   }

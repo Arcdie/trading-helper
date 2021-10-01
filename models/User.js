@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+const {
+  DEFAULT_INDENT_IN_PERCENTS,
+} = require('../controllers/user-level-bounds/constants');
+
 const User = new mongoose.Schema({
   fullname: {
     unique: true,
@@ -19,6 +23,20 @@ const User = new mongoose.Schema({
 
   tradingview_chart_id: String,
   tradingview_session_id: String,
+
+  telegram_user_id: String,
+
+  settings: {
+    is_bounded_telegram: {
+      type: Boolean,
+      default: false,
+    },
+
+    indent_in_percents: {
+      type: Number,
+      default: DEFAULT_INDENT_IN_PERCENTS,
+    },
+  },
 
   created_at: {
     type: Date,

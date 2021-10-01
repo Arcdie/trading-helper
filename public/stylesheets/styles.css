@@ -46,51 +46,51 @@ table {
   .login a, .registration a {
     display: block; }
 
-.profile .settings-for-tradingview {
+.profile h1 {
+  display: inline-block; }
+
+.profile .links {
+  float: right; }
+  .profile .links a {
+    margin-left: 10px; }
+
+.profile .settings-for-tradingview,
+.profile .settings-for-profile {
   margin-top: 10px;
   padding: 10px 0;
   border-top: 1px solid black; }
-  .profile .settings-for-tradingview p {
+  .profile .settings-for-tradingview p,
+  .profile .settings-for-profile p {
     margin-bottom: 10px; }
-  .profile .settings-for-tradingview .setting.active .instruction {
+  .profile .settings-for-tradingview .setting.active .instruction,
+  .profile .settings-for-profile .setting.active .instruction {
     display: block; }
-  .profile .settings-for-tradingview .setting input[type="text"] {
+  .profile .settings-for-tradingview .setting input[type="text"],
+  .profile .settings-for-profile .setting input[type="text"] {
     margin-bottom: 10px; }
-    .profile .settings-for-tradingview .setting input[type="text"].not-valid {
+    .profile .settings-for-tradingview .setting input[type="text"].not-valid,
+    .profile .settings-for-profile .setting input[type="text"].not-valid {
       border-color: red; }
-  .profile .settings-for-tradingview .setting span.to-instruction {
+  .profile .settings-for-tradingview .setting span.to-instruction,
+  .profile .settings-for-profile .setting span.to-instruction {
     cursor: pointer;
     position: relative;
     top: 3px;
     margin-left: 8px; }
-  .profile .settings-for-tradingview .setting .instruction {
+  .profile .settings-for-tradingview .setting .instruction,
+  .profile .settings-for-profile .setting .instruction {
     display: none;
     margin-bottom: 10px; }
-    .profile .settings-for-tradingview .setting .instruction ol {
+    .profile .settings-for-tradingview .setting .instruction ol,
+    .profile .settings-for-profile .setting .instruction ol {
       list-style: auto;
       margin-left: 16px; }
-      .profile .settings-for-tradingview .setting .instruction ol li {
+      .profile .settings-for-tradingview .setting .instruction ol li,
+      .profile .settings-for-profile .setting .instruction ol li {
         margin-bottom: 5px; }
-  .profile .settings-for-tradingview button {
+  .profile .settings-for-tradingview button,
+  .profile .settings-for-profile button {
     margin-bottom: 10px; }
-
-.profile .settings-for-instruments {
-  margin-top: 10px;
-  padding: 10px 0;
-  border-top: 1px solid black; }
-  .profile .settings-for-instruments button#load-lists {
-    margin-top: 5px; }
-  .profile .settings-for-instruments .tradingview-lists {
-    margin-top: 10px; }
-    .profile .settings-for-instruments .tradingview-lists p {
-      margin-bottom: 5px; }
-    .profile .settings-for-instruments .tradingview-lists ul {
-      list-style: unset;
-      margin-left: 22px; }
-      .profile .settings-for-instruments .tradingview-lists ul li {
-        margin-bottom: 5px; }
-        .profile .settings-for-instruments .tradingview-lists ul li button {
-          cursor: pointer; }
 
 .profile .settings-for-levels {
   margin-top: 10px;
@@ -98,5 +98,14 @@ table {
   border-top: 1px solid black; }
   .profile .settings-for-levels button {
     margin-top: 5px; }
-    .profile .settings-for-levels button#remove-levels {
+    .profile .settings-for-levels button#remove-all-levels {
       float: right; }
+
+.profile .levels .instrument {
+  border: 1px solid black;
+  padding: 10px;
+  margin-bottom: 10px; }
+  .profile .levels .instrument p {
+    margin-bottom: 5px; }
+    .profile .levels .instrument p:last-child {
+      margin-bottom: 0px; }

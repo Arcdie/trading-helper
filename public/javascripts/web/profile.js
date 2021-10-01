@@ -4,123 +4,99 @@
 const userId = $('h1').data('id');
 
 const URL_UPDATE_USER = '/api/users';
-const URL_GET_LISTS = '/api/tradingview/lists';
-const URL_FIND_MANY_BY_NAMES = '/api/instruments/by-names';
 const URL_GET_USER_INSTRUMENTS = '/api/tradingview/instruments';
+const URL_REMOVE_ALL_LEVELS = '/api/user-level-bounds/remove-all-levels';
+const URL_ADD_LEVELS = '/api/user-level-bounds/add-levels-from-tradingview';
 
 /* JQuery */
-const $userId = $('#userid');
-const $chartId = $('#chartid');
-const $sessionId = $('#sessionid');
-
-const $tradingviewLists = $('.settings-for-instruments .tradingview-lists');
 
 /* Functions */
 
 $(document).ready(() => {
-  $('.settings-for-tradingview .setting span.to-instruction')
+  $('.setting span.to-instruction')
     .on('click', function () {
       const $setting = $(this).parent();
       $setting.toggleClass('active');
     });
 
-  $('#load-lists')
+  $('#load-levels')
     .on('click', async function () {
-      const resultGetLists = await makeRequest({
-        method: 'GET',
-        url: URL_GET_LISTS,
+      $(this).parent().remove();
+
+      if (confirm('Процесс может занять до минуты, позже добавлю индикатор загрузки. Продожить?')) {
+        const resultLoad = await makeRequest({
+          method: 'POST',
+          url: URL_ADD_LEVELS,
+        });
+
+        if (!resultLoad || !resultLoad.status) {
+          alert(resultLoad.message || 'Couldnt makeRequest URL_ADD_LEVELS');
+          return true;
+        }
+
+        alert('Готово! Перейдите на страницу скринера');
+      }
+    });
+
+  $('#remove-all-levels')
+    .on('click', async function () {
+      $(this).parent().remove();
+
+      const resultRemove = await makeRequest({
+        method: 'POST',
+        url: URL_REMOVE_ALL_LEVELS,
       });
 
-      if (!resultGetLists || !resultGetLists.status) {
-        alert(resultGetLists.message || 'Couldnt makeRequest');
+      if (!resultRemove || !resultRemove.status) {
+        alert(resultRemove.message || 'Couldnt makeRequest URL_REMOVE_ALL_LEVELS');
         return true;
       }
 
-      $(this).remove();
+      location.reload(true);
+    });
 
-      let appendStr = '';
+  $('#save-profile-settings')
+    .on('click', async () => {
+      const $indentInPercents = $('#indent-in-percents');
 
-      resultGetLists.result.forEach(list => {
-        appendStr += `<li data-listid="${list.id}">
-          <button>${list.name}</button>
-        </li>`;
+      const indentInPercents = parseFloat($indentInPercents.val());
+
+      let isDataValid = true;
+
+      if (indentInPercents === '' || Number.isNaN(indentInPercents)) {
+        isDataValid = false;
+        $indentInPercents.addClass('not-valid');
+        alert('Empty or invalid indentInPercents field');
+      } else {
+        $indentInPercents.removeClass('not-valid');
+      }
+
+      if (!isDataValid) {
+        return true;
+      }
+
+      const resultUpdate = await makeRequest({
+        method: 'PATCH',
+        url: `${URL_UPDATE_USER}/${userId}`,
+        body: {
+          indentInPercents,
+        },
       });
 
-      $tradingviewLists.find('ul').append(appendStr);
-    });
-
-  $tradingviewLists
-    .find('ul')
-    .on('click', 'li button', async function () {
-      if (confirm('Вы уверены?')) {
-        const $list = $(this).parent();
-        const listId = $list.data('listid');
-
-        const resultUpdate = await makeRequest({
-          method: 'PATCH',
-          url: `${URL_UPDATE_USER}/${userId}`,
-          body: {
-            tradingviewTargetListId: parseInt(listId, 10),
-          },
-        });
-
-        if (!resultUpdate || !resultUpdate.status) {
-          alert(resultUpdate.message || 'Couldnt makeRequest URL_UPDATE_USER');
-          return true;
-        }
-
-        console.log('listId', listId);
-
-        const resultGetInstruments = await makeRequest({
-          method: 'GET',
-          url: `${URL_GET_USER_INSTRUMENTS}?userId=${userId}&listId=${listId}`,
-        });
-
-        console.log('resultGetInstruments', resultGetInstruments);
-
-        if (!resultGetInstruments || !resultGetInstruments.status) {
-          alert(resultUpdate.message || 'Couldnt makeRequest URL_GET_USER_INSTRUMENTS');
-          return true;
-        }
-
-        const arrOfNames = resultGetInstruments.result.map(
-          nameOfInstrument => nameOfInstrument.split(':')[1],
-        );
-
-        const resultDoExistInstruments = await makeRequest({
-          method: 'POST',
-          url: URL_FIND_MANY_BY_NAMES,
-          body: {
-            arrOfNames,
-          },
-        });
-
-        if (!resultDoExistInstruments || resultDoExistInstruments.status) {
-          alert(resultUpdate.message || 'Couldnt makeRequest URL_FIND_MANY_BY_NAMES');
-          return true;
-        }
-
-        const inactiveInstruments = arrOfNames.filter(instrumentName => {
-          const instrumentDoc = resultDoExistInstruments.result.find(
-            doc => doc.name === instrumentName,
-          );
-
-          if (!instrumentDoc || !instrumentDoc.is_active) {
-            return true;
-          }
-
-          return false;
-        });
-
-        console.log('inactiveInstruments', inactiveInstruments);
-        if (inactiveInstruments && inactiveInstruments.length) {
-
-        }
+      if (!resultUpdate || !resultUpdate.status) {
+        alert(resultUpdate.message || 'Couldnt makeRequest');
+        return true;
       }
+
+      alert('Cохранено');
     });
 
-  $('#save-settings')
+  $('#save-tradingview-settings')
     .on('click', async () => {
+      const $userId = $('#userid');
+      const $chartId = $('#chartid');
+      const $sessionId = $('#sessionid');
+
       const userIdInTV = $userId.val();
       const chartIdInTV = $chartId.val();
       const sessionIdInTV = $sessionId.val();

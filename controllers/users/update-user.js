@@ -22,7 +22,9 @@ module.exports = async (req, res, next) => {
       tradingviewUserId,
       tradingviewChartId,
       tradingviewSessionId,
-      tradingviewTargetListId,
+      // tradingviewTargetListId,
+
+      indentInPercents,
     },
   } = req;
 
@@ -54,18 +56,29 @@ module.exports = async (req, res, next) => {
     });
   }
 
+  if (indentInPercents && Number.isNaN(parseFloat(indentInPercents))) {
+    return res.json({
+      status: false,
+      message: 'Invalid indentInPercents',
+    });
+  }
+
+  /*
   if (tradingviewTargetListId && !Number.isInteger(parseInt(tradingviewTargetListId, 10))) {
     return res.json({
       status: false,
       message: 'Invalid tradingviewTargetListId',
     });
   }
+  */
 
   const userDoc = await User.findById(userid, {
     tradingview_user_id: 1,
     tradingview_chart_id: 1,
     tradingview_session_id: 1,
-    tradingview_list_id: 1,
+    // tradingview_list_id: 1,
+
+    settings: 1,
   }).exec();
 
   if (!userDoc) {
@@ -75,15 +88,21 @@ module.exports = async (req, res, next) => {
     });
   }
 
+  if (!userDoc.settings) {
+    userDoc.settings = {};
+  }
+
   if (tradingviewUserId) {
     tradingviewUserId = parseInt(tradingviewUserId, 10);
     userDoc.tradingview_user_id = tradingviewUserId;
   }
 
+  /*
   if (tradingviewTargetListId) {
     tradingviewTargetListId = parseInt(tradingviewTargetListId, 10);
     userDoc.tradingview_list_id = tradingviewTargetListId;
   }
+  */
 
   if (tradingviewChartId) {
     tradingviewChartId = tradingviewChartId
@@ -96,6 +115,10 @@ module.exports = async (req, res, next) => {
   if (tradingviewSessionId) {
     tradingviewSessionId = tradingviewSessionId.trim();
     userDoc.tradingview_session_id = tradingviewSessionId;
+  }
+
+  if (indentInPercents) {
+    userDoc.settings.indent_in_percents = parseFloat(indentInPercents);
   }
 
   await userDoc.save();
