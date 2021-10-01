@@ -1,7 +1,7 @@
 const path = require('path');
 const moment = require('moment');
 
-const logger = require('../../logger');
+const logger = require('../../libs/logger');
 
 const {
   parseFromCSVToJSON,

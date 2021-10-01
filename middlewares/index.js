@@ -11,16 +11,26 @@ require('dotenv').config({
   path: path.join(__dirname, `../${fileEnv}`),
 });
 
+const helmet = require('helmet');
 const express = require('express');
 const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
-const log = require('../logger');
+require('../libs/mongodb');
+const morgan = require('../libs/morgan');
+
+const log = require('../libs/logger');
+const migrations = require('../migrations');
 const initServices = require('../services');
 
 const app = express();
 
-require('./mongodb');
+app.use(helmet());
+
+// Page Rendering
+app.set('views', path.join(__dirname, '../views'));
+app.set('view engine', 'pug');
 
 // Favicon
 app.use(favicon(path.join(__dirname, '../public/images', 'favicon.ico')));
@@ -32,6 +42,9 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use(express.static(path.join(__dirname, '../public')));
+
+app.use(morgan);
+app.use(cookieParser());
 
 // if (process.env.environment !== 'production') {
 //   app.use(morgan);
@@ -61,5 +74,6 @@ process.on('uncaughtException', (err) => {
 });
 
 initServices();
+migrations();
 
 module.exports = app;

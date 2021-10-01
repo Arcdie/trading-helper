@@ -17,4 +17,9 @@ module.exports = {
     secret: process.env.TELEGRAM_BOT_SECRET,
     chatId: process.env.TELEGRAM_BOT_CHAT_ID,
   },
+
+  jwtConf: {
+    secret: process.env.JWT_SECRET,
+    lifetime: (7 * 24 * 60 * 60 * 1000), // 1 week
+  },
 };

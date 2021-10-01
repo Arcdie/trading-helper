@@ -1,0 +1,76 @@
+extends ../app
+
+block variables
+	-
+		const pageTitle = 'Профиль';
+
+block content
+	.page.profile
+		h1(data-id= user._id) Профиль #{user.fullname}
+		
+		.settings-for-tradingview
+			p Настройка для TradingView
+			
+			.setting.chartid
+				input#chartid(type="text", placeholder="chart id", value= user.tradingview_chart_id)
+				span.to-instruction ?
+				
+				.instruction
+					ol(type="1")
+						li Авторизироваться в TradingView.
+						li Перейти по ссылке <a href="https://ru.tradingview.com/chart/" target="_blank">https://ru.tradingview.com/chart/</a>
+						li
+							p Нам нужно вот это
+							img(src="/images/instructions/chartid.png")
+			
+			.setting.sessionid
+				input#sessionid(type="text", placeholder="session id", value= user.tradingview_session_id)
+				span.to-instruction ?
+				
+				.instruction
+					ol(type="1")
+						li Авторизироваться в TradingView.
+						li 
+							p Достать куку sessionid. Это ваша запись сессии в tradingview. Ее иногда нужно будет обновлять.<br>
+								| Вы можете достать ее самостоятельно или сделать как показано в видео ниже.
+						
+						li Ссылка на скачивание <a href="https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg/related?hl=ru" target="_blank">EditThisCookie</a>
+
+						li
+							video(width="400", controls)
+								source(src="/video/instructions/sessionid.mov", type="video/mp4")
+
+			.setting.userid
+				input#userid(type="text", placeholder="user id", value= user.tradingview_user_id)
+				span.to-instruction ?
+				
+				.instruction
+					ol(type="1")
+						li А сейчас вы почувствуете себя программистом. Если вдруг найдете как достать ваш userid в TV более простым способом - буду благодарен.
+						li Перейти по ссылке <a href="https://ru.tradingview.com/chart/" target="_blank">https://ru.tradingview.com/chart/</a>
+						li
+							p Посмотреть видео.
+							video(width="400", controls)
+								source(src="/video/instructions/userid.mov", type="video/mp4")
+
+			button#save-settings Сохранить
+			
+		if !user.tradingview_list_id && user.tradingview_chart_id && user.tradingview_session_id && user.tradingview_chart_id
+			.settings-for-instruments
+				p Настройка для инструментов
+				
+				button#load-lists Получить списки из TV
+				
+				.tradingview-lists
+					p Выберите список, с которого подгрузить уровни
+					ul
+		
+		if user.tradingview_list_id
+			.settings-for-levels
+				p Настройка для уровней
+				button#load-levels Загрузить уровни
+				button#remove-levels Удалить уровни
+				
+
+block scripts
+	script(src='/javascripts/web/profile.js')

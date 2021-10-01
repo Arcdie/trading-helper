@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const log = require('../logger');
+const log = require('../libs/logger');
 
 const Instrument = require('../models/Instrument');
 

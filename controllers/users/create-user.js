@@ -1,12 +1,18 @@
+const {
+  jwtConf,
+} = require('../../config');
+
+const {
+  createToken,
+} = require('../../libs/jwt');
+
 const User = require('../../models/User');
 
 module.exports = async (req, res, next) => {
   const {
     body: {
       fullname,
-      tradingviewUserId,
-      tradingviewChartId,
-      tradingviewSessionId,
+      password,
     },
   } = req;
 
@@ -14,6 +20,13 @@ module.exports = async (req, res, next) => {
     return res.json({
       status: false,
       text: 'No fullname',
+    });
+  }
+
+  if (!password) {
+    return res.json({
+      status: false,
+      text: 'No password',
     });
   }
 
@@ -28,28 +41,16 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const doesExistUserWithThisId = await User.exists({
-    tradingview_user_id: tradingviewUserId,
-  });
-
-  if (doesExistUserWithThisId) {
-    return res.json({
-      status: false,
-      text: 'User with this id already exists',
-    });
-  }
-
   const newUser = new User({
     fullname,
-    tradingview_user_id: tradingviewUserId,
-    tradingview_chart_id: tradingviewChartId,
-    tradingview_session_id: tradingviewSessionId,
+    password,
   });
 
   await newUser.save();
 
-  return res.json({
-    status: true,
-    result: newUser._doc,
-  });
+  const newToken = createToken({ _id: newUser._id.toString() });
+
+  res
+    .cookie('token', newToken, { maxAge: jwtConf.lifetime, httpOnly: true })
+    .json({ status: true });
 };

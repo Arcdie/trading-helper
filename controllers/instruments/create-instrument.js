@@ -5,19 +5,30 @@ const {
 module.exports = async (req, res, next) => {
   const {
     body: {
-      name,
+      nameSpot,
+      nameFutures,
     },
   } = req;
 
-  if (!name) {
+  if (!nameSpot) {
     return res.json({
       status: false,
-      text: 'No name',
+      text: 'No nameSpot',
+    });
+  }
+
+  if (!nameFutures) {
+    return res.json({
+      status: false,
+      text: 'No nameFutures',
     });
   }
 
   const resultCreate = await createInstrument({
-    name,
+    nameSpot,
+    nameFutures,
+
+    isActive: true,
   });
 
   if (!resultCreate) {

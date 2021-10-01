@@ -1,0 +1,102 @@
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline; }
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+  display: block; }
+
+body {
+  line-height: 1; }
+
+ol, ul {
+  list-style: none; }
+
+blockquote, q {
+  quotes: none; }
+
+blockquote:before, blockquote:after {
+  content: '';
+  content: none; }
+
+q:before, q:after {
+  content: '';
+  content: none; }
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0; }
+
+.page {
+  padding: 15px; }
+
+.login, .registration {
+  position: relative; }
+  .login h1, .registration h1 {
+    margin-bottom: 10px; }
+  .login input[type="text"], .login input[type="password"], .registration input[type="text"], .registration input[type="password"] {
+    display: block;
+    margin-bottom: 10px; }
+  .login button, .registration button {
+    margin-bottom: 10px; }
+  .login a, .registration a {
+    display: block; }
+
+.profile .settings-for-tradingview {
+  margin-top: 10px;
+  padding: 10px 0;
+  border-top: 1px solid black; }
+  .profile .settings-for-tradingview p {
+    margin-bottom: 10px; }
+  .profile .settings-for-tradingview .setting.active .instruction {
+    display: block; }
+  .profile .settings-for-tradingview .setting input[type="text"] {
+    margin-bottom: 10px; }
+    .profile .settings-for-tradingview .setting input[type="text"].not-valid {
+      border-color: red; }
+  .profile .settings-for-tradingview .setting span.to-instruction {
+    cursor: pointer;
+    position: relative;
+    top: 3px;
+    margin-left: 8px; }
+  .profile .settings-for-tradingview .setting .instruction {
+    display: none;
+    margin-bottom: 10px; }
+    .profile .settings-for-tradingview .setting .instruction ol {
+      list-style: auto;
+      margin-left: 16px; }
+      .profile .settings-for-tradingview .setting .instruction ol li {
+        margin-bottom: 5px; }
+  .profile .settings-for-tradingview button {
+    margin-bottom: 10px; }
+
+.profile .settings-for-instruments {
+  margin-top: 10px;
+  padding: 10px 0;
+  border-top: 1px solid black; }
+  .profile .settings-for-instruments button#load-lists {
+    margin-top: 5px; }
+  .profile .settings-for-instruments .tradingview-lists {
+    margin-top: 10px; }
+    .profile .settings-for-instruments .tradingview-lists p {
+      margin-bottom: 5px; }
+    .profile .settings-for-instruments .tradingview-lists ul {
+      list-style: unset;
+      margin-left: 22px; }
+      .profile .settings-for-instruments .tradingview-lists ul li {
+        margin-bottom: 5px; }
+        .profile .settings-for-instruments .tradingview-lists ul li button {
+          cursor: pointer; }
+
+.profile .settings-for-levels {
+  margin-top: 10px;
+  padding: 10px 0;
+  border-top: 1px solid black; }
+  .profile .settings-for-levels button {
+    margin-top: 5px; }
+    .profile .settings-for-levels button#remove-levels {
+      float: right; }

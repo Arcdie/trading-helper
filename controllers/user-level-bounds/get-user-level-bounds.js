@@ -2,7 +2,7 @@ const {
   isMongoId,
 } = require('validator');
 
-const logger = require('../../logger');
+const logger = require('../../libs/logger');
 
 const User = require('../../models/User');
 const Instrument = require('../../models/Instrument');

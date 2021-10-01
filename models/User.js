@@ -7,21 +7,18 @@ const User = new mongoose.Schema({
     required: true,
   },
 
+  password: {
+    type: String,
+    required: true,
+  },
+
   tradingview_user_id: {
-    unique: true,
     type: String,
-    required: true,
+    index: true,
   },
 
-  tradingview_chart_id: {
-    type: String,
-    required: true,
-  },
-
-  tradingview_session_id: {
-    type: String,
-    required: true,
-  },
+  tradingview_chart_id: String,
+  tradingview_session_id: String,
 
   created_at: {
     type: Date,
@@ -34,6 +31,10 @@ const User = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
+
+  /* DEPRECATED
+    tradingview_list_id: String,
+  */
 }, { versionKey: false });
 
 module.exports = mongoose.model('User', User, 'users');

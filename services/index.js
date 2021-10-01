@@ -5,7 +5,7 @@ const updatePricesForInstruments = require('./update-prices-for-instruments');
 
 module.exports = () => {
   // binanceFuturesAPI();
-  binanceFuturesWebsocket();
+  // binanceFuturesWebsocket();
 
   // updatePricesForInstruments();
 };

@@ -1,7 +1,15 @@
 const getMainPage = require('./get-main-page');
-const getTradingViewPage = require('./get-trading-view-page');
+const getProfilePage = require('./get-profile-page');
+const getLevelsMonitoringPage = require('./get-levels-monitoring-page');
+
+const getLoginPage = require('./get-login-page');
+const getRegistrationPage = require('./get-registration-page');
 
 module.exports = {
   getMainPage,
-  getTradingViewPage,
+  getProfilePage,
+  getLevelsMonitoringPage,
+
+  getLoginPage,
+  getRegistrationPage,
 };

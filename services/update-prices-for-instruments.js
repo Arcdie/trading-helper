@@ -1,8 +1,8 @@
-const log = require('../logger');
+const log = require('../libs/logger');
 
 const {
-  getPrices,
-} = require('../controllers/binance/utils/get-prices');
+  getBinanceInstruments,
+} = require('../controllers/binance/utils/get-binance-instruments');
 
 const Instrument = require('../models/Instrument');
 
@@ -17,10 +17,10 @@ module.exports = async () => {
   }));
 
   setInterval(async () => {
-    const resultGetPrices = await getPrices();
+    const resultGetInstruments = await getBinanceInstruments();
 
-    if (resultGetPrices && resultGetPrices.status) {
-      await Promise.all(resultGetPrices.result.map(async elem => {
+    if (resultGetInstruments && resultGetInstruments.status) {
+      await Promise.all(resultGetInstruments.result.map(async elem => {
         const instrumentDoc = instrumentsWithoutPERP.find(doc => doc.name === elem.symbol);
 
         if (!instrumentDoc) {

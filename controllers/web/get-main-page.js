@@ -1,5 +1,11 @@
-const path = require('path');
-
 module.exports = async (req, res, next) => {
-  res.sendFile(path.join(__dirname, '../../public/html/index.html'));
+  const {
+    user,
+  } = req;
+
+  if (!user) {
+    res.redirect('/auth/login');
+  } else {
+    res.redirect('/profile');
+  }
 };

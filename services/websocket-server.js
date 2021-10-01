@@ -1,6 +1,6 @@
 const ws = require('ws');
 
-const log = require('../logger');
+const log = require('../libs/logger');
 
 const wss = new ws.WebSocketServer({
   port: 8080,

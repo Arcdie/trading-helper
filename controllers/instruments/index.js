@@ -1,9 +1,12 @@
+const findManyByNames = require('./find-many-by-names');
+
 const createInstrument = require('./create-instrument');
 
-const doExistInstruments = require('./do-exist-instruments');
+const uploadNewInstrumentsFromBinance = require('./upload-new-instuments-from-binance');
 
 module.exports = {
+  findManyByNames,
   createInstrument,
 
-  doExistInstruments,
+  uploadNewInstrumentsFromBinance,
 };

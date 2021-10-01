@@ -1,0 +1,97 @@
+.profile {
+  .settings-for-tradingview {
+    margin-top: 10px;
+    padding: 10px 0;
+    border-top: 1px solid black;
+
+    p {
+      margin-bottom: 10px;
+    }
+
+    .setting {
+      &.active {
+        .instruction {
+          display: block;
+        }
+      }
+
+      input[type="text"] {
+        &.not-valid {
+          border-color: red;
+        }
+
+        margin-bottom: 10px;
+      }
+
+      span.to-instruction {
+        cursor: pointer;
+        position: relative;
+        top: 3px;
+        margin-left: 8px;
+      }
+
+      .instruction {
+        display: none;
+        margin-bottom: 10px;
+
+        ol {
+          list-style: auto;
+          margin-left: 16px;
+
+          li {
+            margin-bottom: 5px;
+          }
+        }
+      }
+    }
+
+    button {
+      margin-bottom: 10px;
+    }
+  }
+
+  .settings-for-instruments {
+    margin-top: 10px;
+    padding: 10px 0;
+    border-top: 1px solid black;
+
+    button#load-lists {
+      margin-top: 5px;
+    }
+
+    .tradingview-lists {
+      margin-top: 10px;
+
+      p {
+        margin-bottom: 5px;
+      }
+
+      ul {
+        list-style: unset;
+        margin-left: 22px;
+
+        li {
+          margin-bottom: 5px;
+
+          button {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
+
+  .settings-for-levels {
+    margin-top: 10px;
+    padding: 10px 0;
+    border-top: 1px solid black;
+
+    button {
+      margin-top: 5px;
+
+      &#remove-levels {
+        float: right;
+      }
+    }
+  }
+}

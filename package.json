@@ -4,18 +4,26 @@
   "description": "Example project",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon app"
+    "dev": "nodemon app",
+    "build-css": "node-sass --include-path scss public/scss/styles.scss   public/stylesheets/styles.css",
+    "watcher": "nodemon -e scss -x \"npm run build-css\""
   },
   "dependencies": {
     "axios": "^0.21.0",
     "body-parser": "^1.18.3",
+    "chalk": "^4.1.2",
+    "cookie-parser": "^1.4.5",
     "dotenv": "^4.0.0",
     "express": "^4.16.3",
     "fast-csv": "^4.3.6",
+    "helmet": "^4.6.0",
+    "jsonwebtoken": "^8.5.1",
     "lightweight-charts": "^3.4.0",
     "moment": "^2.29.1",
     "mongodb": "^4.1.2",
     "mongoose": "^6.0.8",
+    "morgan": "^1.10.0",
+    "pug": "^3.0.2",
     "serve-favicon": "^2.5.0",
     "telebot": "^1.4.1",
     "validator": "^10.11.0",
@@ -26,6 +34,6 @@
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.12.0",
-    "morgan": "^1.9.1"
+    "node-sass": "^6.0.1"
   }
 }

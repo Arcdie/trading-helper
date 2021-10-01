@@ -1,6 +1,6 @@
 const WebSocketClient = require('ws');
 
-const log = require('../logger');
+const log = require('../libs/logger');
 
 const {
   checkCrossing,
@@ -15,7 +15,9 @@ const Instrument = require('../models/Instrument');
 const instrumentsMapper = {};
 
 module.exports = async () => {
-  const instrumentsDocs = await Instrument.find({}, {
+  const instrumentsDocs = await Instrument.find({
+    is_active: true,
+  }, {
     name: 1,
   }).exec();
 

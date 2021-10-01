@@ -1,10 +1,40 @@
 const Instrument = require('../../../models/Instrument');
 
 const createInstrument = async ({
-  name,
+  nameSpot,
+  nameFutures,
+
+  price,
+
+  isActive,
 }) => {
+  if (!nameSpot) {
+    return {
+      status: false,
+      message: 'No nameSpot',
+    };
+  }
+
+  if (!nameFutures) {
+    return {
+      status: false,
+      message: 'No nameFutures',
+    };
+  }
+
+  if (!price) {
+    return {
+      status: false,
+      message: 'No price',
+    };
+  }
+
   const instrumentDoc = await Instrument.findOne({
-    name,
+    $or: [{
+      name_spot: nameSpot,
+    }, {
+      name_futures: nameFutures,
+    }],
   }).exec();
 
   if (instrumentDoc) {
@@ -16,7 +46,12 @@ const createInstrument = async ({
   }
 
   const newInstrument = new Instrument({
-    name,
+    name_spot: nameSpot,
+    name_futures: nameFutures,
+
+    price,
+
+    is_active: isActive,
   });
 
   await newInstrument.save();

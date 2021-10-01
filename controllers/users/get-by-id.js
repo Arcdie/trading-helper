@@ -1,3 +1,11 @@
+const {
+  isMongoId,
+} = require('validator');
+
+const {
+  getById,
+} = require('./utils/get-by-id');
+
 const User = require('../../models/User');
 
 module.exports = async (req, res, next) => {
@@ -7,17 +15,26 @@ module.exports = async (req, res, next) => {
     },
   } = req;
 
-  if (!userid) {
+  if (!userid || !isMongoId(userid)) {
     return res.json({
       status: false,
-      text: 'No userid',
+      message: 'No or invalid userid',
     });
   }
 
-  const userDoc = await User.findById(userid).exec();
+  const resultGet = await getById({
+    userId: userid,
+  });
+
+  if (!resultGet || !resultGet.status) {
+    return res.json({
+      status: false,
+      message: resultGet.message || 'Cant getById',
+    });
+  }
 
   return res.json({
     status: true,
-    result: userDoc._doc,
+    result: resultGet.result,
   });
 };
