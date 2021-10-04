@@ -30,10 +30,8 @@ $(document).ready(async () => {
   if (resultGetLevels && resultGetLevels.status) {
     userLevelBounds = resultGetLevels.result || [];
 
-    renderLevels();
-
     setInterval(() => {
-      // renderLevels();
+      renderLevels();
     }, 1000 * 5); // 5 seconds
   }
 
@@ -57,6 +55,11 @@ $(document).ready(async () => {
 
       if (resultRemoveLevel && resultRemoveLevel.status) {
         $instrument.remove();
+
+        userLevelBounds = userLevelBounds.filter(bound =>
+          bound.instrumentId !== instrumentId
+          && bound.price_original !== priceOriginal,
+        );
       }
     })
     .on('click', '.navbar .tradingview-chart', async function () {
