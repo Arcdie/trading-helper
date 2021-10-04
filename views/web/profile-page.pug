@@ -9,7 +9,7 @@ block content
 		h1(data-id= user._id) Профиль #{user.fullname}
 		
 		.links
-			a(href='/levels-monitoring') Скринер
+			a(href='/levels-monitoring') Скринер уровней
 			a(href='https://t.me/helperenok_bot', target="_blank") Telegram-бот
 		
 		.settings-for-profile
@@ -26,7 +26,6 @@ block content
 							img(src="/images/instructions/indent-in-percents.png")
 				
 			button#save-profile-settings Сохранить
-
 		
 		.settings-for-tradingview
 			p Настройка для TradingView
@@ -106,6 +105,11 @@ block content
 						p #{instrumentsWithLevels[key].instrumentName}
 						p К-во уровней <span>#{instrumentsWithLevels[key].countLevels}</span>
 				- }); 
+				
+		.common-instruction
+			p Инструкция по настройке
+			video(width="400", controls)
+				source(src="/video/instructions/common-instruction.mov", type="video/mp4")
 
 block scripts
 	script(src='/javascripts/websocket.js')

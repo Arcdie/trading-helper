@@ -161,15 +161,11 @@ const renderLevels = () => {
     appendStr += `<div class="instrument ${bound.instrument_doc.name_futures}" data-instrumentid="${bound.instrument_id}" data-name="${bound.instrument_doc.name_futures}">
       <span class="instrument-name">${bound.instrument_doc.name_futures} (${bound.is_long ? 'long' : 'short'})</span>
       <div class="levels">
-        ${!bound.is_long && instrumentPrice > bound.price_with_indent ? blockWithInstrumentPrice : ''}
-
         ${bound.is_long ? blockWithOriginalPrice : ''}
 
         ${bound.is_long
           && instrumentPrice > bound.price_with_indent
           && instrumentPrice < bound.price_original ? blockWithInstrumentPrice : ''}
-
-        ${!hasPriceCrossedIndentPrice ? blockWithIndentPrice : ''}
 
         ${!bound.is_long
           && instrumentPrice < bound.price_with_indent

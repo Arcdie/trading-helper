@@ -113,6 +113,14 @@ div.md-show.md-modal div.md-content {
     margin-bottom: 10px; }
   .login a, .registration a {
     display: block; }
+  .login .common-instruction, .registration .common-instruction {
+    float: right;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    padding-top: 10px; }
+    .login .common-instruction video, .registration .common-instruction video {
+      margin-top: 10px; }
 
 .profile h1 {
   display: inline-block; }
@@ -182,6 +190,13 @@ div.md-show.md-modal div.md-content {
     margin-bottom: 5px; }
     .profile .levels .instrument p:last-child {
       margin-bottom: 0px; }
+
+.profile .common-instruction {
+  border-top: 1px solid black;
+  margin-top: 10px;
+  padding-top: 10px; }
+  .profile .common-instruction video {
+    margin-top: 10px; }
 
 .levels-monitoring {
   width: 100%; }

@@ -17,4 +17,17 @@
   a {
     display: block;
   }
+
+  .common-instruction {
+    float: right;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+
+    padding-top: 10px;
+
+    video {
+      margin-top: 10px;
+    }
+  }
 }
