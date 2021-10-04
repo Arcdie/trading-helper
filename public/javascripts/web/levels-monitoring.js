@@ -1,4 +1,4 @@
-/* global makeRequest, wsClient */
+/* global makeRequest, wsClient, tradingviewChartId */
 
 /* Constants */
 
@@ -67,7 +67,7 @@ $(document).ready(async () => {
 
       const instrumentName = $instrument.data('name');
 
-      const newWindow = window.open(`https://ru.tradingview.com/chart/XCMsz22F/?symbol=${instrumentName}`, instrumentName, 'width=600,height=400');
+      const newWindow = window.open(`https://ru.tradingview.com/chart/${tradingviewChartId}/?symbol=${instrumentName}`, instrumentName, 'width=600,height=400');
     });
 });
 

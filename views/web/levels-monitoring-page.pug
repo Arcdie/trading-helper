@@ -8,5 +8,8 @@ block content
 	.page.levels-monitoring.container
 
 block scripts
+	script.
+		const tradingviewChartId = '#{user.tradingview_chart_id}';
+
 	script(src='/javascripts/websocket.js')
 	script(src='/javascripts/web/levels-monitoring.js')
