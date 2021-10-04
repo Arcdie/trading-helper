@@ -15,8 +15,8 @@ router.get('/', commonMiddlewares, userLevelBoundControllers.getUserLevelBounds)
 router.post('/add-levels-from-tradingview', commonMiddlewares, userLevelBoundControllers.getLevelsForEveryInstrumentFromTradingView);
 
 router.post('/remove-all-levels', commonMiddlewares, userLevelBoundControllers.removeAllLevels);
+router.post('/remove-level-for-instrument', commonMiddlewares, userLevelBoundControllers.removeLevelForInstrument);
 router.post('/remove-levels-for-instrument', commonMiddlewares, userLevelBoundControllers.removeLevelsForInstrument);
-
 
 /* Deprecated
   router.post('/', commonMiddlewares, userLevelBoundControllers.createBound);

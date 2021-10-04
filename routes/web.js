@@ -17,6 +17,8 @@ const extendedMiddlewares = [
 router.get('/', commonMiddlewares, webControllers.getMainPage);
 router.get('/profile', extendedMiddlewares, webControllers.getProfilePage);
 
+router.get('/test', extendedMiddlewares, webControllers.getTestPage);
+
 router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 
 router.get('/auth/login', commonMiddlewares, webControllers.getLoginPage);

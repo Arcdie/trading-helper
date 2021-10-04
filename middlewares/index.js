@@ -3,7 +3,7 @@ const path = require('path');
 let fileEnv = 'config/envs/';
 
 switch (process.env.INIT_CWD) {
-  // case '/home/example/www/example.com': fileEnv = '.env'; break;
+  case '/home/ivelntyn/www/trading-helper': fileEnv += 'develpment.env'; break;
   default: { fileEnv += 'localhost.env'; break; }
 }
 

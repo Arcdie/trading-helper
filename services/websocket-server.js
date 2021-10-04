@@ -3,7 +3,7 @@ const ws = require('ws');
 const log = require('../libs/logger');
 
 const wss = new ws.WebSocketServer({
-  port: 8080,
+  port: 3001,
 });
 
 /*
@@ -15,10 +15,10 @@ wss.on('connection', connection => {
 });
 */
 
-const sendData = message => {
+const sendData = obj => {
   wss.clients.forEach(ws => {
     if (ws.isAlive === false) return ws.terminate();
-    ws.send(message);
+    ws.send(JSON.stringify(obj));
   });
 };
 

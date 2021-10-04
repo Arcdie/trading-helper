@@ -16,11 +16,7 @@ const User = new mongoose.Schema({
     required: true,
   },
 
-  tradingview_user_id: {
-    type: String,
-    index: true,
-  },
-
+  tradingview_user_id: String,
   tradingview_chart_id: String,
   tradingview_session_id: String,
 

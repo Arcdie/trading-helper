@@ -78,6 +78,14 @@
   }
 
   .levels {
+    p.loading {
+      &.active {
+        display: block;
+      }
+
+      display: none;
+    }
+
     .instrument {
       border: 1px solid black;
       padding: 10px;

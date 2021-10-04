@@ -5,6 +5,12 @@ head
 	
 body
 	include ./includes/header
+	
+	.pop-up
+		.md-modal
+			.md-content
+
+		.shadow
 
 	block content
 
@@ -13,6 +19,7 @@ body
 	// Common scripts
 	//- script(src='http://localhost:35729/livereload.js')
 	script(src='/libs/jquery-3.6.0.min.js')
+	script(src='/javascripts/pop-up-windows.js')
 	script(src='/javascripts/common-functions.js')
 
 	block scripts

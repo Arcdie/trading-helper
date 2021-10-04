@@ -1,10 +1,9 @@
-/* global makeRequest */
+/* global makeRequest, wsClient */
 
 /* Constants */
 
-const wsClient = new WebSocket('ws://localhost:8080');
-
 const URL_GET_USER_LEVEL_BOUNDS = '/api/user-level-bounds';
+const URL_GET_REMOVE_LEVEL = '/api/user-level-bounds/remove-level-for-instrument';
 
 let userLevelBounds = [];
 
@@ -31,10 +30,42 @@ $(document).ready(async () => {
   if (resultGetLevels && resultGetLevels.status) {
     userLevelBounds = resultGetLevels.result || [];
 
+    renderLevels();
+
     setInterval(() => {
-      renderLevels();
+      // renderLevels();
     }, 1000 * 5); // 5 seconds
   }
+
+  $container
+    .on('click', '.navbar .remove-level', async function () {
+      const $instrument = $(this).closest('.instrument');
+      const $priceOriginal = $instrument.find('p.price_original span.price');
+
+      const instrumentId = $instrument.data('instrumentid');
+      const priceOriginal = parseFloat($priceOriginal.text());
+
+      const resultRemoveLevel = await makeRequest({
+        method: 'POST',
+        url: URL_GET_REMOVE_LEVEL,
+
+        body: {
+          instrumentId,
+          priceOriginal,
+        },
+      });
+
+      if (resultRemoveLevel && resultRemoveLevel.status) {
+        $instrument.remove();
+      }
+    })
+    .on('click', '.navbar .tradingview-chart', async function () {
+      const $instrument = $(this).closest('.instrument');
+
+      const instrumentName = $instrument.data('name');
+
+      const newWindow = window.open(`https://ru.tradingview.com/chart/XCMsz22F/?symbol=${instrumentName}`, instrumentName, 'width=600,height=400');
+    });
 });
 
 const renderLevels = () => {
@@ -124,7 +155,7 @@ const renderLevels = () => {
     const blockWithInstrumentPrice = `<p class="price_current">
       <span class="price">${instrumentPrice}</span></p>`;
 
-    appendStr += `<div class="instrument ${bound.instrument_doc.name_futures}">
+    appendStr += `<div class="instrument ${bound.instrument_doc.name_futures}" data-instrumentid="${bound.instrument_id}" data-name="${bound.instrument_doc.name_futures}">
       <span class="instrument-name">${bound.instrument_doc.name_futures} (${bound.is_long ? 'long' : 'short'})</span>
       <div class="levels">
         ${!bound.is_long && instrumentPrice > bound.price_with_indent ? blockWithInstrumentPrice : ''}
@@ -144,6 +175,11 @@ const renderLevels = () => {
         ${!bound.is_long ? blockWithOriginalPrice : ''}
 
         ${bound.is_long && instrumentPrice < bound.price_with_indent ? blockWithInstrumentPrice : ''}
+      </div>
+
+      <div class="navbar">
+        <button class="tradingview-chart" title="График в TV">TV</button>
+        <button class="remove-level" title="Удалить уровень">x</button>
       </div>
     </div>`;
   });

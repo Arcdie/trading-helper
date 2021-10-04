@@ -79,10 +79,12 @@ block content
 			.settings-for-levels
 				//- p Настройка для уровней
 				.actions
-					button#load-levels Загрузить уровни
+					button#load-levels Загрузить / Обновить уровни
 					button#remove-all-levels Удалить уровни
 			
 			.levels
+				p.loading Уровни загружаются, нужно немного подождать..
+
 				-
 					const instrumentsWithLevels = [];
 					
@@ -106,4 +108,5 @@ block content
 				- }); 
 
 block scripts
+	script(src='/javascripts/websocket.js')
 	script(src='/javascripts/web/profile.js')

@@ -1,4 +1,4 @@
-/* global makeRequest */
+/* global makeRequest, wsClient */
 
 /* Constants */
 const userId = $('h1').data('id');
@@ -9,8 +9,33 @@ const URL_REMOVE_ALL_LEVELS = '/api/user-level-bounds/remove-all-levels';
 const URL_ADD_LEVELS = '/api/user-level-bounds/add-levels-from-tradingview';
 
 /* JQuery */
+const $levels = $('.levels');
 
 /* Functions */
+wsClient.onmessage = data => {
+  const parsedData = JSON.parse(data.data);
+
+  if (parsedData.actionName) {
+    switch (parsedData.actionName) {
+      case 'newLoadedLevels': {
+        $levels.prepend(`<div class="instrument">
+          <p>${parsedData.instrumentName}</p>
+          <p>К-во уровней <span>${parsedData.countLevels}</span></p>
+        </div>`);
+
+        break;
+      }
+
+      case 'endOfLoadLevels': {
+        $levels.find('p.loading').removeClass('active');
+        location.href = '/levels-monitoring';
+        break;
+      }
+
+      default: break;
+    }
+  }
+};
 
 $(document).ready(() => {
   $('.setting span.to-instruction')
@@ -22,19 +47,17 @@ $(document).ready(() => {
   $('#load-levels')
     .on('click', async function () {
       $(this).parent().remove();
+      $levels.find('.instrument').remove();
+      $levels.find('p.loading').addClass('active');
 
-      if (confirm('Процесс может занять до минуты, позже добавлю индикатор загрузки. Продожить?')) {
-        const resultLoad = await makeRequest({
-          method: 'POST',
-          url: URL_ADD_LEVELS,
-        });
+      const resultLoad = await makeRequest({
+        method: 'POST',
+        url: URL_ADD_LEVELS,
+      });
 
-        if (!resultLoad || !resultLoad.status) {
-          alert(resultLoad.message || 'Couldnt makeRequest URL_ADD_LEVELS');
-          return true;
-        }
-
-        alert('Готово! Перейдите на страницу скринера');
+      if (!resultLoad || !resultLoad.status) {
+        alert(resultLoad.message || 'Couldnt makeRequest URL_ADD_LEVELS');
+        return true;
       }
     });
 

@@ -1,4 +1,8 @@
 const {
+  sendData,
+} = require('../../services/websocket-server');
+
+const {
   createUserLevelBound,
 } = require('./utils/create-user-level-bound');
 
@@ -99,6 +103,8 @@ module.exports = async (req, res, next) => {
         price_original: 1,
       }).exec();
 
+      let countLevels = 0;
+
       // remove refused levels
       await Promise.all(userLevelBounds.map(async userLevelBound => {
         const doesExistLevelInTradingView = prices.some(
@@ -110,7 +116,11 @@ module.exports = async (req, res, next) => {
             is_worked: true,
             worked_at: new Date(),
           }).exec();
+
+          return null;
         }
+
+        countLevels += 1;
       }));
 
       // add new levels
@@ -136,12 +146,24 @@ module.exports = async (req, res, next) => {
             log.warn(resultCreateBound.message || 'Cant createUserLevelBound');
             return null;
           }
+
+          countLevels += 1;
         }
       }));
+
+      sendData({
+        actionName: 'newLoadedLevels',
+        instrumentName: instrumentDoc.name_futures,
+        countLevels,
+      });
 
       await sleep(500);
       console.log(`Ended ${instrumentDoc.name_futures}`);
     }
+
+    sendData({
+      actionName: 'endOfLoadLevels',
+    });
   })();
 
   return res.json({

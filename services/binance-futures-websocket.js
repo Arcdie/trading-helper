@@ -102,10 +102,10 @@ module.exports = async () => {
     instrumentsMapper[`${instrumentName}PERP`].bidPrice = bidPrice;
     instrumentsMapper[`${instrumentName}PERP`].askPrice = askPrice;
 
-    sendData(JSON.stringify({
+    sendData({
       actionName: 'newPrice',
       instrumentName: `${instrumentName}PERP`,
       newPrice: askPrice,
-    }));
+    });
   });
 };
