@@ -102,6 +102,57 @@ div.md-show.md-modal div.md-content {
   padding: 20px;
   background-color: white; }
 
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px; }
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0; }
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s; }
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s; }
+
+input:checked + .slider {
+  background-color: #2196F3; }
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3; }
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px); }
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px; }
+
+.slider.round:before {
+  border-radius: 50%; }
+
 .login, .registration {
   position: relative; }
   .login h1, .registration h1 {
@@ -200,7 +251,7 @@ div.md-show.md-modal div.md-content {
 
 .levels-monitoring {
   width: 100%; }
-  .levels-monitoring .instrument {
+  .levels-monitoring .container .instrument {
     width: 190px;
     height: 170px;
     float: left;
@@ -210,32 +261,44 @@ div.md-show.md-modal div.md-content {
     padding: 15px 10px;
     margin-right: 20px;
     margin-bottom: 20px; }
-    .levels-monitoring .instrument .instrument-name {
+    .levels-monitoring .container .instrument.is_monitoring {
+      background-color: #06d73c40; }
+    .levels-monitoring .container .instrument .instrument-name {
       text-align: center;
       display: block;
+      cursor: pointer;
       margin-bottom: 15px;
       font: 19px sans-serif; }
-    .levels-monitoring .instrument .levels p {
+    .levels-monitoring .container .instrument .levels p {
       margin-bottom: 5px;
       font: 19px monospace; }
-      .levels-monitoring .instrument .levels p.price_original {
+      .levels-monitoring .container .instrument .levels p.price_original {
         border-top: 1px solid black;
         border-bottom: 1px solid; }
-    .levels-monitoring .instrument .levels span.percents {
+    .levels-monitoring .container .instrument .levels span.percents {
       float: right; }
-    .levels-monitoring .instrument .navbar {
+    .levels-monitoring .container .instrument .navbar {
       width: 90%;
       position: absolute;
       bottom: 8px; }
-      .levels-monitoring .instrument .navbar button {
+      .levels-monitoring .container .instrument .navbar button {
         border-radius: 100px;
         width: 30px;
         height: 30px;
         background-color: transparent;
         cursor: pointer; }
-        .levels-monitoring .instrument .navbar button.tradingview-chart {
+        .levels-monitoring .container .instrument .navbar button img {
+          width: 105%;
+          margin-top: 3px; }
+        .levels-monitoring .container .instrument .navbar button.tradingview-chart {
           font-size: 11px;
           float: left; }
-        .levels-monitoring .instrument .navbar button.remove-level {
+        .levels-monitoring .container .instrument .navbar button.remove-level {
           float: right;
           font-size: 14px; }
+        .levels-monitoring .container .instrument .navbar button.reload-levels {
+          float: right;
+          margin-right: 6px; }
+  .levels-monitoring .settings {
+    display: block;
+    border-top: 1px solid black; }

@@ -20,6 +20,10 @@ const {
 
 const log = require('../../libs/logger');
 
+const {
+  LINE_TYPES,
+} = require('../tradingview/constants');
+
 const Instrument = require('../../models/Instrument');
 const UserLevelBound = require('../../models/UserLevelBound');
 
@@ -121,11 +125,15 @@ module.exports = async (req, res, next) => {
     } = resultGetLevels.result;
 
     Object.keys(sources).forEach(key => {
-      const { points } = sources[key].state;
-      points.forEach(point => prices.push(point.price));
-    });
+      const {
+        type,
+        points,
+      } = sources[key].state;
 
-    console.log('prices', prices);
+      if (LINE_TYPES.includes(type)) {
+        points.forEach(point => prices.push(point.price));
+      }
+    });
   }
 
   // remove refused levels
@@ -178,8 +186,4 @@ module.exports = async (req, res, next) => {
     status: true,
     result: countLevels,
   });
-};
-
-const sleep = ms => {
-  return new Promise(resolve => setTimeout(resolve, ms));
 };

@@ -12,12 +12,8 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  await UserLevelBound.updateMany({
+  await UserLevelBound.deleteMany({
     user_id: user._id,
-    is_worked: false,
-  }, {
-    is_worked: true,
-    worked_at: new Date(),
   });
 
   return res.json({

@@ -117,7 +117,7 @@ module.exports = async (req, res, next) => {
     userDoc.tradingview_session_id = tradingviewSessionId;
   }
 
-  if (indentInPercents) {
+  if (indentInPercents || indentInPercents === 0) {
     userDoc.settings.indent_in_percents = parseFloat(indentInPercents);
   }
 

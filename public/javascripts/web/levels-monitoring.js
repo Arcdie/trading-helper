@@ -4,9 +4,14 @@
 /* Constants */
 
 const URL_GET_USER_LEVEL_BOUNDS = '/api/user-level-bounds';
-const URL_GET_REMOVE_LEVEL = '/api/user-level-bounds/remove-level-for-instrument';
+const URL_ADD_LEVELS = '/api/user-level-bounds/add-levels-from-tradingview-for-one-instrument';
+const URL_REMOVE_LEVEL_FOR_INSTRUMENT = '/api/user-level-bounds/remove-level-for-instrument';
+const URL_REMOVE_LEVELS_FOR_INSTRUMENT = '/api/user-level-bounds/remove-levels-for-instrument';
 
 let userLevelBounds = [];
+
+const soundNewLevel = new Audio();
+soundNewLevel.src = '/audio/new-level.mp3';
 
 /* JQuery */
 const $container = $('.container');
@@ -31,12 +36,34 @@ $(document).ready(async () => {
   if (resultGetLevels && resultGetLevels.status) {
     userLevelBounds = resultGetLevels.result || [];
 
+    userLevelBounds.forEach(bound => {
+      bound.is_monitoring = false;
+      bound.is_warning_played = false;
+    });
+
+    renderLevels(true);
+
     setInterval(() => {
-      renderLevels();
+      renderLevels(false);
     }, 1000 * 5); // 5 seconds
   }
 
   $container
+    .on('click', 'span.instrument-name', function () {
+      const $instrument = $(this).closest('.instrument');
+
+      const boundId = $instrument.data('boundid');
+
+      $instrument.toggleClass('is_monitoring');
+
+      const targetBound = userLevelBounds.find(
+        bound => bound._id.toString() === boundId.toString(),
+      );
+
+      if (targetBound) {
+        targetBound.is_monitoring = !targetBound.is_monitoring;
+      }
+    })
     .on('click', '.navbar .remove-level', async function () {
       const $instrument = $(this).closest('.instrument');
       const $priceOriginal = $instrument.find('p.price_original span.price');
@@ -46,7 +73,7 @@ $(document).ready(async () => {
 
       const resultRemoveLevel = await makeRequest({
         method: 'POST',
-        url: URL_GET_REMOVE_LEVEL,
+        url: URL_REMOVE_LEVEL_FOR_INSTRUMENT,
 
         body: {
           instrumentId,
@@ -63,20 +90,67 @@ $(document).ready(async () => {
         );
       }
     })
-    .on('click', '.navbar .tradingview-chart', async function () {
+    .on('click', '.navbar .reload-levels', async function () {
+      const $instrument = $(this).closest('.instrument');
+
+      const instrumentId = $instrument.data('instrumentid');
+
+      userLevelBounds = userLevelBounds.filter(bound =>
+        bound.instrument_id.toString() !== instrumentId.toString(),
+      );
+
+      renderLevels(false);
+
+      const resultRemoveLevels = await makeRequest({
+        method: 'POST',
+        url: URL_REMOVE_LEVELS_FOR_INSTRUMENT,
+
+        body: {
+          instrumentId,
+        },
+      });
+
+      if (resultRemoveLevels && resultRemoveLevels.status) {
+        const resultAddLevels = await makeRequest({
+          method: 'POST',
+          url: URL_ADD_LEVELS,
+
+          body: {
+            instrumentId,
+          },
+        });
+
+        const resultGetLevels = await makeRequest({
+          method: 'GET',
+          url: URL_GET_USER_LEVEL_BOUNDS,
+        });
+
+        if (resultGetLevels && resultGetLevels.status) {
+          const newUserLevelBounds = resultGetLevels.result.filter(bound =>
+            bound.instrument_id.toString() === instrumentId.toString(),
+          );
+
+          if (newUserLevelBounds && newUserLevelBounds.length) {
+            userLevelBounds.push(...newUserLevelBounds);
+            renderLevels(false);
+          }
+        }
+      }
+    })
+    .on('mousedown', '.navbar .tradingview-chart', async function (e) {
       const $instrument = $(this).closest('.instrument');
 
       const instrumentName = $instrument.data('name');
 
-      initPopWindow(windows.getTVChart(`BINANCE:${instrumentName}`));
-
-      /*
-      const newWindow = window.open(`https://ru.tradingview.com/chart/${tradingviewChartId}/?symbol=${instrumentName}`, instrumentName, 'width=600,height=400');
-      */
+      if (e.button === 0) {
+        const newWindow = window.open(`https://ru.tradingview.com/chart/${tradingviewChartId}/?symbol=${instrumentName}`, instrumentName, 'width=600,height=400');
+      } else {
+        initPopWindow(windows.getTVChart(`BINANCE:${instrumentName}`));
+      }
     });
 });
 
-const renderLevels = () => {
+const renderLevels = (isFirstRender = false) => {
   userLevelBounds.forEach(bound => {
     const instrumentPrice = bound.instrument_doc.price;
 
@@ -129,6 +203,22 @@ const renderLevels = () => {
       return 1;
     });
 
+  if (!isFirstRender) {
+    softBounds.forEach(bound => {
+      if (parseFloat(bound.price_original_percent) <= 1.5
+        && !bound.is_warning_played) {
+        soundNewLevel.play();
+        bound.is_warning_played = true;
+      }
+    });
+  } else {
+    softBounds.forEach(bound => {
+      if (parseFloat(bound.price_original_percent) <= 1.5) {
+        bound.is_warning_played = true;
+      }
+    });
+  }
+
   $container.empty();
 
   let appendStr = '';
@@ -163,7 +253,7 @@ const renderLevels = () => {
     const blockWithInstrumentPrice = `<p class="price_current">
       <span class="price">${instrumentPrice}</span></p>`;
 
-    appendStr += `<div class="instrument ${bound.instrument_doc.name_futures}" data-instrumentid="${bound.instrument_id}" data-name="${bound.instrument_doc.name_futures}">
+    appendStr += `<div class="instrument ${bound.instrument_doc.name_futures} ${bound.is_monitoring ? 'is_monitoring' : ''}" data-instrumentid="${bound.instrument_id}" data-name="${bound.instrument_doc.name_futures}" data-boundid="${bound._id}">
       <span class="instrument-name">${bound.instrument_doc.name_futures} (${bound.is_long ? 'long' : 'short'})</span>
       <div class="levels">
         ${bound.is_long ? blockWithOriginalPrice : ''}
@@ -184,6 +274,9 @@ const renderLevels = () => {
       <div class="navbar">
         <button class="tradingview-chart" title="График в TV">TV</button>
         <button class="remove-level" title="Удалить уровень">x</button>
+        <button class="reload-levels" title="Обновить уровни для инструмента">
+          <img src="/images/reload.png" alt="reload">
+        </button>
       </div>
     </div>`;
   });

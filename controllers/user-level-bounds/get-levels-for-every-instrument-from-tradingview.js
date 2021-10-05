@@ -16,6 +16,10 @@ const {
 
 const log = require('../../libs/logger');
 
+const {
+  LINE_TYPES,
+} = require('../tradingview/constants');
+
 const Instrument = require('../../models/Instrument');
 const UserLevelBound = require('../../models/UserLevelBound');
 
@@ -90,8 +94,14 @@ module.exports = async (req, res, next) => {
       } = resultGetLevels.result;
 
       Object.keys(sources).forEach(key => {
-        const { points } = sources[key].state;
-        points.forEach(point => prices.push(point.price));
+        const {
+          type,
+          points,
+        } = sources[key].state;
+
+        if (LINE_TYPES.includes(type)) {
+          points.forEach(point => prices.push(point.price));
+        }
       });
 
       const userLevelBounds = await UserLevelBound.find({
@@ -157,7 +167,7 @@ module.exports = async (req, res, next) => {
         countLevels,
       });
 
-      await sleep(500);
+      await sleep(300);
       console.log(`Ended ${instrumentDoc.name_futures}`);
     }
 
