@@ -46,6 +46,8 @@ $(document).ready(() => {
 
   $('#load-levels')
     .on('click', async function () {
+      alert('Закройте все вкладки tradingview');
+
       $(this).parent().remove();
       $levels.find('.instrument').remove();
       $levels.find('p.loading').addClass('active');

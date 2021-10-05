@@ -14,8 +14,6 @@ module.exports = async (req, res, next) => {
     user,
   } = req;
 
-  console.log(req.query);
-
   if (!listId || !isMongoId(listId)) {
     return res.json({
       success: false,

@@ -1,4 +1,5 @@
-/* global makeRequest, wsClient, tradingviewChartId */
+/* global makeRequest, initPopWindow, windows,
+  wsClient, tradingviewChartId */
 
 /* Constants */
 
@@ -67,7 +68,11 @@ $(document).ready(async () => {
 
       const instrumentName = $instrument.data('name');
 
+      initPopWindow(windows.getTVChart(`BINANCE:${instrumentName}`));
+
+      /*
       const newWindow = window.open(`https://ru.tradingview.com/chart/${tradingviewChartId}/?symbol=${instrumentName}`, instrumentName, 'width=600,height=400');
+      */
     });
 });
 
