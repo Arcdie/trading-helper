@@ -19,6 +19,7 @@ const $container = $('.container');
 /* Functions */
 wsClient.onmessage = data => {
   const parsedData = JSON.parse(data.data);
+  console.log('ws message', parsedData);
 
   if (parsedData.actionName) {
     if (parsedData.actionName === 'newPrice') {
@@ -256,17 +257,9 @@ const renderLevels = (isFirstRender = false) => {
     appendStr += `<div class="instrument ${bound.instrument_doc.name_futures} ${bound.is_monitoring ? 'is_monitoring' : ''}" data-instrumentid="${bound.instrument_id}" data-name="${bound.instrument_doc.name_futures}" data-boundid="${bound._id}">
       <span class="instrument-name">${bound.instrument_doc.name_futures} (${bound.is_long ? 'long' : 'short'})</span>
       <div class="levels">
-        ${bound.is_long ? blockWithOriginalPrice : ''}
+        ${!bound.is_long && instrumentPrice > bound.price_original ? blockWithInstrumentPrice : ''}
 
-        ${bound.is_long
-          && instrumentPrice > bound.price_with_indent
-          && instrumentPrice < bound.price_original ? blockWithInstrumentPrice : ''}
-
-        ${!bound.is_long
-          && instrumentPrice < bound.price_with_indent
-          && instrumentPrice > bound.price_original ? blockWithInstrumentPrice : ''}
-
-        ${!bound.is_long ? blockWithOriginalPrice : ''}
+        ${blockWithOriginalPrice}
 
         ${bound.is_long && instrumentPrice < bound.price_with_indent ? blockWithInstrumentPrice : ''}
       </div>

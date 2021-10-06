@@ -7,5 +7,5 @@ module.exports = () => {
   // binanceFuturesAPI();
   binanceFuturesWebsocket();
 
-  updatePricesForInstruments();
+  // updatePricesForInstruments();
 };

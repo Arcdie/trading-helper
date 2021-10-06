@@ -32,9 +32,11 @@ module.exports = async () => {
       instrumentId: doc._id,
       askPrice: 0,
       bidPrice: 0,
+      lastUpdate: getUnix(),
     };
   });
 
+  let sendPongInterval;
   let checkCrossingInterval;
   let connectStr = 'wss://fstream.binance.com/stream?streams=';
 
@@ -45,10 +47,14 @@ module.exports = async () => {
 
   // connectStr += 'ctkusdt@bookTicker';
 
-  const client = new WebSocketClient(connectStr);
+  let client = new WebSocketClient(connectStr);
 
   client.on('open', () => {
     log.info('Connection is opened');
+
+    sendPongInterval = setInterval(() => {
+      client.send('pong');
+    }, 1000 * 60); // 1 minute
 
     checkCrossingInterval = setInterval(async () => {
       await Promise.all(
@@ -77,12 +83,16 @@ module.exports = async () => {
     client.send('pong');
   });
 
-  client.on('close', () => {
+  client.on('close', (message) => {
     log.info('Connection is closed');
+    clearInterval(sendPongInterval);
     clearInterval(checkCrossingInterval);
+
+    client = {};
+    client = new WebSocketClient(connectStr);
   });
 
-  client.on('message', bufferData => {
+  client.on('message', async bufferData => {
     const parsedData = JSON.parse(bufferData.toString());
 
     if (!parsedData.data || !parsedData.data.e) {
@@ -99,8 +109,24 @@ module.exports = async () => {
       },
     } = parsedData;
 
-    instrumentsMapper[`${instrumentName}PERP`].bidPrice = bidPrice;
-    instrumentsMapper[`${instrumentName}PERP`].askPrice = askPrice;
+    const instrumentObj = instrumentsMapper[`${instrumentName}PERP`];
+
+    instrumentObj.bidPrice = bidPrice;
+    instrumentObj.askPrice = askPrice;
+
+    const nowUnix = getUnix();
+    const instrumentLastUpdateUnix = instrumentObj.lastUpdate;
+
+    if (Math.abs(nowUnix - instrumentLastUpdateUnix) >= 60) {
+      instrumentObj.lastUpdate = nowUnix;
+
+      await Instrument.findOneAndUpdate({
+        name_futures: `${instrumentName}PERP`,
+      }, {
+        price: askPrice,
+        updated_at: new Date(),
+      }).exec();
+    }
 
     sendData({
       actionName: 'newPrice',
@@ -109,3 +135,5 @@ module.exports = async () => {
     });
   });
 };
+
+const getUnix = () => parseInt(new Date().getTime() / 1000, 10);
