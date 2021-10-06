@@ -1,3 +1,5 @@
+let widget;
+
 const windows = {
   getTVChart(instrumentName) {
     return `<div class="window tv-chart-window">
@@ -6,7 +8,7 @@ const windows = {
       <div class="tradingview-widget-container">
         <div id="tradingview_532c8"></div>
         <script type="text/javascript">
-          new TradingView.widget({
+          widget = new TradingView.widget({
             "width": 980,
             "height": 610,
             "symbol": "${instrumentName}",
