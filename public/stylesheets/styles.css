@@ -262,7 +262,9 @@ input:checked + .slider:before {
     margin-right: 20px;
     margin-bottom: 20px; }
     .levels-monitoring .container .instrument.is_monitoring {
-      background-color: #06d73c40; }
+      background-color: #06d73c40 !important; }
+    .levels-monitoring .container .instrument.not_processed {
+      background-color: #ffca6a78; }
     .levels-monitoring .container .instrument .instrument-name {
       text-align: center;
       display: block;

@@ -22,4 +22,8 @@ module.exports = {
     secret: process.env.JWT_SECRET,
     lifetime: (7 * 24 * 60 * 60 * 1000), // 1 week
   },
+
+  clientConf: {
+    userId: process.env.CLIENT_USER_ID,
+  },
 };
