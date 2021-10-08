@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon app",
     "set-levels": "nodemon set-levels",
+    "set-wa": "nodemon set-workamounts",
     "build-css": "node-sass --include-path scss public/scss/styles.scss   public/stylesheets/styles.css",
     "watcher": "nodemon -e scss -x \"npm run build-css\""
   },
@@ -22,6 +23,7 @@
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
     "lightweight-charts": "^3.4.0",
+    "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mongodb": "^4.1.2",
     "mongoose": "^6.0.8",
