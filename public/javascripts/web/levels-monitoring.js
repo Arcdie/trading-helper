@@ -254,7 +254,9 @@ const renderLevels = (isFirstRender = false) => {
     const blockWithInstrumentPrice = `<p class="price_current">
       <span class="price">${instrumentPrice}</span></p>`;
 
-    appendStr += `<div class="instrument ${bound.instrument_doc.name_futures} ${bound.is_monitoring ? 'is_monitoring' : ''}" data-instrumentid="${bound.instrument_id}" data-name="${bound.instrument_doc.name_futures}" data-boundid="${bound._id}">
+    const isProcessed = parseFloat(bound.price_original_percent) <= 1.5 && !bound.is_monitoring;
+
+    appendStr += `<div class="instrument ${bound.instrument_doc.name_futures} ${bound.is_monitoring ? 'is_monitoring' : ''} ${isProcessed ? 'not_processed' : ''}" data-instrumentid="${bound.instrument_id}" data-name="${bound.instrument_doc.name_futures}" data-boundid="${bound._id}">
       <span class="instrument-name">${bound.instrument_doc.name_futures} (${bound.is_long ? 'long' : 'short'})</span>
       <div class="levels">
         ${!bound.is_long && instrumentPrice > bound.price_original ? blockWithInstrumentPrice : ''}

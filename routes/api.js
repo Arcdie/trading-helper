@@ -4,6 +4,7 @@ const router = require('express').Router();
 // router.use('/signals', require('./signals'));
 
 router.use('/test', require('./test'));
+router.use('/binance', require('./binance'));
 router.use('/tradingview', require('./tradingview'));
 
 router.use('/users', require('./users'));

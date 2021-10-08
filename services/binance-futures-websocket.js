@@ -10,6 +10,10 @@ const {
   sendData,
 } = require('./websocket-server');
 
+const {
+  sendMessage,
+} = require('./telegram-bot');
+
 const Instrument = require('../models/Instrument');
 
 const instrumentsMapper = {};
@@ -45,95 +49,100 @@ module.exports = async () => {
     connectStr += `${cutName}@bookTicker/`;
   });
 
-  // connectStr += 'ctkusdt@bookTicker';
+  const websocketConnect = () => {
+    const client = new WebSocketClient(connectStr);
 
-  let client = new WebSocketClient(connectStr);
+    client.on('open', () => {
+      log.info('Connection was opened');
+      sendMessage(260325716, 'Connection was opened');
 
-  client.on('open', () => {
-    log.info('Connection is opened');
+      sendPongInterval = setInterval(() => {
+        client.send('pong');
+      }, 1000 * 60); // 1 minute
 
-    sendPongInterval = setInterval(() => {
-      client.send('pong');
-    }, 1000 * 60); // 1 minute
-
-    checkCrossingInterval = setInterval(async () => {
-      await Promise.all(
-        Object
-          .keys(instrumentsMapper)
-          .map(async instrumentName => {
-            const {
-              bidPrice,
-              askPrice,
-              instrumentId,
-            } = instrumentsMapper[instrumentName];
-
-            if (bidPrice && askPrice) {
-              const resultCheck = await checkCrossing({
+      checkCrossingInterval = setInterval(async () => {
+        await Promise.all(
+          Object
+            .keys(instrumentsMapper)
+            .map(async instrumentName => {
+              const {
+                bidPrice,
+                askPrice,
                 instrumentId,
-                instrumentName,
-                bidPrice: parseFloat(bidPrice),
-                askPrice: parseFloat(askPrice),
-              });
-            }
-          }));
-    }, 1000 * 10); // 10 seconds
-  });
+              } = instrumentsMapper[instrumentName];
 
-  client.on('ping', () => {
-    client.send('pong');
-  });
-
-  client.on('close', (message) => {
-    log.info('Connection is closed');
-    clearInterval(sendPongInterval);
-    clearInterval(checkCrossingInterval);
-
-    client = {};
-    client = new WebSocketClient(connectStr);
-  });
-
-  client.on('message', async bufferData => {
-    const parsedData = JSON.parse(bufferData.toString());
-
-    if (!parsedData.data || !parsedData.data.e) {
-      console.log('parsedData', parsedData);
-      return true;
-    }
-
-    const {
-      data: {
-        e: actionName,
-        s: instrumentName,
-        b: bidPrice,
-        a: askPrice,
-      },
-    } = parsedData;
-
-    const instrumentObj = instrumentsMapper[`${instrumentName}PERP`];
-
-    instrumentObj.bidPrice = bidPrice;
-    instrumentObj.askPrice = askPrice;
-
-    const nowUnix = getUnix();
-    const instrumentLastUpdateUnix = instrumentObj.lastUpdate;
-
-    if (Math.abs(nowUnix - instrumentLastUpdateUnix) >= 60) {
-      instrumentObj.lastUpdate = nowUnix;
-
-      await Instrument.findOneAndUpdate({
-        name_futures: `${instrumentName}PERP`,
-      }, {
-        price: askPrice,
-        updated_at: new Date(),
-      }).exec();
-    }
-
-    sendData({
-      actionName: 'newPrice',
-      instrumentName: `${instrumentName}PERP`,
-      newPrice: askPrice,
+              if (bidPrice && askPrice) {
+                const resultCheck = await checkCrossing({
+                  instrumentId,
+                  instrumentName,
+                  bidPrice: parseFloat(bidPrice),
+                  askPrice: parseFloat(askPrice),
+                });
+              }
+            }));
+      }, 1000 * 10); // 10 seconds
     });
-  });
+
+    client.on('ping', () => {
+      client.send('pong');
+    });
+
+    client.on('close', (message) => {
+      log.info('Connection was closed');
+      sendMessage(260325716, 'Connection was closed');
+      clearInterval(sendPongInterval);
+      clearInterval(checkCrossingInterval);
+
+      websocketConnect();
+    });
+
+    client.on('message', async bufferData => {
+      const parsedData = JSON.parse(bufferData.toString());
+
+      if (!parsedData.data || !parsedData.data.e) {
+        console.log('parsedData', parsedData);
+        return true;
+      }
+
+      const {
+        data: {
+          e: actionName,
+          s: instrumentName,
+          b: bidPrice,
+          a: askPrice,
+        },
+      } = parsedData;
+
+      const instrumentObj = instrumentsMapper[`${instrumentName}PERP`];
+
+      instrumentObj.bidPrice = bidPrice;
+      instrumentObj.askPrice = askPrice;
+
+      const nowUnix = getUnix();
+      const instrumentLastUpdateUnix = instrumentObj.lastUpdate;
+
+      if (Math.abs(nowUnix - instrumentLastUpdateUnix) >= 60) {
+        instrumentObj.lastUpdate = nowUnix;
+
+        await Instrument.findOneAndUpdate({
+          name_futures: `${instrumentName}PERP`,
+        }, {
+          price: askPrice,
+          updated_at: new Date(),
+        }).exec();
+      }
+
+      sendData({
+        actionName: 'newPrice',
+        instrumentName: `${instrumentName}PERP`,
+        newPrice: askPrice,
+      });
+    });
+  };
+
+  websocketConnect();
+
+  // connectStr += 'ctkusdt@bookTicker';
 };
 
 const getUnix = () => parseInt(new Date().getTime() / 1000, 10);

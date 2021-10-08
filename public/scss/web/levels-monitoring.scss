@@ -4,7 +4,11 @@
   .container {
     .instrument {
       &.is_monitoring {
-        background-color: #06d73c40;
+        background-color: #06d73c40 !important;
+      }
+
+      &.not_processed {
+        background-color: #ffca6a78;
       }
 
       width: 190px;

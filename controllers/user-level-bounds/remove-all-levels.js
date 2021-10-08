@@ -1,3 +1,7 @@
+const {
+  removeAllLevels,
+} = require('./utils/remove-all-levels');
+
 const UserLevelBound = require('../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
@@ -12,9 +16,16 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  await UserLevelBound.deleteMany({
-    user_id: user._id,
+  const resultRemove = await removeAllLevels({
+    userId: user._id,
   });
+
+  if (!resultRemove || !resultRemove.status) {
+    return res.json({
+      status: false,
+      message: resultRemove.message || 'Cant removeAllLevels',
+    });
+  }
 
   return res.json({
     status: true,
