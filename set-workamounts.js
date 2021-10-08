@@ -31,7 +31,7 @@ const {
 
 const pathToRoot = path.parse(process.cwd()).root;
 // const pathToSettingsFolder = path.join(__dirname, './files/MVS');
-const pathToSettingsFolder = `${pathToRoot}Program Files (x86)\\FSR Launcher\\SubApps\\CScalp\\Data\\MVS`;
+const pathToSettingsFolder = 'D:\\FSR Launcher\\SubApps\\CScalp\\Data\\MVS';
 
 if (!fs.existsSync(pathToSettingsFolder)) {
   log.warn('Cant find settings folder');
@@ -125,10 +125,18 @@ const updateWorkAmounts = async workAmounts => {
       if (tmp < stepSize) {
         tmp = stepSize;
       } else {
-        tmp = Math.floor(tmp / stepSize);
+        const remainder = tmp % stepSize;
+
+        if (remainder !== 0) {
+          tmp -= remainder;
+
+          if (tmp < stepSize) {
+            tmp = stepSize;
+          }
+        }
       }
 
-      return tmp;
+      return tmp.toString().replace('.', ',');
     });
 
     filesNames.forEach(async fileName => {
@@ -148,6 +156,8 @@ const updateWorkAmounts = async workAmounts => {
       const builder = new xml2js.Builder();
       const xml = builder.buildObject(parsedContent);
       fs.writeFileSync(`${pathToSettingsFolder}/${fileName}`, xml);
+
+      log.info(`Finished ${instrument.symbol}`);
     });
   });
 };
