@@ -3,16 +3,20 @@ const WebSocketClient = require('ws');
 const log = require('../libs/logger');
 
 const {
-  checkCrossing,
-} = require('../controllers/user-level-bounds/utils/check-crossing');
+  sendMessage,
+} = require('./telegram-bot');
+
+const {
+  getUnix,
+} = require('../libs/support');
 
 const {
   sendData,
 } = require('./websocket-server');
 
 const {
-  sendMessage,
-} = require('./telegram-bot');
+  checkCrossing,
+} = require('../controllers/user-level-bounds/utils/check-crossing');
 
 const Instrument = require('../models/Instrument');
 
@@ -29,7 +33,7 @@ module.exports = async () => {
     throw new Error('> 140 streams to binance');
   }
 
-  log.info(`Count instruments: ${instrumentsDocs.length}`);
+  log.info(`Count instruments for levels: ${instrumentsDocs.length}`);
 
   instrumentsDocs.forEach(doc => {
     instrumentsMapper[doc.name_futures] = {
@@ -53,8 +57,8 @@ module.exports = async () => {
     const client = new WebSocketClient(connectStr);
 
     client.on('open', () => {
-      log.info('Connection was opened');
-      sendMessage(260325716, 'Connection was opened');
+      log.info('Levels-connection was opened');
+      sendMessage(260325716, 'Levels-connection was opened');
 
       sendPongInterval = setInterval(() => {
         client.send('pong');
@@ -88,8 +92,8 @@ module.exports = async () => {
     });
 
     client.on('close', (message) => {
-      log.info('Connection was closed');
-      sendMessage(260325716, 'Connection was closed');
+      log.info('Levels-connection was closed');
+      sendMessage(260325716, 'Levels-connection was closed');
       clearInterval(sendPongInterval);
       clearInterval(checkCrossingInterval);
 
@@ -141,8 +145,4 @@ module.exports = async () => {
   };
 
   websocketConnect();
-
-  // connectStr += 'ctkusdt@bookTicker';
 };
-
-const getUnix = () => parseInt(new Date().getTime() / 1000, 10);

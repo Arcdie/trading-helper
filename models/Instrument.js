@@ -23,6 +23,19 @@ const Instrument = new mongoose.Schema({
     default: false,
   },
 
+  does_exist_robot: {
+    type: Boolean,
+    default: false,
+  },
+
+  tick_sizes_for_robot: [{
+    value: Number,
+    direction: {
+      type: String,
+      enum: ['long', 'short'],
+    },
+  }],
+
   created_at: {
     type: Date,
     required: true,
