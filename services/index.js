@@ -8,9 +8,8 @@ module.exports = () => {
   if (process.env.NODE_ENV !== 'localhost') {
     // binanceFuturesAPI();
     binanceFuturesWebsocket();
+    binanceFuturesAggregation();
   }
-
-  binanceFuturesAggregation();
 
   // updatePricesForInstruments();
 };
