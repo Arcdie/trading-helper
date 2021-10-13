@@ -2,7 +2,7 @@ const path = require('path');
 
 let fileEnv = '../config/envs/';
 
-switch (process.env.INIT_CWD) {
+switch (process.env.pm_cwd) {
   case '/home/ivalentyn/www/trading-helper': fileEnv += 'development.env'; break;
   default: { fileEnv += 'localhost.env'; break; }
 }

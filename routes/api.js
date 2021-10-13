@@ -9,6 +9,7 @@ router.use('/tradingview', require('./tradingview'));
 
 router.use('/users', require('./users'));
 router.use('/instruments', require('./instruments'));
+router.use('/instrument-ticks', require('./instrument-ticks'));
 
 router.use('/user-level-bounds', require('./user-level-bounds'));
 router.use('/user-instrument-bounds', require('./user-instrument-bounds'));

@@ -113,7 +113,7 @@ module.exports = async () => {
                 }
               }
 
-              if ((unixNow - timeLastTick) >= maxTimeDifferenceBetweenTicks * 2) {
+              if ((unixNow - timeLastTick) >= maxTimeDifferenceBetweenTicks * 4) {
                 isEndMonitoring = true;
 
                 if (lHistory >= 1) {
@@ -140,9 +140,9 @@ module.exports = async () => {
             }
 
             if (isEndMonitoring) {
-              sendMessage(260325716, `${instrumentName}PERP
-Робот ${trackingTick.value} ${trackingTick.direction}
-Тик: Конец`);
+//               sendMessage(260325716, `${instrumentName}
+// Робот ${trackingTick.value} ${trackingTick.direction}
+// Тик: Конец`);
 
               instrumentsMapper[instrumentName].tickHistory = [];
               instrumentsMapper[instrumentName].lastUpdate = getUnix();
@@ -188,12 +188,10 @@ module.exports = async () => {
 
       const targetInstrument = instrumentsMapper[`${instrumentName}PERP`];
 
-      // if (quantity === 5 && direction === false) {
-      //   console.log('quantity', quantity, direction === false ? 'long' : '');
-      // }
-
       if (quantity >= targetInstrument.minTickSize) {
         direction = direction === true ? 'short' : 'long';
+
+        // console.log(`${instrumentName}PERP, ${quantity} ${direction === false ? 'long' : ''}`);
 
         if (!targetInstrument.isActiveMonitoring) {
           const doesExistTickWithThisQuantity = targetInstrument.tickSizes.find(
@@ -210,6 +208,11 @@ module.exports = async () => {
               value: quantity,
               time: targetInstrument.lastUpdate,
             });
+/*
+            sendMessage(260325716, `${instrumentName}
+Робот ${quantity} ${direction}
+Тик: 1`);
+*/
 
             targetInstrument.trackingTick = doesExistTickWithThisQuantity;
             targetInstrument.trackingTick.tickId = doesExistTickWithThisQuantity._id;
@@ -226,11 +229,11 @@ module.exports = async () => {
 
           const lHistory = targetInstrument.tickHistory.length;
 
-          // if (lHistory >= 3) {
-            sendMessage(260325716, `${instrumentName}PERP
+          if (lHistory >= 3) {
+            sendMessage(260325716, `${instrumentName}
 Робот ${quantity} ${direction}
 Тик: ${lHistory}`);
-          // }
+          }
         }
       }
     });

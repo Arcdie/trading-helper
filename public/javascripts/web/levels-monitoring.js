@@ -19,7 +19,6 @@ const $container = $('.container');
 /* Functions */
 wsClient.onmessage = data => {
   const parsedData = JSON.parse(data.data);
-  console.log('ws message', parsedData);
 
   if (parsedData.actionName) {
     if (parsedData.actionName === 'newPrice') {
@@ -195,7 +194,7 @@ const renderLevels = (isFirstRender = false) => {
   });
 
   const softBounds = userLevelBounds
-    .filter(bound => parseFloat(bound.price_original_percent) <= 3)
+    .filter(bound => parseFloat(bound.price_original_percent) <= 6)
     .sort((a, b) => {
       if (parseFloat(a.price_original_percent) < parseFloat(b.price_original_percent)) {
         return -1;
