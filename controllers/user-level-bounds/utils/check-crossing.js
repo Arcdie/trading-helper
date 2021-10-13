@@ -16,6 +16,7 @@ const checkCrossing = async ({
 }) => {
   const targetBounds = await UserLevelBound.find({
     instrument_id: instrumentId,
+    level_timeframe: '4h',
     is_worked: false,
   }).exec();
 
