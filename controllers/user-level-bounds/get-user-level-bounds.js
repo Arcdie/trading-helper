@@ -14,6 +14,10 @@ const UserLevelBound = require('../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
   const {
+    query: {
+      timeframe,
+    },
+
     user,
   } = req;
 
@@ -24,8 +28,16 @@ module.exports = async (req, res, next) => {
     });
   }
 
+  if (!timeframe || !['4h', '5m'].includes(timeframe)) {
+    return res.json({
+      status: false,
+      message: 'No or invalid timeframe',
+    });
+  }
+
   const resultGetBounds = await getUserLevelBounds({
     userId: user._id,
+    timeframe,
   });
 
   if (!resultGetBounds || !resultGetBounds.status) {

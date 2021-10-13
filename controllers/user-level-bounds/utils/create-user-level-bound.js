@@ -21,6 +21,7 @@ const createUserLevelBound = async ({
   instrumentId,
   instrumentPrice,
 
+  timeframe,
   priceOriginal,
 }) => {
   if (!userId || !isMongoId(userId.toString())) {
@@ -34,6 +35,13 @@ const createUserLevelBound = async ({
     return {
       status: false,
       message: 'No or invalid priceOriginal',
+    };
+  }
+
+  if (!timeframe || !['4h', '5m'].includes(timeframe)) {
+    return {
+      status: false,
+      message: 'No or invalid timeframe',
     };
   }
 
@@ -114,6 +122,7 @@ const createUserLevelBound = async ({
 
     is_long: isLong,
 
+    level_timeframe: timeframe,
     price_original: priceOriginal,
     indent_in_percents: indentInPercents,
   });

@@ -30,7 +30,7 @@ wsClient.onmessage = data => {
 $(document).ready(async () => {
   const resultGetLevels = await makeRequest({
     method: 'GET',
-    url: URL_GET_USER_LEVEL_BOUNDS,
+    url: `${URL_GET_USER_LEVEL_BOUNDS}?timeframe=4h`,
   });
 
   if (resultGetLevels && resultGetLevels.status) {

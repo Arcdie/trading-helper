@@ -97,10 +97,20 @@ module.exports = async (req, res, next) => {
         const {
           type,
           points,
+
+          state: {
+            linecolor,
+          },
         } = sources[key].state;
 
         if (LINE_TYPES.includes(type)) {
-          points.forEach(point => prices.push(point.price));
+          const timeframe = linecolor === 'rgba(33, 150, 243, 1)' ?
+            '4h' : '5m';
+
+          points.forEach(point => prices.push({
+            price: point.price,
+            timeframe,
+          }));
         }
       });
 
@@ -118,7 +128,7 @@ module.exports = async (req, res, next) => {
       // remove refused levels
       await Promise.all(userLevelBounds.map(async userLevelBound => {
         const doesExistLevelInTradingView = prices.some(
-          price => parseFloat(price) === userLevelBound.price_original,
+          ({ price }) => parseFloat(price) === userLevelBound.price_original,
         );
 
         if (!doesExistLevelInTradingView) {
@@ -134,7 +144,7 @@ module.exports = async (req, res, next) => {
       }));
 
       // add new levels
-      await Promise.all(prices.map(async price => {
+      await Promise.all(prices.map(async ({ price, timeframe }) => {
         const parsedPrice = parseFloat(price);
 
         const doesExistUserLevelBound = userLevelBounds.some(
@@ -149,6 +159,7 @@ module.exports = async (req, res, next) => {
             instrumentId: instrumentDoc._id,
             instrumentPrice: instrumentDoc.price,
 
+            timeframe,
             priceOriginal: parseFloat(price),
           });
 

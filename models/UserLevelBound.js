@@ -43,6 +43,12 @@ const UserLevelBound = new mongoose.Schema({
     default: false,
   },
 
+  level_timeframe: {
+    type: String,
+    required: true,
+    default: '4h',
+  },
+
   created_at: {
     type: Date,
     required: true,

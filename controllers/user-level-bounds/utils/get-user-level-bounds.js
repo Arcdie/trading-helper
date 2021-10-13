@@ -16,6 +16,7 @@ const UserLevelBound = require('../../../models/UserLevelBound');
 
 const getUserLevelBounds = async ({
   userId,
+  timeframe,
 }) => {
   if (!userId || !isMongoId(userId.toString())) {
     return {
@@ -24,10 +25,23 @@ const getUserLevelBounds = async ({
     };
   }
 
-  const userLevelBounds = await UserLevelBound.find({
+  if (timeframe && !['4h', '5m'].includes(timeframe)) {
+    return {
+      status: false,
+      message: 'Invalid timeframe',
+    };
+  }
+
+  const searchObj = {
     user_id: userId,
     is_worked: false,
-  }).exec();
+  };
+
+  if (timeframe) {
+    searchObj.level_timeframe = timeframe;
+  }
+
+  const userLevelBounds = await UserLevelBound.find(searchObj).exec();
 
   if (!userLevelBounds || !userLevelBounds.length) {
     return {

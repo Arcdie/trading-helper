@@ -10,6 +10,7 @@ block content
 		
 		.links
 			a(href='/levels-monitoring') Скринер уровней
+			a(href='/levels-monitoring/5m') Скринер 5-минуток
 			a(href='https://t.me/helperenok_bot', target="_blank") Telegram-бот
 		
 		.settings-for-profile
@@ -104,12 +105,13 @@ block content
 					.instrument
 						p #{instrumentsWithLevels[key].instrumentName}
 						p К-во уровней <span>#{instrumentsWithLevels[key].countLevels}</span>
-				- }); 
-				
-		.common-instruction
-			p Инструкция по настройке
-			video(width="400", controls)
-				source(src="/video/instructions/common-instruction.mov", type="video/mp4")
+				- });
+
+		//- 
+		//- .common-instruction
+		//- 	p Инструкция по настройке
+		//- 	video(width="400", controls)
+		//- 		source(src="/video/instructions/common-instruction.mov", type="video/mp4")
 
 block scripts
 	script(src='/javascripts/websocket.js')

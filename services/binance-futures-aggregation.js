@@ -113,7 +113,7 @@ module.exports = async () => {
                 }
               }
 
-              if ((unixNow - timeLastTick) >= maxTimeDifferenceBetweenTicks * 4) {
+              if ((unixNow - timeLastTick) >= maxTimeDifferenceBetweenTicks * 10) {
                 isEndMonitoring = true;
 
                 if (lHistory >= 1) {
@@ -140,9 +140,11 @@ module.exports = async () => {
             }
 
             if (isEndMonitoring) {
-//               sendMessage(260325716, `${instrumentName}
-// Робот ${trackingTick.value} ${trackingTick.direction}
-// Тик: Конец`);
+              if (tickHistory.length >= 5) {
+                sendMessage(260325716, `${instrumentName}
+Робот ${trackingTick.value} ${trackingTick.direction}
+Тик: ${tickHistory.length}`);
+              }
 
               instrumentsMapper[instrumentName].tickHistory = [];
               instrumentsMapper[instrumentName].lastUpdate = getUnix();
@@ -227,13 +229,15 @@ module.exports = async () => {
             time: targetInstrument.lastUpdate,
           });
 
+/*
           const lHistory = targetInstrument.tickHistory.length;
 
-          if (lHistory >= 3) {
+          if (lHistory >= 5) {
             sendMessage(260325716, `${instrumentName}
 Робот ${quantity} ${direction}
 Тик: ${lHistory}`);
           }
+*/
         }
       }
     });

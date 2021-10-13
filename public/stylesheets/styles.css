@@ -31,9 +31,6 @@ table {
   border-collapse: collapse;
   border-spacing: 0; }
 
-.page {
-  padding: 15px; }
-
 div.shadow {
   width: 100%;
   height: 100%;
@@ -173,134 +170,148 @@ input:checked + .slider:before {
     .login .common-instruction video, .registration .common-instruction video {
       margin-top: 10px; }
 
-.profile h1 {
-  display: inline-block; }
-
-.profile .links {
-  float: right; }
-  .profile .links a {
-    margin-left: 10px; }
-
-.profile .settings-for-tradingview,
-.profile .settings-for-profile {
-  margin-top: 10px;
-  padding: 10px 0;
-  border-top: 1px solid black; }
-  .profile .settings-for-tradingview p,
-  .profile .settings-for-profile p {
+.profile {
+  padding: 15px; }
+  .profile h1 {
+    display: inline-block; }
+  .profile .links {
+    float: right; }
+    .profile .links a {
+      margin-left: 10px; }
+  .profile .settings-for-tradingview,
+  .profile .settings-for-profile {
+    margin-top: 10px;
+    padding: 10px 0;
+    border-top: 1px solid black; }
+    .profile .settings-for-tradingview p,
+    .profile .settings-for-profile p {
+      margin-bottom: 10px; }
+    .profile .settings-for-tradingview .setting.active .instruction,
+    .profile .settings-for-profile .setting.active .instruction {
+      display: block; }
+    .profile .settings-for-tradingview .setting input[type="text"],
+    .profile .settings-for-profile .setting input[type="text"] {
+      margin-bottom: 10px; }
+      .profile .settings-for-tradingview .setting input[type="text"].not-valid,
+      .profile .settings-for-profile .setting input[type="text"].not-valid {
+        border-color: red; }
+    .profile .settings-for-tradingview .setting span.to-instruction,
+    .profile .settings-for-profile .setting span.to-instruction {
+      cursor: pointer;
+      position: relative;
+      top: 3px;
+      margin-left: 8px; }
+    .profile .settings-for-tradingview .setting .instruction,
+    .profile .settings-for-profile .setting .instruction {
+      display: none;
+      margin-bottom: 10px; }
+      .profile .settings-for-tradingview .setting .instruction ol,
+      .profile .settings-for-profile .setting .instruction ol {
+        list-style: auto;
+        margin-left: 16px; }
+        .profile .settings-for-tradingview .setting .instruction ol li,
+        .profile .settings-for-profile .setting .instruction ol li {
+          margin-bottom: 5px; }
+    .profile .settings-for-tradingview button,
+    .profile .settings-for-profile button {
+      margin-bottom: 10px; }
+  .profile .settings-for-levels {
+    margin-top: 10px;
+    padding: 10px 0;
+    border-top: 1px solid black; }
+    .profile .settings-for-levels button {
+      margin-top: 5px; }
+      .profile .settings-for-levels button#remove-all-levels {
+        float: right; }
+  .profile .levels p.loading {
+    display: none; }
+    .profile .levels p.loading.active {
+      display: block; }
+  .profile .levels .instrument {
+    border: 1px solid black;
+    padding: 10px;
     margin-bottom: 10px; }
-  .profile .settings-for-tradingview .setting.active .instruction,
-  .profile .settings-for-profile .setting.active .instruction {
-    display: block; }
-  .profile .settings-for-tradingview .setting input[type="text"],
-  .profile .settings-for-profile .setting input[type="text"] {
-    margin-bottom: 10px; }
-    .profile .settings-for-tradingview .setting input[type="text"].not-valid,
-    .profile .settings-for-profile .setting input[type="text"].not-valid {
-      border-color: red; }
-  .profile .settings-for-tradingview .setting span.to-instruction,
-  .profile .settings-for-profile .setting span.to-instruction {
-    cursor: pointer;
-    position: relative;
-    top: 3px;
-    margin-left: 8px; }
-  .profile .settings-for-tradingview .setting .instruction,
-  .profile .settings-for-profile .setting .instruction {
-    display: none;
-    margin-bottom: 10px; }
-    .profile .settings-for-tradingview .setting .instruction ol,
-    .profile .settings-for-profile .setting .instruction ol {
-      list-style: auto;
-      margin-left: 16px; }
-      .profile .settings-for-tradingview .setting .instruction ol li,
-      .profile .settings-for-profile .setting .instruction ol li {
-        margin-bottom: 5px; }
-  .profile .settings-for-tradingview button,
-  .profile .settings-for-profile button {
-    margin-bottom: 10px; }
-
-.profile .settings-for-levels {
-  margin-top: 10px;
-  padding: 10px 0;
-  border-top: 1px solid black; }
-  .profile .settings-for-levels button {
-    margin-top: 5px; }
-    .profile .settings-for-levels button#remove-all-levels {
-      float: right; }
-
-.profile .levels p.loading {
-  display: none; }
-  .profile .levels p.loading.active {
-    display: block; }
-
-.profile .levels .instrument {
-  border: 1px solid black;
-  padding: 10px;
-  margin-bottom: 10px; }
-  .profile .levels .instrument p {
-    margin-bottom: 5px; }
-    .profile .levels .instrument p:last-child {
-      margin-bottom: 0px; }
-
-.profile .common-instruction {
-  border-top: 1px solid black;
-  margin-top: 10px;
-  padding-top: 10px; }
-  .profile .common-instruction video {
-    margin-top: 10px; }
+    .profile .levels .instrument p {
+      margin-bottom: 5px; }
+      .profile .levels .instrument p:last-child {
+        margin-bottom: 0px; }
+  .profile .common-instruction {
+    border-top: 1px solid black;
+    margin-top: 10px;
+    padding-top: 10px; }
+    .profile .common-instruction video {
+      margin-top: 10px; }
 
 .levels-monitoring {
   width: 100%; }
-  .levels-monitoring .container .instrument {
-    width: 190px;
-    height: 170px;
-    float: left;
-    position: relative;
-    display: inline-block;
-    border: 1px solid black;
-    padding: 15px 10px;
-    margin-right: 20px;
-    margin-bottom: 20px; }
-    .levels-monitoring .container .instrument.is_monitoring {
-      background-color: #06d73c40 !important; }
-    .levels-monitoring .container .instrument.not_processed {
-      background-color: #ffca6a78; }
-    .levels-monitoring .container .instrument .instrument-name {
-      text-align: center;
-      display: block;
-      cursor: pointer;
-      margin-bottom: 15px;
-      font: 19px sans-serif; }
-    .levels-monitoring .container .instrument .levels p {
-      margin-bottom: 5px;
-      font: 19px monospace; }
-      .levels-monitoring .container .instrument .levels p.price_original {
-        border-top: 1px solid black;
-        border-bottom: 1px solid; }
-    .levels-monitoring .container .instrument .levels span.percents {
-      float: right; }
-    .levels-monitoring .container .instrument .navbar {
-      width: 90%;
-      position: absolute;
-      bottom: 8px; }
-      .levels-monitoring .container .instrument .navbar button {
-        border-radius: 100px;
-        width: 30px;
-        height: 30px;
-        background-color: transparent;
-        cursor: pointer; }
-        .levels-monitoring .container .instrument .navbar button img {
-          width: 105%;
-          margin-top: 3px; }
-        .levels-monitoring .container .instrument .navbar button.tradingview-chart {
-          font-size: 11px;
-          float: left; }
-        .levels-monitoring .container .instrument .navbar button.remove-level {
-          float: right;
-          font-size: 14px; }
-        .levels-monitoring .container .instrument .navbar button.reload-levels {
-          float: right;
-          margin-right: 6px; }
+  .levels-monitoring .container {
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 15px; }
+    .levels-monitoring .container .instrument {
+      width: 190px;
+      height: 170px;
+      float: left;
+      position: relative;
+      border: 1px solid black;
+      padding: 15px 10px;
+      margin-right: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start; }
+      .levels-monitoring .container .instrument.is_monitoring {
+        background-color: #06d73c40; }
+      .levels-monitoring .container .instrument.is_worked {
+        background-color: #b8b8b8; }
+      .levels-monitoring .container .instrument.not_processed {
+        background-color: #ffca6a78; }
+      .levels-monitoring .container .instrument.extended {
+        width: 22.6%;
+        height: 443px; }
+        .levels-monitoring .container .instrument.extended .navbar {
+          margin-top: 10px; }
+      .levels-monitoring .container .instrument .instrument-name {
+        text-align: center;
+        display: block;
+        cursor: pointer;
+        margin-bottom: 15px;
+        font: 19px sans-serif; }
+      .levels-monitoring .container .instrument .levels {
+        width: 100%; }
+        .levels-monitoring .container .instrument .levels p {
+          margin-bottom: 5px;
+          font: 19px monospace; }
+          .levels-monitoring .container .instrument .levels p.price_original {
+            border-top: 1px solid black;
+            border-bottom: 1px solid; }
+        .levels-monitoring .container .instrument .levels span.percents {
+          float: right; }
+      .levels-monitoring .container .instrument .navbar {
+        width: 100%;
+        position: relative;
+        z-index: 9;
+        margin-top: 26px; }
+        .levels-monitoring .container .instrument .navbar button {
+          border-radius: 100px;
+          width: 30px;
+          height: 30px;
+          background-color: transparent;
+          cursor: pointer; }
+          .levels-monitoring .container .instrument .navbar button img {
+            width: 105%;
+            margin-top: 3px; }
+          .levels-monitoring .container .instrument .navbar button.tradingview-chart {
+            font-size: 11px;
+            float: left; }
+          .levels-monitoring .container .instrument .navbar button.remove-level {
+            float: right;
+            font-size: 14px; }
+          .levels-monitoring .container .instrument .navbar button.reload-levels {
+            float: right;
+            margin-right: 6px; }
+      .levels-monitoring .container .instrument .chart {
+        margin-top: 15px; }
   .levels-monitoring .settings {
     display: block;
     border-top: 1px solid black; }

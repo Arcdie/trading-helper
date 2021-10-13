@@ -2,8 +2,12 @@ const addIsModeratedAndIsActiveToInstruments = require('./add-is-moderated-and-i
 
 const addDoesExistRobotToInstruments = require('./add-does-exist-robot-to-instruments');
 
+const addTimeframeToLevelBounds = require('./add-timeframe-to-level-bounds');
+
 module.exports = () => {
   // addIsModeratedAndIsActiveToInstruments();
 
   // addDoesExistRobotToInstruments();
+
+  // addTimeframeToLevelBounds();
 };

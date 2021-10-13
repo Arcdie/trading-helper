@@ -2,24 +2,43 @@
   width: 100%;
 
   .container {
+    display: inline-flex;
+    flex-wrap: wrap;
+    padding: 15px;
+
     .instrument {
       &.is_monitoring {
-        background-color: #06d73c40 !important;
+        background-color: #06d73c40;
+      }
+
+      &.is_worked {
+        background-color: #b8b8b8;
       }
 
       &.not_processed {
         background-color: #ffca6a78;
       }
 
+      &.extended {
+        width: 22.6%;
+        height: 443px;
+
+        .navbar {
+          margin-top: 10px;
+        }
+      }
+
       width: 190px;
       height: 170px;
       float: left;
       position: relative;
-      display: inline-block;
       border: 1px solid black;
       padding: 15px 10px;
       margin-right: 20px;
       margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
 
       .instrument-name {
         text-align: center;
@@ -30,6 +49,8 @@
       }
 
       .levels {
+        width: 100%;
+
         p {
           margin-bottom: 5px;
           font: 19px monospace;
@@ -46,9 +67,10 @@
       }
 
       .navbar {
-        width: 90%;
-        position: absolute;
-        bottom: 8px;
+        width: 100%;
+        position: relative;
+        z-index: 9;
+        margin-top: 26px;
 
         button {
           border-radius: 100px;
@@ -77,6 +99,10 @@
             margin-right: 6px;
           }
         }
+      }
+
+      .chart {
+        margin-top: 15px;
       }
     }
   }

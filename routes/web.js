@@ -20,6 +20,7 @@ router.get('/profile', extendedMiddlewares, webControllers.getProfilePage);
 router.get('/test', extendedMiddlewares, webControllers.getTestPage);
 
 router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
+router.get('/levels-monitoring/:timeframe', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 
 router.get('/auth/login', commonMiddlewares, webControllers.getLoginPage);
 router.get('/auth/registration', commonMiddlewares, webControllers.getRegistrationPage);

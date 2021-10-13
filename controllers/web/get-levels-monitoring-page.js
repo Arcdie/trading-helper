@@ -1,3 +1,14 @@
 module.exports = async (req, res, next) => {
-  res.render('web/levels-monitoring-page');
+  const {
+    params: {
+      timeframe,
+    },
+  } = req;
+
+  if (!timeframe) {
+    res.render('web/levels-monitoring-page');
+    console.log('HERE');
+  } else {
+    res.render(`web/levels-monitoring-${timeframe}-page`);
+  }
 };
