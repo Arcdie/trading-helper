@@ -8,6 +8,7 @@ router.use('/binance', require('./binance'));
 router.use('/tradingview', require('./tradingview'));
 
 router.use('/users', require('./users'));
+router.use('/candles', require('./candles'));
 router.use('/instruments', require('./instruments'));
 router.use('/instrument-ticks', require('./instrument-ticks'));
 

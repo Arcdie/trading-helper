@@ -352,6 +352,11 @@ const renderLevels = (isFirstRender = false) => {
         bound.$element.removeClass('not_processed');
       }
 
+      if (bound.price_original_percent <= PERCENT_FOR_SWITCH_ON_NOT_PROCESSING
+        && !bound.$element.hasClass('not_processed')) {
+        bound.$element.addClass('not_processed');
+      }
+
       if (bound.is_worked && !bound.$element.hasClass('is_worked')) {
         bound.$element
           .removeClass('is_monitoring')
