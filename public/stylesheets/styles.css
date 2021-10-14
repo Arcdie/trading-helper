@@ -260,10 +260,10 @@ input:checked + .slider:before {
       display: flex;
       flex-wrap: wrap;
       align-content: flex-start; }
-      .levels-monitoring .container .instrument.is_monitoring {
-        background-color: #06d73c40; }
       .levels-monitoring .container .instrument.is_worked {
-        background-color: #b8b8b8; }
+        background-color: #b8b8b8 !important; }
+      .levels-monitoring .container .instrument.is_monitoring {
+        background-color: #06d73c40 !important; }
       .levels-monitoring .container .instrument.not_processed {
         background-color: #ffca6a78; }
       .levels-monitoring .container .instrument.extended {

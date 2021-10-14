@@ -8,6 +8,8 @@ const URL_ADD_LEVELS = '/api/user-level-bounds/add-levels-from-tradingview-for-o
 const URL_REMOVE_LEVEL_FOR_INSTRUMENT = '/api/user-level-bounds/remove-level-for-instrument';
 const URL_REMOVE_LEVELS_FOR_INSTRUMENT = '/api/user-level-bounds/remove-levels-for-instrument';
 
+const PERCENT_FOR_SWITCH_ON_NOT_PROCESSING = 1.5;
+
 let userLevelBounds = [];
 
 const soundNewLevel = new Audio();
@@ -44,6 +46,9 @@ $(document).ready(async () => {
       bound.is_monitoring = false;
       bound.is_warning_played = false;
       bound.is_active_widget = false;
+
+      const numberSymbolsAfterComma = (bound.instrument_doc.price.toString().split('.')[1] || []).length;
+      bound.price_original = parseFloat(bound.price_original.toFixed(numberSymbolsAfterComma));
     });
 
     renderLevels(true);
@@ -187,16 +192,6 @@ const renderLevels = (isFirstRender = false) => {
   userLevelBounds.forEach(bound => {
     const instrumentPrice = bound.instrument_doc.price;
 
-    const percentPerOriginalPrice = bound.price_original * (bound.indent_in_percents / 100);
-
-    const differenceBetweenNewPriceAndOriginalPrice = Math.abs(
-      instrumentPrice - bound.price_original,
-    );
-
-    bound.price_original_percent =
-      parseFloat((100 / (bound.price_original / differenceBetweenNewPriceAndOriginalPrice))
-        .toFixed(2));
-
     let hasPriceCrossedOriginalPrice = false;
 
     if (bound.is_long) {
@@ -212,6 +207,22 @@ const renderLevels = (isFirstRender = false) => {
     if (hasPriceCrossedOriginalPrice) {
       bound.is_worked = true;
     }
+
+    let differenceBetweenNewPriceAndOriginalPrice;
+
+    if (bound.is_worked) {
+      if (bound.is_long) {
+        differenceBetweenNewPriceAndOriginalPrice = bound.price_original - instrumentPrice;
+      } else {
+        differenceBetweenNewPriceAndOriginalPrice = instrumentPrice - bound.price_original;
+      }
+    } else {
+      differenceBetweenNewPriceAndOriginalPrice = Math.abs(instrumentPrice - bound.price_original);
+    }
+
+    bound.price_original_percent =
+      parseFloat((100 / (bound.price_original / differenceBetweenNewPriceAndOriginalPrice))
+        .toFixed(2));
   });
 
   const boundsToRemove = userLevelBounds.filter(
@@ -249,15 +260,15 @@ const renderLevels = (isFirstRender = false) => {
 
   if (isFirstRender) {
     softBounds.forEach(bound => {
-      if (bound.price_original_percent <= 1.5) {
+      if (bound.price_original_percent <= PERCENT_FOR_SWITCH_ON_NOT_PROCESSING) {
         bound.is_warning_played = true;
       }
     });
   } else {
     softBounds.forEach(bound => {
-      if (bound.price_original_percent <= 1.5
+      if (bound.price_original_percent <= PERCENT_FOR_SWITCH_ON_NOT_PROCESSING
         && !bound.is_warning_played) {
-        soundNewLevel.play();
+        // soundNewLevel.play();
         bound.is_warning_played = true;
       }
     });
@@ -269,15 +280,15 @@ const renderLevels = (isFirstRender = false) => {
   [...workedBounds, ...softBounds].forEach(bound => {
     const instrumentPrice = bound.instrument_doc.price;
 
+    const blockWithOriginalPrice = `<p class="price_original">
+      <span class="price">${bound.price_original}</span>
+      <span class="percents">${bound.price_original_percent}%</span>
+    </p>`;
+
+    const blockWithInstrumentPrice = `<p class="price_current">
+      <span class="price">${instrumentPrice}</span></p>`;
+
     if (!bound.is_rendered) {
-      const blockWithOriginalPrice = `<p class="price_original">
-        <span class="price">${bound.price_original}</span>
-        <span class="percents">${bound.price_original_percent}%</span>
-      </p>`;
-
-      const blockWithInstrumentPrice = `<p class="price_current">
-        <span class="price">${instrumentPrice}</span></p>`;
-
       let isProcessed = false;
       let isMonitoring = false;
       const isWorked = bound.is_worked;
@@ -286,7 +297,7 @@ const renderLevels = (isFirstRender = false) => {
         isMonitoring = bound.is_monitoring;
 
         if (!isMonitoring) {
-          isProcessed = bound.price_original_percent <= 1.5 && !bound.is_monitoring;
+          isProcessed = bound.price_original_percent <= PERCENT_FOR_SWITCH_ON_NOT_PROCESSING && !bound.is_monitoring;
         }
       }
 
@@ -304,10 +315,13 @@ const renderLevels = (isFirstRender = false) => {
         <span class="instrument-name">${bound.instrument_doc.name_futures} (${bound.is_long ? 'long' : 'short'})</span>
         <div class="levels">
           ${!bound.is_long && instrumentPrice > bound.price_original ? blockWithInstrumentPrice : ''}
+          ${bound.is_long && instrumentPrice >= bound.price_original && isWorked ? blockWithInstrumentPrice : ''}
 
           ${blockWithOriginalPrice}
 
           ${bound.is_long && instrumentPrice < bound.price_original ? blockWithInstrumentPrice : ''}
+          ${!bound.is_long && instrumentPrice <= bound.price_original && isWorked ? blockWithInstrumentPrice : ''}
+
         </div>
 
         <div class="chart" id="chart-${bound._id}"></div>
@@ -332,6 +346,26 @@ const renderLevels = (isFirstRender = false) => {
       $blockWithOriginalPrice.find('span.percents').text(`${bound.price_original_percent}%`);
 
       $blockWithInstrumentPrice.find('span.price').text(bound.instrument_doc.price);
+
+      if (bound.price_original_percent > PERCENT_FOR_SWITCH_ON_NOT_PROCESSING
+        && bound.$element.hasClass('not_processed')) {
+        bound.$element.removeClass('not_processed');
+      }
+
+      if (bound.is_worked && !bound.$element.hasClass('is_worked')) {
+        bound.$element
+          .removeClass('is_monitoring')
+          .addClass('is_worked')
+          .find('.levels')
+          .empty()
+          .append(`
+          ${bound.is_long && instrumentPrice >= bound.price_original ? blockWithInstrumentPrice : ''}
+
+          ${blockWithOriginalPrice}
+
+          ${!bound.is_long && instrumentPrice <= bound.price_original ? blockWithInstrumentPrice : ''}
+        `);
+      }
     }
   });
 
