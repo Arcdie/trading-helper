@@ -40,7 +40,7 @@ if (!fs.existsSync(pathToSettingsFolder)) {
 const filesNames = fs.readdirSync(pathToSettingsFolder);
 
 const setVolume = async () => {
-  console.log('Это может занять некоторое время');
+  log.info('Это может занять некоторое время');
 
   const resultGetExchangeInfo = await getExchangeInfo();
 

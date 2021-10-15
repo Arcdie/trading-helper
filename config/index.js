@@ -26,4 +26,9 @@ module.exports = {
   clientConf: {
     userId: process.env.CLIENT_USER_ID,
   },
+
+  binanceConf: {
+    apikey: process.env.BINANCE_API_KEY,
+    secret: process.env.BINANCE_API_SECRET,
+  },
 };
