@@ -1,7 +1,6 @@
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
-const moment = require('moment');
 const xml2js = require('xml2js');
 const readline = require('readline');
 
@@ -11,15 +10,7 @@ const {
 
 xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
-require('./middlewares/utils/set-env');
-
 const log = require('./libs/logger');
-
-const {
-  clientConf: {
-    userId,
-  },
-} = require('./config');
 
 const {
   getExchangeInfo,
@@ -80,11 +71,11 @@ const askQuestion = () => {
       return askQuestion();
     }
 
-    updateWorkAmounts(arr.map(elem => parseFloat(elem)));
+    setWorkAmounts(arr.map(elem => parseFloat(elem)));
   });
 };
 
-const updateWorkAmounts = async workAmounts => {
+const setWorkAmounts = async workAmounts => {
   const resultGetExchangeInfo = await getExchangeInfo();
 
   if (!resultGetExchangeInfo || !resultGetExchangeInfo.status) {

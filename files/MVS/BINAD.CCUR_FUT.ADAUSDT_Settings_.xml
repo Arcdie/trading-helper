@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Settings>
+  <DOM>
+    <FilledAt Value="322359"/>
+    <AutoScroll Value="True"/>
+    <ScrollStepTurbo Value="100"/>
+    <StringHeight Value="11"/>
+    <BigAmount Value="322359"/>
+    <HugeAmount Value="644718"/>
+    <PlayBigAmount Value="False"/>
+    <PlayHugeAmount Value="False"/>
+    <RulerDataType Value="2"/>
+    <FindIcebergOrders Value="False"/>
+    <PlayIcebergOrders Value="False"/>
+    <IcebergSuspectedFrom Value="999999"/>
+    <IcebergFactor Value="2"/>
+    <Focus_TSpreadFTick Value="True"/>
+    <FatLevelsFactor Value="50"/>
+    <SlimLevelsFactor Value="10"/>
+    <PanelWidth Value="371"/>
+    <UserLevels Value="2.874/29.08.2021;2.94/29.08.2021"/>
+    <UserSignalPriceLevels Value=""/>
+    <PlayUserSignalPriceLevels Value="True"/>
+  </DOM>
+  <TICK_PANEL>
+    <ShowTicksFrom Value="2000"/>
+    <HideFilteredTicks Value="False"/>
+    <TicksStyle Value="DotsLines"/>
+    <TicksWeight Value="1"/>
+    <SumTicks_Period Value="250"/>
+    <PanelWidth Value="600"/>
+    <BigAmount Value="999999"/>
+    <PlayBigAmount Value="False"/>
+  </TICK_PANEL>
+  <CLUSTER_PANEL>
+    <FilledAt Value="322359"/>
+    <ShowClusterPanel Value="True"/>
+    <TimeFrame Value="5"/>
+    <GridWidth Value="505"/>
+    <ClusterStyleText Value="Summ"/>
+    <ClusterStyleColor Value="WhiteBalance"/>
+    <PanelWidth Value="155"/>
+  </CLUSTER_PANEL>
+  <COMMON_PANEL>
+    <PriceAggregationStep Value="1"/>
+    <PriceAggregationFactor Value="1"/>
+    <MaxAmountZeroDigits Value="0"/>
+    <ReduceAmountThousands Value="False"/>
+    <ShowAdditiveCursor Value="True"/>
+  </COMMON_PANEL>
+  <TRADING>
+    <First_WorkAmount Value="10"/>
+    <Second_WorkAmount Value="17"/>
+    <Third_WorkAmount Value="35"/>
+    <Fourth_WorkAmount Value="70"/>
+    <Fifth_WorkAmount Value="2"/>
+    <ActiveWorkAmountKey Value="1"/>
+    <IsWorkAmountInMoneyMode Value="True"/>
+    <ThrowLimitTo Value="100"/>
+    <StopLoss_Steps Value="0"/>
+    <TakeProfit_Steps Value="0"/>
+    <StopLimitOrdersThrowRange Value="0"/>
+    <StopOrdersThrowRange Value="0"/>
+    <IsServerStopOrders Value="True"/>
+    <StopOrdersMethod_TPricesFTick Value="False"/>
+    <AveragingMethod Value="Dispatcher"/>
+    <PlaySoundOnTrade Value="True"/>
+    <ShowProfitType Value="2"/>
+  </TRADING>
+</Settings>

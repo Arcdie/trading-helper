@@ -3,6 +3,10 @@ const {
 } = require('../../services/websocket-server');
 
 const {
+  sleep,
+} = require('../../libs/support');
+
+const {
   createUserLevelBound,
 } = require('./utils/create-user-level-bound');
 
@@ -190,8 +194,4 @@ module.exports = async (req, res, next) => {
   return res.json({
     status: true,
   });
-};
-
-const sleep = ms => {
-  return new Promise(resolve => setTimeout(resolve, ms));
 };

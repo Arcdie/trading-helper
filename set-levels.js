@@ -25,7 +25,6 @@ const pathToRoot = path.parse(process.cwd()).root;
 // const pathToSettingsFolder = path.join(__dirname, './files/MVS');
 const pathToSettingsFolder = 'D:\\FSR Launcher\\SubApps\\CScalp\\Data\\MVS';
 
-console.log('pathToSettingsFolder', pathToSettingsFolder);
 
 if (!fs.existsSync(pathToSettingsFolder)) {
   log.warn('Cant find settings folder');
@@ -34,7 +33,7 @@ if (!fs.existsSync(pathToSettingsFolder)) {
 
 const filesNames = fs.readdirSync(pathToSettingsFolder);
 
-const updateLevelsInCScalp = async () => {
+const setLevels = async () => {
   const userLevelBounds = await UserLevelBound.find({
     user_id: userId,
     is_worked: false,
@@ -96,4 +95,4 @@ const updateLevelsInCScalp = async () => {
   log.info('End of operation');
 };
 
-updateLevelsInCScalp();
+setLevels();

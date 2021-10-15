@@ -5,8 +5,8 @@ const {
 } = require('validator');
 
 const {
-  getMinuteCandles,
-} = require('../binance/utils/get-minute-candles');
+  getCandles,
+} = require('../binance/utils/get-candles');
 
 const Candle = require('../../models/Candle');
 const Instrument = require('../../models/Instrument');
@@ -118,17 +118,18 @@ module.exports = async (req, res, next) => {
   if (undefinedPeriodsOfCandles && undefinedPeriodsOfCandles.length) {
     const lUndefinedCandles = undefinedPeriodsOfCandles.length;
 
-    const resultGetCandles = await getMinuteCandles({
+    const resultGetCandles = await getCandles({
       symbol: instrumentDoc.name_spot,
       startTime: undefinedPeriodsOfCandles[0],
       endTime: undefinedPeriodsOfCandles[lUndefinedCandles - 1],
       limit: lUndefinedCandles,
+      interval: '1m',
     });
 
     if (!resultGetCandles || !resultGetCandles.status) {
       return res.json({
         status: false,
-        message: resultGetCandles.message || 'Cant getMinuteCandles',
+        message: resultGetCandles.message || 'Cant getCandles',
       });
     }
 

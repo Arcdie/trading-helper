@@ -5,8 +5,6 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon app",
-    "set-levels": "nodemon set-levels",
-    "set-wa": "nodemon set-workamounts",
     "build-css": "node-sass --include-path scss public/scss/styles.scss   public/stylesheets/styles.css",
     "watcher": "nodemon -e scss -x \"npm run build-css\""
   },
