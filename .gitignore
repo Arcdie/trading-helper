@@ -10,6 +10,7 @@
 .git/
 .DS_Store
 Thumbs.db
+/*.bat
 atom-sftp-sync.json
 off-atom-sftp-sync.json
 
