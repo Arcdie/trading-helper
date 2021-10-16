@@ -39,6 +39,9 @@ $(document).ready(async () => {
     userLevelBounds.forEach(bound => {
       bound.is_monitoring = false;
       bound.is_warning_played = false;
+
+      const numberSymbolsAfterComma = (bound.instrument_doc.price.toString().split('.')[1] || []).length;
+      bound.price_original = parseFloat(bound.price_original.toFixed(numberSymbolsAfterComma));
     });
 
     renderLevels(true);
@@ -154,21 +157,11 @@ const renderLevels = (isFirstRender = false) => {
   userLevelBounds.forEach(bound => {
     const instrumentPrice = bound.instrument_doc.price;
 
-    let priceWithIndent;
     const percentPerOriginalPrice = bound.price_original * (bound.indent_in_percents / 100);
 
-    if (bound.is_long) {
-      priceWithIndent = bound.price_original - percentPerOriginalPrice;
-    } else {
-      priceWithIndent = bound.price_original + percentPerOriginalPrice;
-    }
-
     const differenceBetweenNewPriceAndOriginalPrice = Math.abs(instrumentPrice - bound.price_original);
-    const differenceBetweenNewPriceAndOPriceWithIndent = Math.abs(instrumentPrice - priceWithIndent);
 
-    bound.price_with_indent = priceWithIndent;
     bound.price_original_percent = (100 / (bound.price_original / differenceBetweenNewPriceAndOriginalPrice)).toFixed(2);
-    bound.price_with_indent_percent = (100 / (bound.price_original / differenceBetweenNewPriceAndOPriceWithIndent)).toFixed(2);
 
     let hasPriceCrossedOriginalPrice = false;
 
@@ -226,28 +219,9 @@ const renderLevels = (isFirstRender = false) => {
   softBounds.forEach(bound => {
     const instrumentPrice = bound.instrument_doc.price;
 
-    let hasPriceCrossedIndentPrice = false;
-
-    if (bound.is_long) {
-      if (instrumentPrice > bound.price_with_indent
-      && instrumentPrice < bound.price_original) {
-        hasPriceCrossedIndentPrice = true;
-      }
-    } else {
-      if (instrumentPrice < bound.price_with_indent
-      && instrumentPrice > bound.price_original) {
-        hasPriceCrossedIndentPrice = true;
-      }
-    }
-
     const blockWithOriginalPrice = `<p class="price_original">
       <span class="price">${bound.price_original}</span>
       <span class="percents">${bound.price_original_percent}%</span>
-    </p>`;
-
-    const blockWithIndentPrice = `<p class="price_with_indent">
-      <span class="price">${parseFloat(bound.price_with_indent.toFixed(2))}</span>
-      <span class="percents">${bound.price_with_indent_percent}%</span>
     </p>`;
 
     const blockWithInstrumentPrice = `<p class="price_current">
@@ -262,7 +236,7 @@ const renderLevels = (isFirstRender = false) => {
 
         ${blockWithOriginalPrice}
 
-        ${bound.is_long && instrumentPrice < bound.price_with_indent ? blockWithInstrumentPrice : ''}
+        ${bound.is_long && instrumentPrice < bound.price_original ? blockWithInstrumentPrice : ''}
       </div>
 
       <div class="navbar">
