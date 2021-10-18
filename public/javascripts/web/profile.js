@@ -7,6 +7,7 @@ const URL_UPDATE_USER = '/api/users';
 const URL_GET_USER_INSTRUMENTS = '/api/tradingview/instruments';
 const URL_REMOVE_ALL_LEVELS = '/api/user-level-bounds/remove-all-levels';
 const URL_ADD_LEVELS = '/api/user-level-bounds/add-levels-from-tradingview';
+const URL_ADD_5M_LEVELS = '/api/user-level-bounds/add-5m-levels-from-tradingview';
 
 /* JQuery */
 const $levels = $('.levels');
@@ -28,7 +29,7 @@ wsClient.onmessage = data => {
 
       case 'endOfLoadLevels': {
         $levels.find('p.loading').removeClass('active');
-        location.href = '/levels-monitoring';
+        alert('Уровни загружены');
         break;
       }
 
@@ -59,6 +60,25 @@ $(document).ready(() => {
 
       if (!resultLoad || !resultLoad.status) {
         alert(resultLoad.message || 'Couldnt makeRequest URL_ADD_LEVELS');
+        return true;
+      }
+    });
+
+  $('#load-5m-levels')
+    .on('click', async function () {
+      alert('Закройте все вкладки tradingview');
+
+      $(this).parent().remove();
+      $levels.find('.instrument').remove();
+      $levels.find('p.loading').addClass('active');
+
+      const resultLoad = await makeRequest({
+        method: 'POST',
+        url: URL_ADD_5M_LEVELS,
+      });
+
+      if (!resultLoad || !resultLoad.status) {
+        alert(resultLoad.message || 'Couldnt makeRequest URL_ADD_5M_LEVELS');
         return true;
       }
     });

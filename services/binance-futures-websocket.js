@@ -93,7 +93,7 @@ module.exports = async () => {
 
     client.on('close', (message) => {
       log.info('Levels-connection was closed');
-      sendMessage(260325716, 'Levels-connection was closed');
+      sendMessage(260325716, `Levels-connection was closed (${message})`);
       clearInterval(sendPongInterval);
       clearInterval(checkCrossingInterval);
 

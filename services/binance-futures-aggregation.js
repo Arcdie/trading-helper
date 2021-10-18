@@ -161,7 +161,7 @@ module.exports = async () => {
 
     client.on('close', message => {
       log.info('Aggregation-connection was closed');
-      sendMessage(260325716, 'Aggregation-connection was closed');
+      sendMessage(260325716, `Aggregation-connection was closed (${message})`);
       clearInterval(sendPongInterval);
       clearInterval(checkTickSizesInterval);
 

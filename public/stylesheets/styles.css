@@ -222,6 +222,8 @@ input:checked + .slider:before {
     border-top: 1px solid black; }
     .profile .settings-for-levels button {
       margin-top: 5px; }
+      .profile .settings-for-levels button#load-5m-levels {
+        margin-left: 10px; }
       .profile .settings-for-levels button#remove-all-levels {
         float: right; }
   .profile .levels p.loading {
