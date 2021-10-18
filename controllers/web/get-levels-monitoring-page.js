@@ -5,9 +5,9 @@ module.exports = async (req, res, next) => {
     },
   } = req;
 
-  if (!timeframe) {
-    res.render('web/levels-monitoring-page');
-  } else {
-    res.render(`web/levels-monitoring-${timeframe}-page`);
+  if (!timeframe || !['5m', '4h'].includes(timeframe)) {
+    return next();
   }
+
+  res.render('web/levels-monitoring-page');
 };
