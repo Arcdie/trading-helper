@@ -8,6 +8,7 @@ const favicon = require('serve-favicon');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 
+require('../libs/redis');
 require('../libs/mongodb');
 const morgan = require('../libs/morgan');
 

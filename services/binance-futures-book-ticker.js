@@ -22,6 +22,8 @@ const Instrument = require('../models/Instrument');
 
 const instrumentsMapper = {};
 
+const CONNECTION_NAME = 'Connection-BookTicker';
+
 module.exports = async () => {
   const instrumentsDocs = await Instrument.find({
     is_active: true,
@@ -29,11 +31,13 @@ module.exports = async () => {
     name_futures: 1,
   }).exec();
 
-  if (instrumentsDocs && instrumentsDocs.length > 140) {
-    throw new Error('> 140 streams to binance');
+  if (!instrumentsDocs || !instrumentsDocs.length) {
+    return true;
   }
 
-  log.info(`Count instruments for levels: ${instrumentsDocs.length}`);
+  if (instrumentsDocs && instrumentsDocs.length > 140) {
+    throw new Error(`${CONNECTION_NAME}: > 140 streams to binance`);
+  }
 
   instrumentsDocs.forEach(doc => {
     instrumentsMapper[doc.name_futures] = {
@@ -57,8 +61,8 @@ module.exports = async () => {
     const client = new WebSocketClient(connectStr);
 
     client.on('open', () => {
-      log.info('Levels-connection was opened');
-      sendMessage(260325716, 'Levels-connection was opened');
+      log.info(`${CONNECTION_NAME} was opened`);
+      sendMessage(260325716, `${CONNECTION_NAME} was opened`);
 
       sendPongInterval = setInterval(() => {
         client.send('pong');
@@ -92,8 +96,8 @@ module.exports = async () => {
     });
 
     client.on('close', (message) => {
-      log.info('Levels-connection was closed');
-      sendMessage(260325716, `Levels-connection was closed (${message})`);
+      log.info(`${CONNECTION_NAME} was closed`);
+      sendMessage(260325716, `${CONNECTION_NAME} was closed (${message})`);
       clearInterval(sendPongInterval);
       clearInterval(checkCrossingInterval);
 
@@ -104,7 +108,7 @@ module.exports = async () => {
       const parsedData = JSON.parse(bufferData.toString());
 
       if (!parsedData.data || !parsedData.data.e) {
-        console.log('parsedData', parsedData);
+        console.log(`${CONNECTION_NAME}: ${parsedData}`, parsedData);
         return true;
       }
 

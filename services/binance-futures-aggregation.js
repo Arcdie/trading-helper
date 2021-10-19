@@ -1,4 +1,7 @@
+const moment = require('moment');
 const WebSocketClient = require('ws');
+
+const redis = require('../libs/redis');
 
 const log = require('../libs/logger');
 
@@ -15,47 +18,51 @@ const InstrumentTickBound = require('../models/InstrumentTickBound');
 
 const instrumentsMapper = {};
 
+const CONNECTION_NAME = 'Connection-AggTrade';
+
 module.exports = async () => {
   const instrumentsDocs = await Instrument.find({
+    // tmp
+    name_futures: 'ZENUSDTPERP',
+
     is_active: true,
-    does_exist_robot: true,
   }, {
     name_futures: 1,
+    does_exist_robot: 1,
     tick_sizes_for_robot: 1,
   }).exec();
 
-  if (instrumentsDocs && instrumentsDocs.length > 140) {
-    throw new Error('> 140 streams to binance');
-  }
-
-  log.info(`Count instruments for aggregation: ${instrumentsDocs.length}`);
-
   if (!instrumentsDocs || !instrumentsDocs.length) {
-    log.info('No instruments with active robots');
     return true;
   }
 
+  if (instrumentsDocs && instrumentsDocs.length > 140) {
+    throw new Error(`${CONNECTION_NAME}: > 140 streams to binance`);
+  }
+
   instrumentsDocs.forEach(doc => {
-    let minTickSize = doc.tick_sizes_for_robot[0].value;
+    if (doc.does_exist_robot) {
+      let minTickSize = doc.tick_sizes_for_robot[0].value;
 
-    doc.tick_sizes_for_robot.forEach(tickSize => {
-      if (tickSize.value < minTickSize) {
-        minTickSize = tickSize.value;
-      }
-    });
+      doc.tick_sizes_for_robot.forEach(tickSize => {
+        if (tickSize.value < minTickSize) {
+          minTickSize = tickSize.value;
+        }
+      });
 
-    instrumentsMapper[doc.name_futures] = {
-      instrumentId: doc._id,
+      instrumentsMapper[doc.name_futures] = {
+        instrumentId: doc._id,
 
-      minTickSize,
-      tickSizes: doc.tick_sizes_for_robot,
+        minTickSize,
+        tickSizes: doc.tick_sizes_for_robot,
 
-      // updated params
-      tickHistory: [],
-      lastUpdate: getUnix(),
-      trackingTick: false,
-      isActiveMonitoring: false,
-    };
+        // updated params
+        tickHistory: [],
+        lastUpdate: getUnix(),
+        trackingTick: false,
+        isActiveMonitoring: false,
+      };
+    }
   });
 
   let sendPongInterval;
@@ -71,8 +78,8 @@ module.exports = async () => {
     const client = new WebSocketClient(connectStr);
 
     client.on('open', () => {
-      log.info('Aggregation-connection was opened');
-      sendMessage(260325716, 'Aggregation-connection was opened');
+      log.info(`${CONNECTION_NAME} was opened`);
+      sendMessage(260325716, `${CONNECTION_NAME} was opened`);
 
       sendPongInterval = setInterval(() => {
         client.send('pong');
@@ -160,8 +167,8 @@ module.exports = async () => {
     });
 
     client.on('close', message => {
-      log.info('Aggregation-connection was closed');
-      sendMessage(260325716, `Aggregation-connection was closed (${message})`);
+      log.info(`${CONNECTION_NAME} was closed`);
+      sendMessage(260325716, `${CONNECTION_NAME} was closed (${message})`);
       clearInterval(sendPongInterval);
       clearInterval(checkTickSizesInterval);
 
@@ -172,7 +179,7 @@ module.exports = async () => {
       const parsedData = JSON.parse(bufferData.toString());
 
       if (!parsedData.data || !parsedData.data.e) {
-        console.log('parsedData', parsedData);
+        console.log(`${CONNECTION_NAME}: ${parsedData}`, parsedData);
         return true;
       }
 
@@ -188,56 +195,77 @@ module.exports = async () => {
       price = parseFloat(price);
       quantity = parseFloat(quantity);
 
+      const startMinuteUnix = moment().startOf('minute').unix();
+      const key = `INSTRUMENT:${instrumentName}PERP:sumAggTrade:${startMinuteUnix}`;
+
+      let cacheDoc = await redis.getAsync(key);
+
+      if (!cacheDoc) {
+        cacheDoc = quantity;
+      } else {
+        const parsedDoc = parseFloat(cacheDoc);
+        cacheDoc = parsedDoc + quantity;
+      }
+
+      await redis.setAsync([
+        key,
+        cacheDoc.toFixed(2),
+        'EX',
+        1 * 60 * 60, // 1 hour
+      ]);
+
       const targetInstrument = instrumentsMapper[`${instrumentName}PERP`];
 
-      if (quantity >= targetInstrument.minTickSize) {
-        direction = direction === true ? 'short' : 'long';
+      if (targetInstrument) {
+        if (quantity >= targetInstrument.minTickSize) {
+          direction = direction === true ? 'short' : 'long';
 
-        // console.log(`${instrumentName}PERP, ${quantity} ${direction === false ? 'long' : ''}`);
+          // console.log(`${instrumentName}PERP, ${quantity} ${direction === false ? 'long' : ''}`);
 
-        if (!targetInstrument.isActiveMonitoring) {
-          const doesExistTickWithThisQuantity = targetInstrument.tickSizes.find(
-            tickSize => tickSize.value === quantity
-              && tickSize.direction === direction,
-          );
+          if (!targetInstrument.isActiveMonitoring) {
+            const doesExistTickWithThisQuantity = targetInstrument.tickSizes.find(
+              tickSize => tickSize.value === quantity
+                && tickSize.direction === direction,
+            );
 
-          if (doesExistTickWithThisQuantity) {
+            if (doesExistTickWithThisQuantity) {
+              targetInstrument.lastUpdate = getUnix();
+              targetInstrument.isActiveMonitoring = true;
+
+              targetInstrument.tickHistory.push({
+                price,
+                value: quantity,
+                time: targetInstrument.lastUpdate,
+              });
+  /*
+              sendMessage(260325716, `${instrumentName}
+  Робот ${quantity} ${direction}
+  Тик: 1`);
+  */
+
+              targetInstrument.trackingTick = doesExistTickWithThisQuantity;
+              targetInstrument.trackingTick.tickId = doesExistTickWithThisQuantity._id;
+            }
+          } else if (quantity === targetInstrument.trackingTick.value
+            && direction === targetInstrument.trackingTick.direction) {
             targetInstrument.lastUpdate = getUnix();
-            targetInstrument.isActiveMonitoring = true;
 
             targetInstrument.tickHistory.push({
               price,
               value: quantity,
               time: targetInstrument.lastUpdate,
             });
-/*
-            sendMessage(260325716, `${instrumentName}
-Робот ${quantity} ${direction}
-Тик: 1`);
-*/
 
-            targetInstrument.trackingTick = doesExistTickWithThisQuantity;
-            targetInstrument.trackingTick.tickId = doesExistTickWithThisQuantity._id;
+  /*
+            const lHistory = targetInstrument.tickHistory.length;
+
+            if (lHistory >= 5) {
+              sendMessage(260325716, `${instrumentName}
+  Робот ${quantity} ${direction}
+  Тик: ${lHistory}`);
+            }
+  */
           }
-        } else if (quantity === targetInstrument.trackingTick.value
-          && direction === targetInstrument.trackingTick.direction) {
-          targetInstrument.lastUpdate = getUnix();
-
-          targetInstrument.tickHistory.push({
-            price,
-            value: quantity,
-            time: targetInstrument.lastUpdate,
-          });
-
-/*
-          const lHistory = targetInstrument.tickHistory.length;
-
-          if (lHistory >= 5) {
-            sendMessage(260325716, `${instrumentName}
-Робот ${quantity} ${direction}
-Тик: ${lHistory}`);
-          }
-*/
         }
       }
     });

@@ -13,6 +13,11 @@ module.exports = {
     },
   },
 
+  redisConf: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+  },
+
   telegramConf: {
     secret: process.env.TELEGRAM_BOT_SECRET,
     chatId: process.env.TELEGRAM_BOT_CHAT_ID,
@@ -20,7 +25,7 @@ module.exports = {
 
   jwtConf: {
     secret: process.env.JWT_SECRET,
-    lifetime: (7 * 24 * 60 * 60 * 1000), // 1 week
+    lifetime: (31 * 24 * 60 * 60 * 1000), // 1 month
   },
 
   clientConf: {

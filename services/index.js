@@ -1,16 +1,14 @@
-const binanceFuturesAPI = require('./binance-futures-api');
-const binanceFuturesWebsocket = require('./binance-futures-websocket');
+const binanceFuturesDepth = require('./binance-futures-depth');
+const binanceFuturesBookTicker = require('./binance-futures-book-ticker');
 const binanceFuturesAggregation = require('./binance-futures-aggregation');
-
-const updatePricesForInstruments = require('./update-prices-for-instruments');
 
 module.exports = () => {
   if (process.env.NODE_ENV !== 'localhost') {
-    // binanceFuturesAPI();
-
-    binanceFuturesWebsocket();
+    binanceFuturesDepth();
+    binanceFuturesBookTicker();
     binanceFuturesAggregation();
+  } else {
+    // binanceFuturesDepth();
+    // binanceFuturesAggregation();
   }
-
-  // updatePricesForInstruments();
 };

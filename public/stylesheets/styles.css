@@ -152,6 +152,7 @@ input:checked + .slider:before {
   border-radius: 50%; }
 
 .login, .registration {
+  padding: 15px;
   position: relative; }
   .login h1, .registration h1 {
     margin-bottom: 10px; }
@@ -244,6 +245,46 @@ input:checked + .slider:before {
     padding-top: 10px; }
     .profile .common-instruction video {
       margin-top: 10px; }
+
+.volume-monitoring {
+  padding: 15px; }
+  .volume-monitoring .container .instrument {
+    width: 230px;
+    display: inline-block;
+    float: left;
+    position: relative;
+    border: 1px solid black;
+    padding: 15px 10px;
+    margin-right: 20px;
+    margin-bottom: 20px; }
+    .volume-monitoring .container .instrument span.instrument-name {
+      text-align: center;
+      display: block;
+      cursor: pointer;
+      margin-bottom: 15px;
+      font: 19px sans-serif; }
+    .volume-monitoring .container .instrument .volume-5m {
+      margin-top: 10px;
+      font: 15px sans-serif; }
+      .volume-monitoring .container .instrument .volume-5m span {
+        font-weight: bold; }
+    .volume-monitoring .container .instrument .asks .level, .volume-monitoring .container .instrument .bids .level {
+      width: 100%;
+      display: block;
+      font: 18px monospace; }
+      .volume-monitoring .container .instrument .asks .level .quantity, .volume-monitoring .container .instrument .asks .level .price, .volume-monitoring .container .instrument .bids .level .quantity, .volume-monitoring .container .instrument .bids .level .price {
+        display: inline-block;
+        box-sizing: border-box; }
+        .volume-monitoring .container .instrument .asks .level .quantity.price span.price_original, .volume-monitoring .container .instrument .asks .level .price.price span.price_original, .volume-monitoring .container .instrument .bids .level .quantity.price span.price_original, .volume-monitoring .container .instrument .bids .level .price.price span.price_original {
+          border-right: 1px solid black; }
+    .volume-monitoring .container .instrument .asks.asks .price, .volume-monitoring .container .instrument .bids.asks .price {
+      background-color: #ff9c9c96; }
+    .volume-monitoring .container .instrument .asks.bids .price, .volume-monitoring .container .instrument .bids.bids .price {
+      background-color: #a2ff9c96; }
+    .volume-monitoring .container .instrument .level .quantity {
+      width: 60%; }
+    .volume-monitoring .container .instrument .level .price {
+      float: right; }
 
 .levels-monitoring {
   width: 100%; }

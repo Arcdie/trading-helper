@@ -1,0 +1,74 @@
+.volume-monitoring {
+  padding: 15px;
+
+  .container {
+    .instrument {
+      width: 230px;
+      display: inline-block;
+      float: left;
+      position: relative;
+      border: 1px solid black;
+      padding: 15px 10px;
+      margin-right: 20px;
+      margin-bottom: 20px;
+
+      span.instrument-name {
+        text-align: center;
+        display: block;
+        cursor: pointer;
+        margin-bottom: 15px;
+        font: 19px sans-serif;
+      }
+
+      .volume-5m {
+        margin-top: 10px;
+        font: 15px sans-serif;
+
+        span {
+          font-weight: bold;
+        }
+      }
+
+      .asks, .bids {
+        .level {
+          width: 100%;
+          display: block;
+          font: 18px monospace;
+
+          .quantity, .price {
+            display: inline-block;
+            box-sizing: border-box;
+
+            &.price {
+              span.price_original {
+                border-right: 1px solid black;
+              }
+            }
+          }
+        }
+
+        &.asks {
+          .price {
+            background-color: #ff9c9c96;
+          }
+        }
+
+        &.bids {
+          .price {
+            background-color: #a2ff9c96;
+          }
+        }
+      }
+
+      .level {
+        .quantity {
+          width: 60%;
+        }
+
+        .price {
+          float: right;
+        }
+      }
+    }
+  }
+}

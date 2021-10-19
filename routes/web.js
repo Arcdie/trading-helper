@@ -19,6 +19,7 @@ router.get('/profile', extendedMiddlewares, webControllers.getProfilePage);
 
 router.get('/test', extendedMiddlewares, webControllers.getTestPage);
 
+router.get('/volume-monitoring', extendedMiddlewares, webControllers.getVolumeMonitoringPage);
 router.get('/levels-monitoring/:timeframe', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 
 router.get('/robots-statistics', extendedMiddlewares, webControllers.getRobotsStatisticsPage);
