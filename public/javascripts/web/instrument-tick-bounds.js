@@ -8,5 +8,5 @@
 /* Functions */
 
 $(document).ready(async () => {
-
+  
 });

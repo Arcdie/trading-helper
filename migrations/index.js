@@ -4,10 +4,14 @@ const addDoesExistRobotToInstruments = require('./add-does-exist-robot-to-instru
 
 const addTimeframeToLevelBounds = require('./add-timeframe-to-level-bounds');
 
+const changeNewInstruments = require('./change-new-instruments');
+
 module.exports = () => {
   // addIsModeratedAndIsActiveToInstruments();
 
   // addDoesExistRobotToInstruments();
 
   // addTimeframeToLevelBounds();
+
+  // changeNewInstruments();
 };

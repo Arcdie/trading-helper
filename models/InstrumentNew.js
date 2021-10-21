@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 
-const InstrumentVolumeBound = new mongoose.Schema({
-  instrument_id: {
-    type: mongoose.Schema.ObjectId,
+const InstrumentNew = new mongoose.Schema({
+  name: {
+    unique: true,
+    type: String,
     required: true,
   },
 
@@ -11,24 +12,24 @@ const InstrumentVolumeBound = new mongoose.Schema({
     required: true,
   },
 
-  quantity: {
-    type: Number,
+  is_active: {
+    type: Boolean,
+    required: true,
+  },
+
+  is_futures: {
+    type: Boolean,
     required: true,
   },
 
   average_volume_for_last_15_minutes: {
     type: Number,
-    required: true,
+    default: 0,
   },
 
-  is_ask: {
+  does_exist_robot: {
     type: Boolean,
-    required: true,
-  },
-
-  is_active: {
-    type: Boolean,
-    default: true,
+    default: false,
   },
 
   created_at: {
@@ -44,4 +45,4 @@ const InstrumentVolumeBound = new mongoose.Schema({
   },
 }, { versionKey: false });
 
-module.exports = mongoose.model('InstrumentVolumeBound', InstrumentVolumeBound, 'instrument-volume-bounds');
+module.exports = mongoose.model('InstrumentNew', InstrumentNew, 'instruments-new');

@@ -1,12 +1,16 @@
+const log = require('../../libs/logger');
+
 const {
   createInstrument,
 } = require('./utils/create-instrument');
 
 const {
-  getBinanceInstruments,
-} = require('../binance/utils/get-binance-instruments');
+  getSpotInstruments,
+} = require('../binance/utils/spot/get-spot-instruments');
 
-const log = require('../../libs/logger');
+const {
+  getFuturesInstruments,
+} = require('../binance/utils/futures/get-futures-instruments');
 
 module.exports = async (req, res, next) => {
   const {
@@ -20,28 +24,41 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const resultGetInstruments = await getBinanceInstruments();
+  const resultGetSpotInstruments = await getSpotInstruments();
 
-  if (!resultGetInstruments || !resultGetInstruments.status) {
+  if (!resultGetSpotInstruments || !resultGetSpotInstruments.status) {
     return res.json({
       status: false,
-      message: resultGetInstruments.message || 'Cant getBinanceInstruments',
+      message: resultGetSpotInstruments.message || 'Cant getSpotInstruments',
     });
   }
 
-  let countNewInstuments = 0;
+  const resultGetFuturesInstruments = await getFuturesInstruments();
 
-  const filteredInstruments = resultGetInstruments.result.filter(
+  if (!resultGetFuturesInstruments || !resultGetFuturesInstruments.status) {
+    return res.json({
+      status: false,
+      message: resultGetFuturesInstruments.message || 'Cant getFuturesInstruments',
+    });
+  }
+
+  let countNewSpotInstuments = 0;
+  let countNewFuturesInstruments = 0;
+
+  const filteredSpotInstruments = resultGetSpotInstruments.result.filter(
     ({ symbol }) => symbol.includes('USDT'),
   );
 
-  await Promise.all(filteredInstruments.map(async instrument => {
+  const filteredFuturesInstruments = resultGetFuturesInstruments.result.filter(
+    ({ symbol }) => symbol.includes('USDT'),
+  );
+
+  await Promise.all(filteredSpotInstruments.map(async instrument => {
     const resultCreate = await createInstrument({
-      nameSpot: instrument.symbol,
-      nameFutures: `${instrument.symbol}PERP`,
+      name: instrument.symbol,
       price: parseFloat(instrument.price),
 
-      isActive: true,
+      isFutures: false,
     });
 
     if (!resultCreate || !resultCreate.status) {
@@ -50,14 +67,33 @@ module.exports = async (req, res, next) => {
     }
 
     if (resultCreate.isCreated) {
-      countNewInstuments += 1;
+      countNewSpotInstuments += 1;
+    }
+  }));
+
+  await Promise.all(filteredFuturesInstruments.map(async instrument => {
+    const resultCreate = await createInstrument({
+      name: `${instrument.symbol}PERP`,
+      price: parseFloat(instrument.price),
+
+      isFutures: true,
+    });
+
+    if (!resultCreate || !resultCreate.status) {
+      log.warn(resultCreate.message || 'Cant createInstrument');
+      return null;
+    }
+
+    if (resultCreate.isCreated) {
+      countNewFuturesInstruments += 1;
     }
   }));
 
   return res.json({
     status: true,
     result: {
-      countNewInstuments,
+      countNewSpotInstuments,
+      countNewFuturesInstruments,
     },
   });
 };

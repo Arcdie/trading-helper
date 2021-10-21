@@ -1,3 +1,5 @@
+const binanceProcesses = require('./binance');
+
 const binanceFuturesDepth = require('./binance-futures-depth');
 const binanceFuturesBookTicker = require('./binance-futures-book-ticker');
 const binanceFuturesAggregation = require('./binance-futures-aggregation');
@@ -8,7 +10,6 @@ module.exports = () => {
     binanceFuturesBookTicker();
     binanceFuturesAggregation();
   } else {
-    // binanceFuturesDepth();
-    // binanceFuturesAggregation();
+    binanceProcesses();
   }
 };

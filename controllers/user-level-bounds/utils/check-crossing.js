@@ -11,8 +11,7 @@ const checkCrossing = async ({
   instrumentId,
   instrumentName,
 
-  askPrice,
-  bidPrice,
+  newPrice,
 }) => {
   const targetBounds = await UserLevelBound.find({
     instrument_id: instrumentId,
@@ -24,10 +23,10 @@ const checkCrossing = async ({
     let isCrossed = false;
 
     if (targetBound.is_long
-      && targetBound.price_original <= askPrice) {
+      && targetBound.price_original <= newPrice) {
       isCrossed = true;
     } else if (!targetBound.is_long
-      && targetBound.price_original >= askPrice) {
+      && targetBound.price_original >= newPrice) {
       isCrossed = true;
     }
 
@@ -68,13 +67,13 @@ const checkCrossing = async ({
       if (targetBound.is_long) {
         priceWithIndent = targetBound.price_original - percentPerOriginalPrice;
 
-        if (priceWithIndent <= askPrice) {
+        if (priceWithIndent <= newPrice) {
           isCrossed = true;
         }
       } else {
         priceWithIndent = targetBound.price_original + percentPerOriginalPrice;
 
-        if (priceWithIndent >= askPrice) {
+        if (priceWithIndent >= newPrice) {
           isCrossed = true;
         }
       }
@@ -95,8 +94,8 @@ const checkCrossing = async ({
         }
 
         if (userDoc.settings.is_bounded_telegram && userDoc.telegram_user_id) {
-          const differenceBetweenOrinalPriceAndNewPrice = Math.abs(targetBound.price_original - askPrice);
-          const percentPerPrice = 100 / (askPrice / differenceBetweenOrinalPriceAndNewPrice);
+          const differenceBetweenOrinalPriceAndNewPrice = Math.abs(targetBound.price_original - newPrice);
+          const percentPerPrice = 100 / (newPrice / differenceBetweenOrinalPriceAndNewPrice);
 
           sendMessage(userDoc.telegram_user_id, `${instrumentName}
 Уровень: ${targetBound.price_original} ${targetBound.is_long ? 'long' : 'short'}
