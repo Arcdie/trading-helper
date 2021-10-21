@@ -14,6 +14,10 @@ const {
   updateLimitOrdersForInstrumentInRedis,
 } = require('../../../controllers/instrument-volume-bounds/utils/update-limit-orders-for-instrument-in-redis');
 
+const {
+  DOCS_LIMITER_FOR_QUEUES,
+} = require('../../../controllers/instruments/constants');
+
 const CONNECTION_NAME = 'Futures:Depth';
 
 module.exports = async (instrumentsDocs = []) => {
@@ -21,6 +25,8 @@ module.exports = async (instrumentsDocs = []) => {
     if (!instrumentsDocs || !instrumentsDocs.length) {
       return true;
     }
+
+    const queue = [];
 
     let sendPongInterval;
     let connectStr = 'wss://fstream.binance.com/stream?streams=';
@@ -34,6 +40,7 @@ module.exports = async (instrumentsDocs = []) => {
 
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);
+      nextStep(queue);
 
       client.on('open', () => {
         log.info(`${CONNECTION_NAME} was opened`);
@@ -41,6 +48,7 @@ module.exports = async (instrumentsDocs = []) => {
 
         sendPongInterval = setInterval(() => {
           client.pong();
+          console.log('spot queue.length', queue.length);
         }, 1000 * 60); // 1 minute
       });
 
@@ -71,7 +79,7 @@ module.exports = async (instrumentsDocs = []) => {
           },
         } = parsedData;
 
-        await updateLimitOrdersForInstrumentInRedis({
+        queue.push({
           asks,
           bids,
           instrumentName: `${instrumentName}PERP`,
@@ -84,4 +92,28 @@ module.exports = async (instrumentsDocs = []) => {
     console.log(error);
     return false;
   }
+};
+
+const nextStep = async (queue) => {
+  const targetElements = queue.splice(0, DOCS_LIMITER_FOR_QUEUES);
+
+  console.log('futures.targetElements.length', targetElements.length);
+
+  if (!targetElements || !targetElements.length) {
+    setTimeout(() => {
+      nextStep(queue);
+    }, 5 * 1000); // 5 seconds
+
+    return true;
+  }
+
+  await Promise.all(targetElements.map(async ({
+    asks, bids, instrumentName,
+  }) => {
+    await updateLimitOrdersForInstrumentInRedis({
+      asks, bids, instrumentName,
+    });
+  }));
+
+  await nextStep(queue);
 };

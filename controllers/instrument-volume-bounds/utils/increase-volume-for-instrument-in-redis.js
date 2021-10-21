@@ -37,6 +37,7 @@ const increaseVolumeForInstrumentInRedis = async ({
     });
   } else {
     doesExistTimestamp.quantity += parseFloat(quantity);
+    doesExistTimestamp.quantity = parseInt(doesExistTimestamp.quantity, 10);
   }
 
   const lCacheDoc = cacheDoc.length;

@@ -3,6 +3,14 @@
 
   .container {
     .instrument {
+      &.is_monitoring {
+        background-color: #06d73c40 !important;
+      }
+
+      &.not_processed {
+        background-color: #ffca6a78;
+      }
+
       width: 230px;
       display: inline-block;
       float: left;
@@ -18,6 +26,16 @@
         cursor: pointer;
         margin-bottom: 15px;
         font: 19px sans-serif;
+      }
+
+      .instrument-price {
+        text-align: right;
+        border-top: 1px solid black;
+        border-bottom: 1px solid black;
+
+        span {
+          font: 18px monospace;
+        }
       }
 
       .volume-5m {
@@ -42,6 +60,8 @@
             &.price {
               span.price_original {
                 border-right: 1px solid black;
+                margin-right: 5px;
+                padding-right: 5px;
               }
             }
           }

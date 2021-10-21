@@ -1,4 +1,12 @@
+const moment = require('moment');
+
+const log = require('../../../libs/logger');
 const redis = require('../../../libs/redis');
+
+const {
+  LIMITER_RANGE_FOR_LIMIT_ORDERS,
+  REMOVE_INACTIVE_LIMIT_ORDERS_AFTER,
+} = require('../constants');
 
 const InstrumentNew = require('../../../models/InstrumentNew');
 
@@ -28,19 +36,41 @@ const updateLimitOrdersForInstrumentInRedis = async ({
     };
   }
 
-  let cacheDocAsks = await redis.getAsync(`INSTRUMENT:${instrumentName}:ASKS`);
-  let cacheDocBids = await redis.getAsync(`INSTRUMENT:${instrumentName}:BIDS`);
+  const nowTime = moment().startOf('minute').unix();
 
-  if (!cacheDocAsks) {
-    cacheDocAsks = [];
-  } else {
-    cacheDocAsks = JSON.parse(cacheDocAsks);
+  const keyInstrument = `INSTRUMENT:${instrumentName}`;
+  const keyInstrumentAsks = `INSTRUMENT:${instrumentName}:ASKS`;
+  const keyInstrumentBids = `INSTRUMENT:${instrumentName}:BIDS`;
+
+  const fetchDataPromises = [
+    redis.getAsync(keyInstrument),
+    redis.getAsync(keyInstrumentAsks),
+    redis.getAsync(keyInstrumentBids),
+  ];
+
+  let [
+    cacheInstrumentDoc,
+    cacheInstrumentAsks,
+    cacheInstrumentBids,
+  ] = await Promise.all(fetchDataPromises);
+
+  if (!cacheInstrumentDoc) {
+    log.warn(`No cacheInstrumentDoc doc; instrumentName: ${instrumentName}`);
+    return null;
   }
 
-  if (!cacheDocBids) {
-    cacheDocBids = [];
+  cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
+
+  if (!cacheInstrumentAsks) {
+    cacheInstrumentAsks = [];
   } else {
-    cacheDocBids = JSON.parse(cacheDocBids);
+    cacheInstrumentAsks = JSON.parse(cacheInstrumentAsks);
+  }
+
+  if (!cacheInstrumentBids) {
+    cacheInstrumentBids = [];
+  } else {
+    cacheInstrumentBids = JSON.parse(cacheInstrumentBids);
   }
 
   asks.forEach(([
@@ -50,18 +80,31 @@ const updateLimitOrdersForInstrumentInRedis = async ({
     quantity = parseFloat(quantity);
 
     if (quantity === 0) {
-      cacheDocAsks = cacheDocAsks.filter(elem => elem[0] !== price);
+      cacheInstrumentAsks = cacheInstrumentAsks.filter(elem => elem[0] !== price);
       return true;
     }
 
-    const doesExistPrice = cacheDocAsks.find(
+    const differenceBetweenPriceAndOrder = Math.abs(cacheInstrumentDoc.price - price);
+    const percentPerPrice = 100 / (cacheInstrumentDoc.price / differenceBetweenPriceAndOrder);
+
+    const doesExistPrice = cacheInstrumentAsks.find(
       elem => elem[0] === price,
     );
 
+    if (percentPerPrice > LIMITER_RANGE_FOR_LIMIT_ORDERS) {
+      if (!doesExistPrice) {
+        return true;
+      }
+
+      cacheInstrumentAsks = cacheInstrumentAsks.filter(elem => elem[0] !== price);
+      return true;
+    }
+
     if (!doesExistPrice) {
-      cacheDocAsks.push([price, quantity]);
+      cacheInstrumentAsks.push([price, quantity, nowTime]);
     } else {
       doesExistPrice[1] = quantity;
+      doesExistPrice[2] = nowTime;
     }
   });
 
@@ -72,29 +115,43 @@ const updateLimitOrdersForInstrumentInRedis = async ({
     quantity = parseFloat(quantity);
 
     if (quantity === 0) {
-      cacheDocBids = cacheDocBids.filter(elem => elem[0] !== price);
+      cacheInstrumentBids = cacheInstrumentBids.filter(elem => elem[0] !== price);
       return true;
     }
 
-    const doesExistPrice = cacheDocBids.find(
+    const differenceBetweenPriceAndOrder = Math.abs(cacheInstrumentDoc.price - price);
+    const percentPerPrice = 100 / (cacheInstrumentDoc.price / differenceBetweenPriceAndOrder);
+
+    const doesExistPrice = cacheInstrumentBids.find(
       elem => elem[0] === price,
     );
 
+    if (percentPerPrice > LIMITER_RANGE_FOR_LIMIT_ORDERS) {
+      if (!doesExistPrice) {
+        return true;
+      }
+
+      cacheInstrumentAsks = cacheInstrumentAsks.filter(elem => elem[0] !== price);
+      return true;
+    }
+
     if (!doesExistPrice) {
-      cacheDocBids.push([price, quantity]);
+      cacheInstrumentBids.push([price, quantity, nowTime]);
     } else {
       doesExistPrice[1] = quantity;
+      doesExistPrice[2] = nowTime;
     }
   });
 
-  await redis.setAsync([
-    `INSTRUMENT:${instrumentName}:ASKS`,
-    JSON.stringify(cacheDocAsks),
-  ]);
-
-  await redis.setAsync([
-    `INSTRUMENT:${instrumentName}:BIDS`,
-    JSON.stringify(cacheDocBids),
+  await Promise.all([
+    redis.setAsync([
+      keyInstrumentAsks,
+      JSON.stringify(cacheInstrumentAsks),
+    ]),
+    redis.setAsync([
+      keyInstrumentBids,
+      JSON.stringify(cacheInstrumentBids),
+    ]),
   ]);
 
   return {

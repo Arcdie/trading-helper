@@ -25,8 +25,8 @@ wsClient.onmessage = data => {
   const parsedData = JSON.parse(data.data);
 
   if (parsedData.actionName) {
-    if (parsedData.actionName === 'newPrice') {
-      updatePrice(parsedData);
+    if (parsedData.actionName === 'newInstrumentPrice') {
+      updatePrice(parsedData.data);
     }
   }
 };

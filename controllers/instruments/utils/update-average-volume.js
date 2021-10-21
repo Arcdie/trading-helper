@@ -14,6 +14,10 @@ const {
 } = require('./update-instrument');
 
 const {
+  sendData,
+} = require('../../../services/websocket-server');
+
+const {
   updateInstrumentInRedis,
 } = require('./update-instrument-in-redis');
 
@@ -79,7 +83,7 @@ const updateAverageVolume = async ({
     sumVolumeForLast15Minutes += element.quantity;
   });
 
-  cacheInstrumentDoc.average_volume_for_last_15_minutes = sumVolumeForLast15Minutes / (15 / 5);
+  cacheInstrumentDoc.average_volume_for_last_15_minutes = parseInt(sumVolumeForLast15Minutes / (15 / 5), 10);
 
   await updateInstrument({
     instrumentId,
@@ -89,6 +93,14 @@ const updateAverageVolume = async ({
   await updateInstrumentInRedis({
     instrumentName,
     averageVolumeForLast15Minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+  });
+
+  sendData({
+    actionName: 'updateAverageVolume',
+    data: {
+      instrumentId,
+      averageVolumeForLast15Minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+    },
   });
 
   return {

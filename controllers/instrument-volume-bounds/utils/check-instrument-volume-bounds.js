@@ -56,14 +56,18 @@ const checkInstrumentVolumeBounds = async ({
     return null;
   }
 
+  cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
+
   if (!cacheInstrumentAsks) {
-    log.warn(`No cacheInstrumentAsksDoc doc; instrumentName: ${instrumentName}`);
-    return null;
+    cacheInstrumentAsks = [];
+  } else {
+    cacheInstrumentAsks = JSON.parse(cacheInstrumentAsks);
   }
 
   if (!cacheInstrumentBids) {
-    log.warn(`No cacheInstrumentBidsDoc doc; instrumentName: ${instrumentName}`);
-    return null;
+    cacheInstrumentBids = [];
+  } else {
+    cacheInstrumentBids = JSON.parse(cacheInstrumentBids);
   }
 
   if (!cacheInstrumentVolumeBounds) {
@@ -72,14 +76,14 @@ const checkInstrumentVolumeBounds = async ({
     cacheInstrumentVolumeBounds = JSON.parse(cacheInstrumentVolumeBounds);
   }
 
-  cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
-  cacheInstrumentAsks = JSON.parse(cacheInstrumentAsks);
-  cacheInstrumentBids = JSON.parse(cacheInstrumentBids);
-
   let wereChangedInstrumentVolumeBounds = false;
-  const averageVolumeForLast15Minutes = cacheInstrumentDoc.average_volume_for_last_15_minutes;
+  const averageVolumeForLast15Minutes = cacheInstrumentDoc.average_volume_for_last_15_minutes || 0;
 
   await Promise.all(cacheInstrumentAsks.map(async ([price, quantity]) => {
+    if (averageVolumeForLast15Minutes === 0) {
+      return null;
+    }
+
     if (quantity >= averageVolumeForLast15Minutes) {
       const doesExistBound = cacheInstrumentVolumeBounds.some(
         bound => bound.price === price && bound.isAsk === true,
@@ -113,6 +117,10 @@ const checkInstrumentVolumeBounds = async ({
   }));
 
   await Promise.all(cacheInstrumentBids.map(async ([price, quantity]) => {
+    if (averageVolumeForLast15Minutes === 0) {
+      return null;
+    }
+
     if (quantity >= averageVolumeForLast15Minutes) {
       const doesExistBound = cacheInstrumentVolumeBounds.some(
         bound => bound.price === price && bound.isAsk === false,

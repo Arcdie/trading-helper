@@ -257,12 +257,22 @@ input:checked + .slider:before {
     padding: 15px 10px;
     margin-right: 20px;
     margin-bottom: 20px; }
+    .volume-monitoring .container .instrument.is_monitoring {
+      background-color: #06d73c40 !important; }
+    .volume-monitoring .container .instrument.not_processed {
+      background-color: #ffca6a78; }
     .volume-monitoring .container .instrument span.instrument-name {
       text-align: center;
       display: block;
       cursor: pointer;
       margin-bottom: 15px;
       font: 19px sans-serif; }
+    .volume-monitoring .container .instrument .instrument-price {
+      text-align: right;
+      border-top: 1px solid black;
+      border-bottom: 1px solid black; }
+      .volume-monitoring .container .instrument .instrument-price span {
+        font: 18px monospace; }
     .volume-monitoring .container .instrument .volume-5m {
       margin-top: 10px;
       font: 15px sans-serif; }
@@ -276,7 +286,9 @@ input:checked + .slider:before {
         display: inline-block;
         box-sizing: border-box; }
         .volume-monitoring .container .instrument .asks .level .quantity.price span.price_original, .volume-monitoring .container .instrument .asks .level .price.price span.price_original, .volume-monitoring .container .instrument .bids .level .quantity.price span.price_original, .volume-monitoring .container .instrument .bids .level .price.price span.price_original {
-          border-right: 1px solid black; }
+          border-right: 1px solid black;
+          margin-right: 5px;
+          padding-right: 5px; }
     .volume-monitoring .container .instrument .asks.asks .price, .volume-monitoring .container .instrument .bids.asks .price {
       background-color: #ff9c9c96; }
     .volume-monitoring .container .instrument .asks.bids .price, .volume-monitoring .container .instrument .bids.bids .price {

@@ -14,10 +14,6 @@ const {
   increaseVolumeForInstrumentInRedis,
 } = require('../../../controllers/instrument-volume-bounds/utils/increase-volume-for-instrument-in-redis');
 
-const {
-  updateInstrumentInRedis,
-} = require('../../../controllers/instruments/utils/update-instrument-in-redis');
-
 const CONNECTION_NAME = 'Spot:AggTrade';
 
 module.exports = async (instrumentsDocs = []) => {

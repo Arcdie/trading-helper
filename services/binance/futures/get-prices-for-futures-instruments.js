@@ -78,8 +78,10 @@ module.exports = async (instrumentsDocs = []) => {
 
         sendData({
           actionName: 'newInstrumentPrice',
-          instrumentName: `${instrumentName}PERP`,
-          newPrice: askPrice,
+          data: {
+            newPrice: askPrice,
+            instrumentName: `${instrumentName}PERP`,
+          },
         });
       });
     };

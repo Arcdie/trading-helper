@@ -16,5 +16,6 @@ router.use('/volume-monitoring', require('./volume-monitoring'));
 
 router.use('/user-level-bounds', require('./user-level-bounds'));
 router.use('/user-instrument-bounds', require('./user-instrument-bounds'));
+router.use('/instrument-volume-bounds', require('./instrument-volume-bounds'));
 
 module.exports = router;
