@@ -16,10 +16,10 @@ module.exports = async (instrumentsDocs = []) => {
   /* set websocket connections */
   await getTicksForSpotInstruments(spotDocs);
   await getPricesForSpotInstruments(spotDocs);
-  await getLimitOrdersForSpotInstruments(spotDocs);
+  // await getLimitOrdersForSpotInstruments(spotDocs);
 
   await getTicksForFuturesInstruments(futuresDocs);
   await getPricesForFuturesInstruments(futuresDocs);
-  await getLimitOrdersForFuturesInstruments(futuresDocs);
+  // await getLimitOrdersForFuturesInstruments(futuresDocs);
   /* end */
 };
