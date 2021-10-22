@@ -41,6 +41,7 @@ module.exports = async (req, res, next) => {
 
   const instrumentsDocs = await InstrumentNew.find({
     is_active: true,
+    is_futures: true,
   }, {
     name: 1,
     price: 1,

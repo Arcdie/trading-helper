@@ -48,7 +48,7 @@ module.exports = async (instrumentsDocs = []) => {
 
         sendPongInterval = setInterval(() => {
           client.pong();
-          console.log('spot.queue.length', queue.length);
+          // console.log('spot.queue.length', queue.length);
         }, 1000 * 60); // 1 minute
       });
 
@@ -79,11 +79,17 @@ module.exports = async (instrumentsDocs = []) => {
           },
         } = parsedData;
 
+        await checkInstrumentVolumeBounds({
+          asks, bids, instrumentName,
+        });
+
+        /*
         queue.push({
           asks,
           bids,
           instrumentName,
         });
+        */
       });
     };
 

@@ -30,10 +30,20 @@ const increaseVolumeForInstrumentInRedis = async ({
 
   cacheVolumeValue = cacheVolumeValue[0];
 
+  quantity = parseFloat(quantity);
+
   if (!cacheVolumeValue) {
     cacheVolumeValue = quantity;
   } else {
-    cacheVolumeValue = parseInt(parseFloat(cacheVolumeValue) + parseFloat(quantity), 10);
+    let numberSymbolsAfterComma = 0;
+    const decimals = quantity.toString().split('.')[1];
+
+    if (decimals) {
+      numberSymbolsAfterComma = decimals.length;
+    }
+
+    cacheVolumeValue = (parseFloat(cacheVolumeValue) + parseFloat(quantity))
+      .toFixed(numberSymbolsAfterComma);
   }
 
   const lVolumeKeys = cacheVolumeKeys.length;

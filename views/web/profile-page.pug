@@ -92,7 +92,7 @@ block content
 					const instrumentsWithLevels = [];
 					
 					userLevelBounds.forEach(bound => {
-						const instrumentName = bound.instrument_doc.name_futures;
+						const instrumentName = bound.instrument_doc.name;
 
 						if (!instrumentsWithLevels[instrumentName]) {
 							instrumentsWithLevels[instrumentName] = {

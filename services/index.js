@@ -31,13 +31,6 @@ const InstrumentNew = require('../models/InstrumentNew');
 
 module.exports = async () => {
   const instrumentsDocs = await InstrumentNew.find({
-    // tmp
-    // name: {
-    //   $in: ['IOTXUSDTPERP'],
-    // },
-    //
-    is_futures: true,
-
     is_active: true,
   }).exec();
 
@@ -55,9 +48,11 @@ module.exports = async () => {
   await binanceProcesses(instrumentsDocs);
 
   // check memory
+  /*
   setInterval(() => {
     memoryUsage();
   }, 10 * 1000); // 10 seconds
+  */
 
   // update average volume per 15 minutes
   await intervalUpdateAverageVolume(instrumentsDocs, 5 * 60 * 1000); // 5 minutes

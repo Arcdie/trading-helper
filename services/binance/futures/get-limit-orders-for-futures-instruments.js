@@ -48,7 +48,7 @@ module.exports = async (instrumentsDocs = []) => {
 
         sendPongInterval = setInterval(() => {
           client.pong();
-          console.log('futures.queue.length', queue.length);
+          // console.log('futures.queue.length', queue.length);
         }, 1000 * 60); // 1 minute
       });
 

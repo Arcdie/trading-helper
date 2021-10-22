@@ -14,9 +14,9 @@ module.exports = async (instrumentsDocs = []) => {
     .filter(doc => !doc.is_futures).map(doc => doc._doc);
 
   /* set websocket connections */
-  // await getTicksForSpotInstruments(spotDocs);
-  // await getPricesForSpotInstruments(spotDocs);
-  // await getLimitOrdersForSpotInstruments(spotDocs);
+  await getTicksForSpotInstruments(spotDocs);
+  await getPricesForSpotInstruments(spotDocs);
+  await getLimitOrdersForSpotInstruments(spotDocs);
 
   await getTicksForFuturesInstruments(futuresDocs);
   await getPricesForFuturesInstruments(futuresDocs);

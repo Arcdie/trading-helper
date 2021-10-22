@@ -11,7 +11,7 @@ const {
 } = require('../constants');
 
 const User = require('../../../models/User');
-const Instrument = require('../../../models/Instrument');
+const InstrumentNew = require('../../../models/InstrumentNew');
 const UserLevelBound = require('../../../models/UserLevelBound');
 
 const getUserLevelBounds = async ({
@@ -52,7 +52,7 @@ const getUserLevelBounds = async ({
 
   const instrumentsIds = userLevelBounds.map(bound => bound.instrument_id);
 
-  const instrumentsDocs = await Instrument.find({
+  const instrumentsDocs = await InstrumentNew.find({
     _id: {
       $in: instrumentsIds,
     },
@@ -63,10 +63,9 @@ const getUserLevelBounds = async ({
       doc => doc._id.toString() === bound.instrument_id.toString(),
     );
 
-    return {
-      ...bound._doc,
-      instrument_doc: instrumentDoc._doc,
-    };
+    const returnObj = bound._doc;
+    returnObj.instrument_doc = instrumentDoc._doc;
+    return returnObj;
   });
 
   return {
