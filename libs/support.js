@@ -1,10 +1,12 @@
-exports.getUnix = () => parseInt(new Date().getTime() / 1000, 10);
+const mongodb = require('mongodb');
 
-exports.sleep = ms => {
+const getUnix = () => parseInt(new Date().getTime() / 1000, 10);
+
+const sleep = ms => {
   return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-exports.getQueue = (arr, limiter) => {
+const getQueue = (arr, limiter) => {
   const queues = [];
   const lArr = arr.length;
 
@@ -29,4 +31,15 @@ exports.getQueue = (arr, limiter) => {
   }
 
   return queues;
+};
+
+const generateMongoId = () => {
+  return new mongodb.ObjectID();
+};
+
+module.exports = {
+  sleep,
+  getUnix,
+  getQueue,
+  generateMongoId,
 };

@@ -40,7 +40,7 @@ module.exports = async (instrumentsDocs = []) => {
 
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);
-      // nextStep(queue);
+      nextStep(queue);
 
       client.on('open', () => {
         log.info(`${CONNECTION_NAME} was opened`);
@@ -48,6 +48,7 @@ module.exports = async (instrumentsDocs = []) => {
 
         sendPongInterval = setInterval(() => {
           client.pong();
+          console.log('futures.queue.length', queue.length);
         }, 1000 * 60); // 1 minute
       });
 
@@ -79,7 +80,9 @@ module.exports = async (instrumentsDocs = []) => {
         } = parsedData;
 
         await checkInstrumentVolumeBounds({
-          asks, bids, instrumentName: `${instrumentName}PERP`,
+          asks,
+          bids,
+          instrumentName: `${instrumentName}PERP`,
         });
 
         /*
@@ -100,9 +103,9 @@ module.exports = async (instrumentsDocs = []) => {
 };
 
 const nextStep = async (queue) => {
-  const targetElements = queue.splice(0, DOCS_LIMITER_FOR_QUEUES);
+  const targetElement = queue.shift();
 
-  if (!targetElements || !targetElements.length) {
+  if (!targetElement) {
     setTimeout(() => {
       nextStep(queue);
     }, 5 * 1000); // 5 seconds
@@ -110,13 +113,11 @@ const nextStep = async (queue) => {
     return true;
   }
 
-  await Promise.all(targetElements.map(async ({
-    asks, bids, instrumentName,
-  }) => {
-    await checkInstrumentVolumeBounds({
-      asks, bids, instrumentName,
-    });
-  }));
+  await checkInstrumentVolumeBounds({
+    asks: targetElement.asks,
+    bids: targetElement.bids,
+    instrumentName: targetElement.instrumentName,
+  });
 
   await nextStep(queue);
 };

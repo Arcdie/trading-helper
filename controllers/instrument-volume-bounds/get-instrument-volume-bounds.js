@@ -2,10 +2,14 @@ const {
   isMongoId,
 } = require('validator');
 
+const redis = require('../../libs/redis');
 const logger = require('../../libs/logger');
 
-const InstrumentNew = require('../../models/InstrumentNew');
-const InstrumentVolumeBound = require('../../models/InstrumentVolumeBound');
+const {
+  getActiveInstruments,
+} = require('../instruments/utils/get-active-instruments');
+
+// const InstrumentVolumeBound = require('../../models/InstrumentVolumeBound');
 
 module.exports = async (req, res, next) => {
   const {
@@ -19,31 +23,37 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const instrumentVolumeBounds = await InstrumentVolumeBound.find({
-    is_active: true,
-  }).exec();
+  const resultGetInstruments = await getActiveInstruments();
 
-  const instrumentsIds = instrumentVolumeBounds.map(bound => bound.instrument_id);
+  if (!resultGetInstruments || !resultGetInstruments.status) {
+    return res.json({
+      status: false,
+      message: resultGetInstruments.message || 'Cant getActiveInstruments',
+    });
+  }
 
-  const instrumentsDocs = await InstrumentNew.find({
-    _id: {
-      $in: instrumentsIds,
-    },
-  }).exec();
+  const instrumentVolumeBounds = [];
 
-  const result = instrumentVolumeBounds.map(bound => {
-    const instrumentDoc = instrumentsDocs.find(
-      doc => doc._id.toString() === bound.instrument_id.toString(),
-    );
+  await Promise.all(resultGetInstruments.result.map(async doc => {
+    const key = `INSTRUMENT:${doc.name}:VOLUME_BOUNDS`;
 
-    const result = bound._doc;
-    result.instrument_doc = instrumentDoc._doc;
+    const data = await redis.hgetallAsync(key);
 
-    return result;
-  });
+    if (data) {
+      Object.keys(data).forEach(key => {
+        const parsedObj = JSON.parse(data[key]);
+
+        parsedObj.price = key;
+        parsedObj.instrument_id = doc._id;
+        parsedObj._id = parsedObj.bound_id;
+
+        instrumentVolumeBounds.push(parsedObj);
+      });
+    }
+  }));
 
   return res.json({
     status: true,
-    result,
+    result: instrumentVolumeBounds,
   });
 };

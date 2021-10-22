@@ -11,7 +11,16 @@ module.exports = async (req, res, next) => {
     body: {
       arrOfNames,
     },
+
+    user,
   } = req;
+
+  if (!user) {
+    return res.json({
+      status: false,
+      message: 'Not authorized',
+    });
+  }
 
   if (!arrOfNames || !Array.isArray(arrOfNames)) {
     return res.json({

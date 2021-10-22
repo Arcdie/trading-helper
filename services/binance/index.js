@@ -14,12 +14,12 @@ module.exports = async (instrumentsDocs = []) => {
     .filter(doc => !doc.is_futures).map(doc => doc._doc);
 
   /* set websocket connections */
-  await getTicksForSpotInstruments(spotDocs); // вродеэтот красавчик
-  await getPricesForSpotInstruments(spotDocs); // поднимается, потом опускается до нормального
-  await getLimitOrdersForSpotInstruments(spotDocs);
+  // await getTicksForSpotInstruments(spotDocs);
+  // await getPricesForSpotInstruments(spotDocs);
+  // await getLimitOrdersForSpotInstruments(spotDocs);
 
-  await getTicksForFuturesInstruments(futuresDocs); // этот красавчик
-  await getPricesForFuturesInstruments(futuresDocs); // поднимается, потом опускается до нормального
+  await getTicksForFuturesInstruments(futuresDocs);
+  await getPricesForFuturesInstruments(futuresDocs);
   await getLimitOrdersForFuturesInstruments(futuresDocs);
   /* end */
 };

@@ -10,12 +10,15 @@ const commonMiddlewares = [
   getUser,
 ];
 
-router.get('/:id', commonMiddlewares, instrumentControllers.findById);
-router.get('/by-names', commonMiddlewares, instrumentControllers.findManyByNames);
+router.get('/active', commonMiddlewares, instrumentControllers.getActiveInstruments);
+router.get('/by-id', commonMiddlewares, instrumentControllers.findManyById);
+router.get('/by-name', commonMiddlewares, instrumentControllers.findManyByName);
 router.get('/by-robots', commonMiddlewares, instrumentControllers.getInstrumentsWithActiveRobots);
 
 router.post('/', commonMiddlewares, instrumentControllers.createInstrument);
 
 router.get('/upload-new-instruments-from-binance', commonMiddlewares, instrumentControllers.uploadNewInstrumentsFromBinance);
+
+router.get('/:id', commonMiddlewares, instrumentControllers.findOneById);
 
 module.exports = router;

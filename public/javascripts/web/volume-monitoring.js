@@ -3,7 +3,7 @@ wsClient */
 
 /* Constants */
 
-const URL_GET_INSTRUMENT_BY_ID = '/api/instruments';
+const URL_GET_ACTIVE_INSTRUMENTS = '/api/instruments/active';
 const URL_GET_INSTRUMENT_VOLUME_BOUNDS = '/api/instrument-volume-bounds';
 
 let instrumentsDocs = [];
@@ -13,9 +13,15 @@ const $container = $('.container');
 
 /* Functions */
 wsClient.onmessage = async data => {
+  if (!instrumentsDocs.length) {
+    return true;
+  }
+
   const parsedData = JSON.parse(data.data);
 
-  console.log('actionName', parsedData.actionName);
+  if (parsedData.actionName === 'updateAverageVolume') {
+    console.log('actionName', parsedData.actionName);
+  }
 
   if (parsedData.actionName) {
     switch (parsedData.actionName) {
@@ -35,101 +41,46 @@ wsClient.onmessage = async data => {
       }
 
       case 'newInstrumentVolumeBound': {
-        const {
-          _id: boundId,
-          instrument_id: instrumentId,
-
-          price,
-          is_ask: isAsk,
-        } = parsedData.data;
-
-        let instrumentDoc = instrumentsDocs.find(doc => doc._id.toString() === instrumentId);
-
-        if (!instrumentDoc) {
-          const resultGetInstrument = await makeRequest({
-            method: 'GET',
-            url: `${URL_GET_INSTRUMENT_BY_ID}/${instrumentId}`,
-          });
-
-          if (!resultGetInstrument || !resultGetInstrument.status) {
-            alert(`Cant get instrument by id; instrumentId: ${instrumentId}`);
-            break;
-          }
-
-          instrumentDoc = resultGetInstrument.result;
-
-          instrumentDoc.asks = [];
-          instrumentDoc.bids = [];
-
-          instrumentsDocs.push(instrumentDoc);
-        }
-
-        let indexOfElement = 0;
-
-        if (isAsk) {
-          instrumentDoc.asks.push(parsedData.data);
-          instrumentDoc.asks = instrumentDoc.asks
-            .sort((a, b) => {
-              if (a.price > b.price) return -1;
-              return 1;
-            });
-
-          indexOfElement = instrumentDoc.asks.findIndex(
-            bound => bound._id.toString() === boundId.toString(),
-          );
-        } else {
-          instrumentDoc.bids.push(parsedData.data);
-          instrumentDoc.bids = instrumentDoc.bids
-            .sort((a, b) => {
-              if (a.price > b.price) return -1;
-              return 1;
-            });
-
-          indexOfElement = instrumentDoc.bids.findIndex(
-            bound => bound._id.toString() === boundId.toString(),
-          );
-        }
-
-        addNewVolumeToInstrument(parsedData.data, indexOfElement);
-
+        handlerNewInstrumentVolumeBound(parsedData.data);
         break;
       }
 
       case 'updateInstrumentVolumeBound': {
         const {
-          boundId,
-
-          instrument_doc: {
-            _id: instrumentId,
-          },
-
           quantity,
+          _id: boundId,
           is_ask: isAsk,
+          instrument_id: instrumentId,
         } = parsedData.data;
 
         const targetDoc = instrumentsDocs.find(doc => doc._id.toString() === instrumentId);
 
         if (targetDoc) {
-          let targetPrice;
+          let targetBound;
 
           if (isAsk) {
-            targetPrice = targetDoc.asks.find(
-              price => price._id.toString() === boundId.toString(),
+            targetBound = targetDoc.asks.find(
+              bound => bound._id.toString() === boundId.toString(),
             );
           } else {
-            targetPrice = targetDoc.bids.find(
-              price => price._id.toString() === boundId.toString(),
+            targetBound = targetDoc.bids.find(
+              bound => bound._id.toString() === boundId.toString(),
             );
           }
 
-          targetPrice.quantity = quantity;
+          if (!targetBound) {
+            handlerNewInstrumentVolumeBound(parsedData.data);
+            break;
+          }
+
+          targetBound.quantity = quantity;
 
           const $bound = $(`#bound-${boundId}`);
 
-          const differenceBetweenPriceAndOrder = Math.abs(targetDoc.price - targetPrice.price);
+          const differenceBetweenPriceAndOrder = Math.abs(targetDoc.price - targetBound.price);
           const percentPerPrice = 100 / (targetDoc.price / differenceBetweenPriceAndOrder);
 
-          $bound.find('.quantity span').text(targetPrice.quantity);
+          $bound.find('.quantity span').text(targetBound.quantity);
           $bound.find('.price .percent').text(`${percentPerPrice.toFixed(1)}%`);
         }
 
@@ -138,11 +89,10 @@ wsClient.onmessage = async data => {
 
       case 'deactivateInstrumentVolumeBound': {
         const {
+          quantity,
           _id: boundId,
+          is_ask: isAsk,
           instrument_id: instrumentId,
-
-          price,
-          isAsk,
         } = parsedData.data;
 
         const targetDoc = instrumentsDocs.find(doc => doc._id.toString() === instrumentId);
@@ -152,15 +102,13 @@ wsClient.onmessage = async data => {
             targetDoc.asks = targetDoc.asks.filter(
               bound => bound._id.toString() !== boundId.toString(),
             );
-
-            $(`#bound-${boundId}`).remove();
           } else {
             targetDoc.bids = targetDoc.bids.filter(
               bound => bound._id.toString() !== boundId.toString(),
             );
-
-            $(`#bound-${boundId}`).remove();
           }
+
+          $(`#bound-${boundId}`).remove();
 
           if (!targetDoc.asks.length && !targetDoc.bids.length) {
             instrumentsDocs.filter(
@@ -198,61 +146,65 @@ wsClient.onmessage = async data => {
 };
 
 $(document).ready(async () => {
+  const resultGetInstruments = await makeRequest({
+    method: 'GET',
+    url: URL_GET_ACTIVE_INSTRUMENTS,
+  });
+
+  if (!resultGetInstruments || !resultGetInstruments.status) {
+    alert(resultGetBounds.message || 'Cant URL_GET_ACTIVE_INSTRUMENTS');
+    return true;
+  }
+
   const resultGetBounds = await makeRequest({
     method: 'GET',
     url: URL_GET_INSTRUMENT_VOLUME_BOUNDS,
   });
 
-  if (resultGetBounds && resultGetBounds.status) {
-    const instrumentVolumeBounds = resultGetBounds.result;
+  if (!resultGetBounds || !resultGetBounds.status) {
+    alert(resultGetBounds.message || 'Cant URL_GET_INSTRUMENT_VOLUME_BOUNDS');
+    return true;
+  }
 
-    const instrumentsIds = [
-      ...new Set(instrumentVolumeBounds.map(
-        bound => bound.instrument_id,
-      )),
-    ];
+  instrumentsDocs = resultGetInstruments.result;
+  const instrumentVolumeBounds = resultGetBounds.result;
 
-    instrumentsDocs = instrumentsIds.map(
-      instrumentId => instrumentVolumeBounds
-        .find(bound => bound.instrument_id.toString() === instrumentId)
-        .instrument_doc,
-    );
+  instrumentsDocs.forEach(doc => {
+    doc.asks = instrumentVolumeBounds
+      .filter(bound => bound.instrument_id.toString() === doc._id.toString() && bound.is_ask)
+      .sort((a, b) => {
+        if (a.price > b.price) {
+          return -1;
+        }
 
-    instrumentsDocs.forEach(doc => {
-      doc.asks = instrumentVolumeBounds
-        .filter(bound => bound.instrument_id.toString() === doc._id.toString() && bound.is_ask)
-        .sort((a, b) => {
-          if (a.price > b.price) {
-            return -1;
-          }
+        return 1;
+      });
 
-          return 1;
-        });
+    doc.bids = instrumentVolumeBounds
+      .filter(bound => bound.instrument_id.toString() === doc._id.toString() && !bound.is_ask)
+      .sort((a, b) => {
+        if (a.price > b.price) {
+          return -1;
+        }
 
-      doc.bids = instrumentVolumeBounds
-        .filter(bound => bound.instrument_id.toString() === doc._id.toString() && !bound.is_ask)
-        .sort((a, b) => {
-          if (a.price > b.price) {
-            return -1;
-          }
+        return 1;
+      });
 
-          return 1;
-        });
-
+    if (doc.asks.length || doc.bids.length) {
       addNewInstrument(doc);
 
       doc.asks.forEach((bound, index) => {
-        addNewVolumeToInstrument(bound, index);
+        addNewVolumeToInstrument(doc, bound, index);
       });
 
       doc.bids.forEach((bound, index) => {
-        addNewVolumeToInstrument(bound, index);
+        addNewVolumeToInstrument(doc, bound, index);
       });
-    });
+    }
+  });
 
-    // update prices and calculate percents
-    setInterval(updatePrices, 10 * 1000);
-  }
+  // update prices and calculate percents
+  setInterval(updatePrices, 10 * 1000);
 
   $container
     .on('click', 'span.instrument-name', function () {
@@ -274,11 +226,11 @@ const addNewInstrument = (instrumentDoc) => {
   </div>`);
 };
 
-const addNewVolumeToInstrument = (bound, index) => {
-  const $instrument = $(`#instrument-${bound.instrument_id}`);
+const addNewVolumeToInstrument = (instrument, bound, index) => {
+  const $instrument = $(`#instrument-${instrument._id}`);
 
-  const differenceBetweenPriceAndOrder = Math.abs(bound.instrument_doc.price - bound.price);
-  const percentPerPrice = 100 / (bound.instrument_doc.price / differenceBetweenPriceAndOrder);
+  const differenceBetweenPriceAndOrder = Math.abs(instrument.price - bound.price);
+  const percentPerPrice = 100 / (instrument.price / differenceBetweenPriceAndOrder);
 
   const blockWithLevel = `<div
     class="level"
@@ -329,4 +281,49 @@ const updatePrices = () => {
       .find('.instrument-price span')
       .text(doc.price);
   });
+};
+
+const handlerNewInstrumentVolumeBound = (newBound) => {
+  const {
+    _id: boundId,
+    is_ask: isAsk,
+    instrument_id: instrumentId,
+  } = newBound;
+
+  const instrumentDoc = instrumentsDocs.find(
+    doc => doc._id.toString() === instrumentId.toString(),
+  );
+
+  if (!instrumentDoc) {
+    alert(`No instrument; instrumentId: ${instrumentDoc._id}`);
+    return false;
+  }
+
+  let indexOfElement = 0;
+
+  if (isAsk) {
+    instrumentDoc.asks.push(newBound);
+    instrumentDoc.asks = instrumentDoc.asks
+      .sort((a, b) => {
+        if (a.price > b.price) return -1;
+        return 1;
+      });
+
+    indexOfElement = instrumentDoc.asks.findIndex(
+      bound => bound._id.toString() === boundId.toString(),
+    );
+  } else {
+    instrumentDoc.bids.push(newBound);
+    instrumentDoc.bids = instrumentDoc.bids
+      .sort((a, b) => {
+        if (a.price > b.price) return -1;
+        return 1;
+      });
+
+    indexOfElement = instrumentDoc.bids.findIndex(
+      bound => bound._id.toString() === boundId.toString(),
+    );
+  }
+
+  addNewVolumeToInstrument(instrumentDoc, newBound, indexOfElement);
 };

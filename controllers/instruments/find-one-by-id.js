@@ -2,10 +2,6 @@ const {
   isMongoId,
 } = require('validator');
 
-const {
-  createInstrument,
-} = require('./utils/create-instrument');
-
 const logger = require('../../libs/logger');
 
 const InstrumentNew = require('../../models/InstrumentNew');

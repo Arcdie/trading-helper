@@ -32,16 +32,14 @@ const InstrumentNew = require('../models/InstrumentNew');
 module.exports = async () => {
   const instrumentsDocs = await InstrumentNew.find({
     // tmp
-    name: {
-      $in: ['IOTXUSDTPERP'],
-    },
-
+    // name: {
+    //   $in: ['IOTXUSDTPERP'],
+    // },
+    //
     is_futures: true,
 
     is_active: true,
-  })
-  .limit(10)
-  .exec();
+  }).exec();
 
   await Promise.all(instrumentsDocs.map(async doc => {
     const key = `INSTRUMENT:${doc.name}`;
@@ -54,7 +52,7 @@ module.exports = async () => {
     return null;
   }));
 
-  // await binanceProcesses(instrumentsDocs);
+  await binanceProcesses(instrumentsDocs);
 
   // check memory
   setInterval(() => {

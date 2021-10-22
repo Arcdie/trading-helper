@@ -2,11 +2,13 @@ const mongoose = require('mongoose');
 
 const InstrumentVolumeBound = new mongoose.Schema({
   instrument_id: {
+    index: true,
     type: mongoose.Schema.ObjectId,
     required: true,
   },
 
   price: {
+    index: true,
     type: Number,
     required: true,
   },

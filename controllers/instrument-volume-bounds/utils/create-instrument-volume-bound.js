@@ -54,6 +54,19 @@ const createInstrumentVolumeBound = async ({
     };
   }
 
+  const boundWithThisPrice = await InstrumentVolumeBound.findOne({
+    instrument_id: instrumentId,
+    price,
+    is_active: true,
+  }).exec();
+
+  if (boundWithThisPrice) {
+    return {
+      status: true,
+      result: boundWithThisPrice._doc,
+    };
+  }
+
   const newBound = new InstrumentVolumeBound({
     instrument_id: instrumentId,
     price,

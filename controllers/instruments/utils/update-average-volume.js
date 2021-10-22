@@ -54,33 +54,29 @@ const updateAverageVolume = async ({
   const keyInstrumentVolume = `INSTRUMENT:${instrumentName}:VOLUME`;
 
   let cacheInstrumentDoc = await redis.getAsync(keyInstrument);
-  let cacheInstrumentVolumeDoc = await redis.getAsync(keyInstrumentVolume);
+  let cacheVolumeValues = await redis.hmgetAsync(keyInstrumentVolume, arrSeries);
 
   if (!cacheInstrumentDoc) {
     log.warn(`No cacheInstrumentDoc doc; instrumentName: ${instrumentName}`);
     return null;
   }
 
-  if (!cacheInstrumentVolumeDoc) {
-    log.warn(`No cacheInstrumentVolumeDoc doc; instrumentName: ${instrumentName}`);
-    return null;
+  if (!cacheVolumeValues) {
+    cacheVolumeValues = [];
   }
 
   cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
-  cacheInstrumentVolumeDoc = JSON.parse(cacheInstrumentVolumeDoc);
 
   let sumVolumeForLast15Minutes = 0;
 
-  arrSeries.forEach(timestamp => {
-    const element = cacheInstrumentVolumeDoc.find(
-      element => element.timestamp === timestamp,
-    );
+  arrSeries.forEach((timestamp, index) => {
+    const quantity = cacheVolumeValues[index];
 
-    if (!element) {
+    if (!quantity) {
       return true;
     }
 
-    sumVolumeForLast15Minutes += element.quantity;
+    sumVolumeForLast15Minutes += parseFloat(quantity);
   });
 
   cacheInstrumentDoc.average_volume_for_last_15_minutes = parseInt(sumVolumeForLast15Minutes / (15 / 5), 10);

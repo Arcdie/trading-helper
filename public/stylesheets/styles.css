@@ -298,7 +298,11 @@ input:checked + .slider:before {
     .volume-monitoring .container .instrument .level .price {
       width: 56%;
       float: right; }
+      .volume-monitoring .container .instrument .level .price .price_original {
+        width: 64%;
+        display: inline-block; }
       .volume-monitoring .container .instrument .level .price .percent {
+        width: 28%;
         float: right; }
 
 .levels-monitoring {

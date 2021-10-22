@@ -18,41 +18,38 @@ const increaseVolumeForInstrumentInRedis = async ({
   const startMinuteUnix = moment().startOf('minute').unix();
   const key = `INSTRUMENT:${instrumentName}:VOLUME`;
 
-  let cacheDoc = await redis.getAsync(key);
+  const fetchDataPromises = [
+    redis.hkeysAsync(key),
+    redis.hmgetAsync(key, startMinuteUnix),
+  ];
 
-  if (!cacheDoc) {
-    cacheDoc = [];
+  let [
+    cacheVolumeKeys,
+    cacheVolumeValue,
+  ] = await Promise.all(fetchDataPromises);
+
+  cacheVolumeValue = cacheVolumeValue[0];
+
+  if (!cacheVolumeValue) {
+    cacheVolumeValue = quantity;
   } else {
-    cacheDoc = JSON.parse(cacheDoc);
+    cacheVolumeValue = parseInt(parseFloat(cacheVolumeValue) + parseFloat(quantity), 10);
   }
 
-  const doesExistTimestamp = cacheDoc.find(
-    element => element.timestamp === startMinuteUnix,
-  );
+  const lVolumeKeys = cacheVolumeKeys.length;
 
-  if (!doesExistTimestamp) {
-    cacheDoc.push({
-      timestamp: startMinuteUnix,
-      quantity: parseFloat(quantity),
-    });
-  } else {
-    doesExistTimestamp.quantity += parseFloat(quantity);
-    doesExistTimestamp.quantity = parseInt(doesExistTimestamp.quantity, 10);
-  }
+  if (lVolumeKeys > 30) {
+    const keysToRemove = [];
+    const nIterations = lVolumeKeys - 30;
 
-  const lCacheDoc = cacheDoc.length;
-
-  if (lCacheDoc > 30) {
-    const nIterations = lCacheDoc - 30;
     for (let i = 0; i < nIterations; i += 1) {
-      cacheDoc.shift();
+      keysToRemove.push(cacheVolumeKeys[i]);
     }
+
+    await redis.hdelAsync(key, keysToRemove);
   }
 
-  await redis.setAsync([
-    key,
-    JSON.stringify(cacheDoc),
-  ]);
+  await redis.hmsetAsync(key, startMinuteUnix, cacheVolumeValue);
 
   return {
     status: true,

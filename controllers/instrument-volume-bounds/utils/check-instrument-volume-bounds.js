@@ -14,6 +14,10 @@ const {
 } = require('../../../services/websocket-server');
 
 const {
+  generateMongoId,
+} = require('../../../libs/support');
+
+const {
   createInstrumentVolumeBound,
 } = require('./create-instrument-volume-bound');
 
@@ -24,8 +28,6 @@ const {
 const {
   LIMITER_RANGE_FOR_LIMIT_ORDERS,
 } = require('../constants');
-
-const InstrumentVolumeBound = require('../../../models/InstrumentVolumeBound');
 
 const checkInstrumentVolumeBounds = async ({
   asks,
@@ -155,6 +157,7 @@ const checkInstrumentVolumeBounds = async ({
     });
 
     if (boundsToRemove.length) {
+      /*
       await Promise.all(boundsToRemove.map(async bound => {
         const resultUpdate = await updateInstrumentVolumeBound({
           boundId: bound.boundId,
@@ -167,19 +170,38 @@ const checkInstrumentVolumeBounds = async ({
           return null;
         }
 
-        bound.instrumentId = cacheInstrumentDoc._id;
-
         sendData({
           actionName: 'deactivateInstrumentVolumeBound',
-          data: bound,
+          data: {
+            _id: bound.boundId,
+            is_ask: bound.isAsk,
+            price: bound.price,
+            quantity: bound.quantity,
+            instrument_id: cacheInstrumentDoc._id,
+          },
         });
       }));
+      */
+
+      boundsToRemove.forEach(bound => {
+        sendData({
+          actionName: 'deactivateInstrumentVolumeBound',
+          data: {
+            _id: bound.boundId,
+            price: bound.price,
+            is_ask: bound.isAsk,
+            quantity: bound.quantity,
+            instrument_id: cacheInstrumentDoc._id,
+          },
+        });
+      });
 
       await redis.hdelAsync(keyInstrumentVolumeBounds, boundsToRemove.map(e => e.price));
     }
 
     if (boundsToUpdate.length) {
       await Promise.all(boundsToUpdate.map(async bound => {
+        /*
         const resultUpdate = await updateInstrumentVolumeBound({
           boundId: bound.boundId,
           quantity: bound.quantity,
@@ -191,18 +213,24 @@ const checkInstrumentVolumeBounds = async ({
           log.warn(message);
           return null;
         }
+        */
 
         await redis.hmsetAsync(keyInstrumentVolumeBounds, bound.price, JSON.stringify({
+          is_ask: bound.isAsk,
           bound_id: bound.boundId,
           quantity: bound.quantity,
           average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
         }));
 
-        bound.instrument_doc = cacheInstrumentDoc;
-
         sendData({
           actionName: 'updateInstrumentVolumeBound',
-          data: bound,
+          data: {
+            _id: bound.boundId,
+            price: bound.price,
+            is_ask: bound.isAsk,
+            quantity: bound.quantity,
+            instrument_id: cacheInstrumentDoc._id,
+          },
         });
       }));
     }
@@ -230,6 +258,7 @@ const checkInstrumentVolumeBounds = async ({
 
   if (boundsToAdd.length) {
     await Promise.all(boundsToAdd.map(async bound => {
+      /*
       const resultCreate = await createInstrumentVolumeBound({
         instrumentId: cacheInstrumentDoc._id,
         price: bound.price,
@@ -245,18 +274,29 @@ const checkInstrumentVolumeBounds = async ({
       }
 
       const newBound = resultCreate.result;
+      */
+
+      const boundId = generateMongoId();
 
       await redis.hmsetAsync(keyInstrumentVolumeBounds, bound.price, JSON.stringify({
-        bound_id: newBound._id,
-        quantity: newBound.quantity,
-        average_volume_for_last_15_minutes: newBound.average_volume_for_last_15_minutes,
+        // bound_id: newBound._id,
+        bound_id: boundId,
+        is_ask: bound.isAsk,
+        quantity: bound.quantity,
+        average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
       }));
 
-      newBound.instrument_doc = cacheInstrumentDoc;
-
       sendData({
+        // data: newBound,
         actionName: 'newInstrumentVolumeBound',
-        data: newBound,
+        data: {
+          _id: boundId,
+          price: bound.price,
+          is_ask: bound.isAsk,
+          quantity: bound.quantity,
+          instrument_id: cacheInstrumentDoc._id,
+          average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+        },
       });
     }));
   }
