@@ -249,7 +249,7 @@ input:checked + .slider:before {
 .volume-monitoring {
   padding: 15px; }
   .volume-monitoring .container .instrument {
-    width: 230px;
+    width: 260px;
     display: inline-block;
     float: left;
     position: relative;
@@ -281,7 +281,7 @@ input:checked + .slider:before {
     .volume-monitoring .container .instrument .asks .level, .volume-monitoring .container .instrument .bids .level {
       width: 100%;
       display: block;
-      font: 18px monospace; }
+      font: 16px monospace; }
       .volume-monitoring .container .instrument .asks .level .quantity, .volume-monitoring .container .instrument .asks .level .price, .volume-monitoring .container .instrument .bids .level .quantity, .volume-monitoring .container .instrument .bids .level .price {
         display: inline-block;
         box-sizing: border-box; }
@@ -294,9 +294,12 @@ input:checked + .slider:before {
     .volume-monitoring .container .instrument .asks.bids .price, .volume-monitoring .container .instrument .bids.bids .price {
       background-color: #a2ff9c96; }
     .volume-monitoring .container .instrument .level .quantity {
-      width: 60%; }
+      width: 40%; }
     .volume-monitoring .container .instrument .level .price {
+      width: 56%;
       float: right; }
+      .volume-monitoring .container .instrument .level .price .percent {
+        float: right; }
 
 .levels-monitoring {
   width: 100%; }

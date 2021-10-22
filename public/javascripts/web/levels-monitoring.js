@@ -163,7 +163,7 @@ $(document).ready(async () => {
           bound.widget = new TradingView.widget({
             width: `${bound.$element.width()}px`,
             height: 300,
-            symbol: bound.instrument_doc.name_spot,
+            symbol: bound.instrument_doc.name,
             interval: '5',
             timezone: 'Etc/UTC',
             theme: 'light',
@@ -303,15 +303,15 @@ const renderLevels = (isFirstRender = false) => {
       appendStr += `<div
         id="bound-${bound._id}"
         style="order: ${bound.index_order};"
-        class="instrument ${bound.instrument_doc.name_futures}
+        class="instrument ${bound.instrument_doc.name}
         ${isWorked ? 'is_worked' : ''}
         ${isProcessed ? 'not_processed' : ''}
         ${isMonitoring ? 'is_monitoring' : ''}"
         data-boundid="${bound._id}"
         data-instrumentid="${bound.instrument_id}"
-        data-name="${bound.instrument_doc.name_futures}"
+        data-name="${bound.instrument_doc.name}"
       >
-        <span class="instrument-name">${bound.instrument_doc.name_futures} (${bound.is_long ? 'long' : 'short'})</span>
+        <span class="instrument-name">${bound.instrument_doc.name} (${bound.is_long ? 'long' : 'short'})</span>
         <div class="levels">
           ${!bound.is_long && instrumentPrice > bound.price_original ? blockWithInstrumentPrice : ''}
           ${bound.is_long && instrumentPrice >= bound.price_original && isWorked ? blockWithInstrumentPrice : ''}
@@ -392,7 +392,7 @@ const renderLevels = (isFirstRender = false) => {
 
 const updatePrice = ({ instrumentName, newPrice }) => {
   const targetBounds = userLevelBounds.filter(
-    bound => bound.instrument_doc.name_futures === instrumentName,
+    bound => bound.instrument_doc.name === instrumentName,
   );
 
   targetBounds.forEach(bound => {

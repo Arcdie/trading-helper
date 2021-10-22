@@ -1,34 +1,47 @@
 const {
+  isUndefined,
+} = require('lodash');
+
+const {
   createInstrument,
 } = require('./utils/create-instrument');
 
 module.exports = async (req, res, next) => {
   const {
     body: {
-      nameSpot,
-      nameFutures,
+      name,
+      price,
+
+      isFutures,
     },
   } = req;
 
-  if (!nameSpot) {
+  if (!name) {
     return res.json({
       status: false,
-      text: 'No nameSpot',
+      text: 'No name',
     });
   }
 
-  if (!nameFutures) {
+  if (!price) {
     return res.json({
       status: false,
-      text: 'No nameFutures',
+      text: 'No price',
+    });
+  }
+
+  if (isUndefined(isFutures)) {
+    return res.json({
+      status: false,
+      text: 'No isFutures',
     });
   }
 
   const resultCreate = await createInstrument({
-    nameSpot,
-    nameFutures,
+    name,
+    price,
 
-    isActive: true,
+    isFutures,
   });
 
   if (!resultCreate) {

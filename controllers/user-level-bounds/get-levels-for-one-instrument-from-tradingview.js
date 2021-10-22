@@ -24,7 +24,7 @@ const {
   LINE_TYPES,
 } = require('../tradingview/constants');
 
-const Instrument = require('../../models/Instrument');
+const InstrumentNew = require('../../models/InstrumentNew');
 const UserLevelBound = require('../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
@@ -50,10 +50,10 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const instrumentDoc = await Instrument.findById(instrumentId, {
+  const instrumentDoc = await InstrumentNew.findById(instrumentId, {
+    name: 1,
     price: 1,
     is_active: 1,
-    name_futures: 1,
   }).exec();
 
   if (!instrumentDoc) {
@@ -86,7 +86,7 @@ module.exports = async (req, res, next) => {
   const tradingViewJwtToken = resultGetJwtToken.result.token;
 
   const resultGetLevels = await getTradingViewLevelsForInstrument({
-    instrumentName: instrumentDoc.name_futures,
+    instrumentName: instrumentDoc.name,
     tradingViewJwtToken,
     tradingViewChartId: user.tradingview_chart_id,
     tradingViewSessionId: user.tradingview_session_id,

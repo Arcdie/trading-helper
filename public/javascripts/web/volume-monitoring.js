@@ -15,6 +15,8 @@ const $container = $('.container');
 wsClient.onmessage = async data => {
   const parsedData = JSON.parse(data.data);
 
+  console.log('actionName', parsedData.actionName);
+
   if (parsedData.actionName) {
     switch (parsedData.actionName) {
       case 'newInstrumentPrice': {
@@ -55,6 +57,10 @@ wsClient.onmessage = async data => {
           }
 
           instrumentDoc = resultGetInstrument.result;
+
+          instrumentDoc.asks = [];
+          instrumentDoc.bids = [];
+
           instrumentsDocs.push(instrumentDoc);
         }
 
@@ -89,13 +95,54 @@ wsClient.onmessage = async data => {
         break;
       }
 
+      case 'updateInstrumentVolumeBound': {
+        const {
+          boundId,
+
+          instrument_doc: {
+            _id: instrumentId,
+          },
+
+          quantity,
+          is_ask: isAsk,
+        } = parsedData.data;
+
+        const targetDoc = instrumentsDocs.find(doc => doc._id.toString() === instrumentId);
+
+        if (targetDoc) {
+          let targetPrice;
+
+          if (isAsk) {
+            targetPrice = targetDoc.asks.find(
+              price => price._id.toString() === boundId.toString(),
+            );
+          } else {
+            targetPrice = targetDoc.bids.find(
+              price => price._id.toString() === boundId.toString(),
+            );
+          }
+
+          targetPrice.quantity = quantity;
+
+          const $bound = $(`#bound-${boundId}`);
+
+          const differenceBetweenPriceAndOrder = Math.abs(targetDoc.price - targetPrice.price);
+          const percentPerPrice = 100 / (targetDoc.price / differenceBetweenPriceAndOrder);
+
+          $bound.find('.quantity span').text(targetPrice.quantity);
+          $bound.find('.price .percent').text(`${percentPerPrice.toFixed(1)}%`);
+        }
+
+        break;
+      }
+
       case 'deactivateInstrumentVolumeBound': {
         const {
           _id: boundId,
           instrument_id: instrumentId,
 
           price,
-          is_ask: isAsk,
+          isAsk,
         } = parsedData.data;
 
         const targetDoc = instrumentsDocs.find(doc => doc._id.toString() === instrumentId);
@@ -206,6 +253,13 @@ $(document).ready(async () => {
     // update prices and calculate percents
     setInterval(updatePrices, 10 * 1000);
   }
+
+  $container
+    .on('click', 'span.instrument-name', function () {
+      const $instrument = $(this).closest('.instrument');
+
+      $instrument.toggleClass('is_monitoring');
+    });
 });
 
 const addNewInstrument = (instrumentDoc) => {

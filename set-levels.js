@@ -18,7 +18,7 @@ const {
   },
 } = require('./config');
 
-const Instrument = require('./models/Instrument');
+const InstrumentNew = require('./models/InstrumentNew');
 const UserLevelBound = require('./models/UserLevelBound');
 
 const pathToRoot = path.parse(process.cwd()).root;
@@ -50,18 +50,21 @@ const setLevels = async () => {
 
   const instrumentsIds = userLevelBounds.map(bound => bound.instrument_id.toString());
 
-  const instrumentsDocs = await Instrument.find({
+  const instrumentsDocs = await InstrumentNew.find({
     _id: {
       // $in: ['6156deec4b6ed207ae8cad07'],
       $in: instrumentsIds,
     },
 
     is_active: true,
+    is_futures: true,
   }, {
-    name_spot: 1,
+    name: 1,
   }).exec();
 
   instrumentsDocs.forEach(instrumentDoc => {
+    instrumentDoc.name = instrumentDoc.name.replace('PERP', '');
+
     const boundsWithInstrument = userLevelBounds.filter(bound =>
       bound.instrument_id.toString() === instrumentDoc._id.toString(),
     );
@@ -76,7 +79,7 @@ const setLevels = async () => {
     validString = validString.slice(0, -1);
 
     filesNames.forEach(async fileName => {
-      if (!fileName.includes(instrumentDoc.name_spot)) {
+      if (!fileName.includes(instrumentDoc.name)) {
         return true;
       }
 

@@ -8,10 +8,6 @@ const {
 
 const logger = require('../../libs/logger');
 
-const User = require('../../models/User');
-const Instrument = require('../../models/Instrument');
-const UserLevelBound = require('../../models/UserLevelBound');
-
 module.exports = async (req, res, next) => {
   const {
     query: {

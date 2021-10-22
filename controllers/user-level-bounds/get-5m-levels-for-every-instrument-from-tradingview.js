@@ -24,7 +24,7 @@ const {
   LINE_TYPES,
 } = require('../tradingview/constants');
 
-const Instrument = require('../../models/Instrument');
+const InstrumentNew = require('../../models/InstrumentNew');
 const UserLevelBound = require('../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
@@ -39,11 +39,11 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const instrumentsDocs = await Instrument.find({
+  const instrumentsDocs = await InstrumentNew.find({
     is_active: true,
   }, {
+    name: 1,
     price: 1,
-    name_futures: 1,
   }).exec();
 
   const resultGetJwtToken = await getTradingViewJwtToken({
@@ -71,7 +71,7 @@ module.exports = async (req, res, next) => {
       const instrumentDoc = instrumentsDocs[i];
 
       const resultGetLevels = await getTradingViewLevelsForInstrument({
-        instrumentName: instrumentDoc.name_futures,
+        instrumentName: instrumentDoc.name,
         tradingViewJwtToken,
         tradingViewChartId: user.tradingview_chart_id,
         tradingViewSessionId: user.tradingview_session_id,
@@ -175,12 +175,12 @@ module.exports = async (req, res, next) => {
 
       sendData({
         actionName: 'newLoadedLevels',
-        instrumentName: instrumentDoc.name_futures,
+        instrumentName: instrumentDoc.name,
         countLevels,
       });
 
       await sleep(300);
-      console.log(`Ended ${instrumentDoc.name_futures}`);
+      console.log(`Ended ${instrumentDoc.name}`);
     }
 
     sendData({

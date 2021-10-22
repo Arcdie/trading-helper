@@ -4,7 +4,7 @@ const {
 
 const logger = require('../../libs/logger');
 
-const Instrument = require('../../models/Instrument');
+const InstrumentNew = require('../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
   const {
@@ -20,7 +20,7 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const instrumentsDocs = await Instrument.find({
+  const instrumentsDocs = await InstrumentNew.find({
     name: {
       $in: arrOfNames,
     },
@@ -28,21 +28,6 @@ module.exports = async (req, res, next) => {
     name: 1,
     is_active: 1,
   }).exec();
-
-  await Promise.all(arrOfNames.map(async instrumentName => {
-    const instrumentDoc = instrumentsDocs.find(doc => doc.name === instrumentName);
-
-    if (instrumentDoc) {
-      return null;
-    }
-
-    const resultCreate = await createInstrument({
-      name,
-
-      isActive: false,
-      isModerated: false,
-    });
-  }));
 
   return res.json({
     status: true,

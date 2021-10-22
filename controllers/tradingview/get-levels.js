@@ -5,7 +5,7 @@ const {
 } = require('validator');
 
 const User = require('../../models/User');
-const Instrument = require('../../models/Instrument');
+const InstrumentNew = require('../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
   const {
@@ -37,7 +37,7 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const instrumentDoc = await Instrument.findById(instrumentId, {
+  const instrumentDoc = await InstrumentNew.findById(instrumentId, {
     name: 1,
   }).exec();
 

@@ -24,10 +24,6 @@ const {
 } = require('../controllers/instrument-volume-bounds/utils/check-instrument-volume-bounds');
 
 const {
-  clearAsksAndBidsInRedis,
-} = require('../controllers/instrument-volume-bounds/utils/clear-asks-and-bids-in-redis');
-
-const {
   DOCS_LIMITER_FOR_QUEUES,
 } = require('../controllers/instruments/constants');
 
@@ -36,10 +32,16 @@ const InstrumentNew = require('../models/InstrumentNew');
 module.exports = async () => {
   const instrumentsDocs = await InstrumentNew.find({
     // tmp
-    // name: 'ADAUSDTPERP',
+    name: {
+      $in: ['IOTXUSDTPERP'],
+    },
+
+    is_futures: true,
 
     is_active: true,
-  }).exec();
+  })
+  .limit(10)
+  .exec();
 
   await Promise.all(instrumentsDocs.map(async doc => {
     const key = `INSTRUMENT:${doc.name}`;
@@ -52,9 +54,7 @@ module.exports = async () => {
     return null;
   }));
 
-  await binanceProcesses(instrumentsDocs);
-
-  memoryUsage();
+  // await binanceProcesses(instrumentsDocs);
 
   // check memory
   setInterval(() => {
@@ -62,16 +62,10 @@ module.exports = async () => {
   }, 10 * 1000); // 10 seconds
 
   // update average volume per 15 minutes
-  // await intervalUpdateAverageVolume(instrumentsDocs, 5 * 60 * 1000); // 5 minutes
-
-  // check volume bounds
-  // await intervalCheckInstrumentVolumeBounds(instrumentsDocs, 10 * 1000); // 10 seconds
+  await intervalUpdateAverageVolume(instrumentsDocs, 5 * 60 * 1000); // 5 minutes
 
   // update price for instrument in database
-  // await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
-
-  // clear old bids and asks
-  // await intervalClearAsksAndBidsInRedis(instrumentsDocs, 60 * 60 * 1000); // 1 hour
+  await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
 };
 
 const intervalUpdateAverageVolume = async (instrumentsDocs = [], interval) => {
@@ -108,30 +102,6 @@ const intervalUpdateAverageVolume = async (instrumentsDocs = [], interval) => {
   return true;
 };
 
-const intervalCheckInstrumentVolumeBounds = async (instrumentsDocs = [], interval) => {
-  console.log('check volume bounds');
-
-  const queues = getQueue(instrumentsDocs, DOCS_LIMITER_FOR_QUEUES);
-  const lQueues = queues.length;
-
-  await (async () => {
-    for (let i = 0; i < lQueues; i += 1) {
-      const targetInstrumentsDocs = queues[i];
-
-      await Promise.all(targetInstrumentsDocs.map(async doc => {
-        await checkInstrumentVolumeBounds({
-          instrumentId: doc._id,
-          instrumentName: doc.name,
-        });
-      }));
-    }
-  })();
-
-  setTimeout(() => {
-    intervalCheckInstrumentVolumeBounds(instrumentsDocs, interval);
-  }, interval);
-};
-
 const intervalUpdateInstrument = async (instrumentsDocs = [], interval) => {
   console.log('update price for instrument in database');
 
@@ -154,28 +124,5 @@ const intervalUpdateInstrument = async (instrumentsDocs = [], interval) => {
 
   setTimeout(() => {
     intervalUpdateInstrument(instrumentsDocs, interval);
-  }, interval);
-};
-
-const intervalClearAsksAndBidsInRedis = async (instrumentsDocs = [], interval) => {
-  console.log('clear old bids and asks');
-
-  const queues = getQueue(instrumentsDocs, DOCS_LIMITER_FOR_QUEUES);
-  const lQueues = queues.length;
-
-  await (async () => {
-    for (let i = 0; i < lQueues; i += 1) {
-      const targetInstrumentsDocs = queues[i];
-
-      await Promise.all(targetInstrumentsDocs.map(async doc => {
-        clearAsksAndBidsInRedis({
-          instrumentName: doc.name,
-        });
-      }));
-    }
-  })();
-
-  setTimeout(() => {
-    intervalClearAsksAndBidsInRedis(instrumentsDocs, interval);
   }, interval);
 };

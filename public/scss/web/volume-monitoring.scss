@@ -11,7 +11,7 @@
         background-color: #ffca6a78;
       }
 
-      width: 230px;
+      width: 260px;
       display: inline-block;
       float: left;
       position: relative;
@@ -51,7 +51,7 @@
         .level {
           width: 100%;
           display: block;
-          font: 18px monospace;
+          font: 16px monospace;
 
           .quantity, .price {
             display: inline-block;
@@ -82,11 +82,22 @@
 
       .level {
         .quantity {
-          width: 60%;
+          width: 40%;
         }
 
         .price {
+          width: 56%;
           float: right;
+
+          .price_original {
+            width: 60%:
+            display: inline-block;
+          }
+
+          .percent {
+            width: 40%;
+            float: right;
+          }
         }
       }
     }

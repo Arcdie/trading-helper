@@ -2,8 +2,6 @@ const {
   removeAllLevels,
 } = require('./utils/remove-all-levels');
 
-const UserLevelBound = require('../../models/UserLevelBound');
-
 module.exports = async (req, res, next) => {
   const {
     user,

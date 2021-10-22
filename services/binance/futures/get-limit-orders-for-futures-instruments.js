@@ -11,8 +11,8 @@ const {
 } = require('../../websocket-server');
 
 const {
-  updateLimitOrdersForInstrumentInRedis,
-} = require('../../../controllers/instrument-volume-bounds/utils/update-limit-orders-for-instrument-in-redis');
+  checkInstrumentVolumeBounds,
+} = require('../../../controllers/instrument-volume-bounds/utils/check-instrument-volume-bounds');
 
 const {
   DOCS_LIMITER_FOR_QUEUES,
@@ -40,7 +40,7 @@ module.exports = async (instrumentsDocs = []) => {
 
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);
-      nextStep(queue);
+      // nextStep(queue);
 
       client.on('open', () => {
         log.info(`${CONNECTION_NAME} was opened`);
@@ -48,7 +48,6 @@ module.exports = async (instrumentsDocs = []) => {
 
         sendPongInterval = setInterval(() => {
           client.pong();
-          console.log('spot queue.length', queue.length);
         }, 1000 * 60); // 1 minute
       });
 
@@ -79,11 +78,17 @@ module.exports = async (instrumentsDocs = []) => {
           },
         } = parsedData;
 
+        await checkInstrumentVolumeBounds({
+          asks, bids, instrumentName: `${instrumentName}PERP`,
+        });
+
+        /*
         queue.push({
           asks,
           bids,
           instrumentName: `${instrumentName}PERP`,
         });
+        */
       });
     };
 
@@ -97,8 +102,6 @@ module.exports = async (instrumentsDocs = []) => {
 const nextStep = async (queue) => {
   const targetElements = queue.splice(0, DOCS_LIMITER_FOR_QUEUES);
 
-  console.log('futures.targetElements.length', targetElements.length);
-
   if (!targetElements || !targetElements.length) {
     setTimeout(() => {
       nextStep(queue);
@@ -110,7 +113,7 @@ const nextStep = async (queue) => {
   await Promise.all(targetElements.map(async ({
     asks, bids, instrumentName,
   }) => {
-    await updateLimitOrdersForInstrumentInRedis({
+    await checkInstrumentVolumeBounds({
       asks, bids, instrumentName,
     });
   }));

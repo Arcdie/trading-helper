@@ -12,4 +12,7 @@ const commonMiddlewares = [
 
 router.get('/', commonMiddlewares, instrumentVolumeBoundControllers.getInstrumentVolumeBounds);
 
+// tmp
+router.get('/remove', commonMiddlewares, instrumentVolumeBoundControllers.removeEverything);
+
 module.exports = router;

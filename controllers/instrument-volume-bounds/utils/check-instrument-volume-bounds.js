@@ -21,35 +21,50 @@ const {
   updateInstrumentVolumeBound,
 } = require('./update-instrument-volume-bound');
 
+const {
+  LIMITER_RANGE_FOR_LIMIT_ORDERS,
+} = require('../constants');
+
 const InstrumentVolumeBound = require('../../../models/InstrumentVolumeBound');
 
 const checkInstrumentVolumeBounds = async ({
-  instrumentId,
+  asks,
+  bids,
   instrumentName,
 }) => {
-  if (!instrumentId || !isMongoId(instrumentId.toString())) {
-    return {
-      status: false,
-      message: 'No or invalid instrumentId',
-    };
-  }
-
   if (!instrumentName) {
     return {
       status: false,
-      message: 'No or invalid instrumentName',
+      message: 'No instrumentName',
+    };
+  }
+
+  if (!asks || !Array.isArray(asks)) {
+    return {
+      status: false,
+      message: 'No or invalid asks',
+    };
+  }
+
+  if (!bids || !Array.isArray(bids)) {
+    return {
+      status: false,
+      message: 'No or invalid bids',
     };
   }
 
   const keyInstrument = `INSTRUMENT:${instrumentName}`;
-  const keyInstrumentAsks = `INSTRUMENT:${instrumentName}:ASKS`;
-  const keyInstrumentBids = `INSTRUMENT:${instrumentName}:BIDS`;
   const keyInstrumentVolumeBounds = `INSTRUMENT:${instrumentName}:VOLUME_BOUNDS`;
 
-  let cacheInstrumentDoc = await redis.getAsync(keyInstrument);
-  let cacheInstrumentAsks = await redis.getAsync(keyInstrumentAsks);
-  let cacheInstrumentBids = await redis.getAsync(keyInstrumentBids);
-  let cacheInstrumentVolumeBounds = await redis.getAsync(keyInstrumentVolumeBounds);
+  const fetchDataPromises = [
+    redis.getAsync(keyInstrument),
+    redis.hkeysAsync(keyInstrumentVolumeBounds),
+  ];
+
+  let [
+    cacheInstrumentDoc,
+    cacheInstrumentVolumeBoundsKeys,
+  ] = await Promise.all(fetchDataPromises);
 
   if (!cacheInstrumentDoc) {
     log.warn(`No cacheInstrumentDoc doc; instrumentName: ${instrumentName}`);
@@ -58,138 +73,192 @@ const checkInstrumentVolumeBounds = async ({
 
   cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
 
-  if (!cacheInstrumentAsks) {
-    cacheInstrumentAsks = [];
-  } else {
-    cacheInstrumentAsks = JSON.parse(cacheInstrumentAsks);
+  if (!cacheInstrumentVolumeBoundsKeys) {
+    cacheInstrumentVolumeBoundsKeys = [];
   }
 
-  if (!cacheInstrumentBids) {
-    cacheInstrumentBids = [];
-  } else {
-    cacheInstrumentBids = JSON.parse(cacheInstrumentBids);
-  }
+  const needValuesForKeys = [];
 
-  if (!cacheInstrumentVolumeBounds) {
-    cacheInstrumentVolumeBounds = [];
-  } else {
-    cacheInstrumentVolumeBounds = JSON.parse(cacheInstrumentVolumeBounds);
-  }
+  asks = asks.map(ask => {
+    let [price, quantity] = ask;
 
-  let wereChangedInstrumentVolumeBounds = false;
-  const averageVolumeForLast15Minutes = cacheInstrumentDoc.average_volume_for_last_15_minutes || 0;
+    price = parseFloat(price);
+    quantity = parseFloat(quantity);
 
-  await Promise.all(cacheInstrumentAsks.map(async ([price, quantity]) => {
-    if (averageVolumeForLast15Minutes === 0) {
-      return null;
+    const doesExistBound = cacheInstrumentVolumeBoundsKeys.some(key => parseFloat(key) === price);
+
+    if (doesExistBound) {
+      needValuesForKeys.push({
+        price,
+        quantity,
+        isAsk: true,
+      });
     }
 
-    if (quantity >= averageVolumeForLast15Minutes) {
-      const doesExistBound = cacheInstrumentVolumeBounds.some(
-        bound => bound.price === price && bound.isAsk === true,
-      );
+    return [price, quantity, true];
+  });
 
-      if (!doesExistBound) {
-        const resultCreate = await createInstrumentVolumeBound({
-          instrumentId,
-          price: parseFloat(price),
-          quantity: parseFloat(quantity),
-          averageVolumeForLast15Minutes,
-          isAsk: true,
+  bids = bids.map(bid => {
+    let [price, quantity] = bid;
+
+    price = parseFloat(price);
+    quantity = parseFloat(quantity);
+
+    const doesExistBound = cacheInstrumentVolumeBoundsKeys.some(key => parseFloat(key) === price);
+
+    if (doesExistBound) {
+      needValuesForKeys.push({
+        price,
+        quantity,
+        isAsk: false,
+      });
+    }
+
+    return [price, quantity, false];
+  });
+
+  // check and remove if it needs
+  if (needValuesForKeys.length) {
+    let cacheInstrumentVolumeBounds = await redis.hmgetAsync(
+      keyInstrumentVolumeBounds, needValuesForKeys.map(e => e.price),
+    );
+
+    if (!cacheInstrumentVolumeBounds) {
+      cacheInstrumentVolumeBounds = [];
+    }
+
+    const boundsToRemove = [];
+    const boundsToUpdate = [];
+
+    needValuesForKeys.forEach(({
+      price, quantity, isAsk,
+    }, index) => {
+      const boundInRedis = JSON.parse(cacheInstrumentVolumeBounds[index]);
+
+      if (boundInRedis) {
+        if (quantity < boundInRedis.average_volume_for_last_15_minutes) {
+          boundsToRemove.push({
+            price,
+            quantity,
+            isAsk,
+            boundId: boundInRedis.bound_id,
+          });
+        } else if (quantity !== boundInRedis.quantity) {
+          boundsToUpdate.push({
+            price,
+            quantity,
+            isAsk,
+            boundId: boundInRedis.bound_id,
+          });
+        }
+      }
+    });
+
+    if (boundsToRemove.length) {
+      await Promise.all(boundsToRemove.map(async bound => {
+        const resultUpdate = await updateInstrumentVolumeBound({
+          boundId: bound.boundId,
+          isActive: false,
         });
 
-        if (!resultCreate || !resultCreate.status) {
-          const message = resultCreate.message || 'Cant createInstrumentVolumeBound';
+        if (!resultUpdate || !resultUpdate.status) {
+          const message = resultUpdate.message || 'Cant updateInstrumentVolumeBound (is_active)';
           log.warn(message);
           return null;
         }
 
-        wereChangedInstrumentVolumeBounds = true;
-        resultCreate.result.instrument_name = instrumentName;
-        cacheInstrumentVolumeBounds.push(resultCreate.result);
+        bound.instrumentId = cacheInstrumentDoc._id;
 
         sendData({
-          actionName: 'newInstrumentVolumeBound',
-          data: resultCreate.result,
+          actionName: 'deactivateInstrumentVolumeBound',
+          data: bound,
         });
-      }
-    }
-  }));
+      }));
 
-  await Promise.all(cacheInstrumentBids.map(async ([price, quantity]) => {
-    if (averageVolumeForLast15Minutes === 0) {
-      return null;
+      await redis.hdelAsync(keyInstrumentVolumeBounds, boundsToRemove.map(e => e.price));
     }
 
-    if (quantity >= averageVolumeForLast15Minutes) {
-      const doesExistBound = cacheInstrumentVolumeBounds.some(
-        bound => bound.price === price && bound.isAsk === false,
-      );
-
-      if (!doesExistBound) {
-        const resultCreate = await createInstrumentVolumeBound({
-          instrumentId,
-          price: parseFloat(price),
-          quantity: parseFloat(quantity),
-          averageVolumeForLast15Minutes,
-          isAsk: false,
+    if (boundsToUpdate.length) {
+      await Promise.all(boundsToUpdate.map(async bound => {
+        const resultUpdate = await updateInstrumentVolumeBound({
+          boundId: bound.boundId,
+          quantity: bound.quantity,
+          averageVolumeForLast15Minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
         });
 
-        if (!resultCreate || !resultCreate.status) {
-          const message = resultCreate.message || 'Cant createInstrumentVolumeBound';
+        if (!resultUpdate || !resultUpdate.status) {
+          const message = resultUpdate.message || 'Cant updateInstrumentVolumeBound (quantity)';
           log.warn(message);
           return null;
         }
 
-        wereChangedInstrumentVolumeBounds = true;
-        resultCreate.result.instrument_name = instrumentName;
-        cacheInstrumentVolumeBounds.push(resultCreate.result);
+        await redis.hmsetAsync(keyInstrumentVolumeBounds, bound.price, JSON.stringify({
+          bound_id: bound.boundId,
+          quantity: bound.quantity,
+          average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+        }));
+
+        bound.instrument_doc = cacheInstrumentDoc;
 
         sendData({
-          actionName: 'newInstrumentVolumeBound',
-          data: resultCreate.result,
+          actionName: 'updateInstrumentVolumeBound',
+          data: bound,
         });
-      }
+      }));
     }
-  }));
+  }
 
-  const commonArr = [...cacheInstrumentAsks, ...cacheInstrumentBids];
+  // create new bounds
+  const boundsToAdd = [];
 
-  await Promise.all(cacheInstrumentVolumeBounds.map(async bound => {
-    const existElement = commonArr.find(element => element[0] === bound.price);
+  [...asks, ...bids]
+    .filter(([price]) => !cacheInstrumentVolumeBoundsKeys.some(key => parseFloat(key) === price))
+    .forEach(([price, quantity, isAsk]) => {
+      if (quantity > cacheInstrumentDoc.average_volume_for_last_15_minutes) {
+        const differenceBetweenPriceAndOrder = Math.abs(cacheInstrumentDoc.price - price);
+        const percentPerPrice = 100 / (cacheInstrumentDoc.price / differenceBetweenPriceAndOrder);
 
-    if (!existElement
-      || existElement[1] < bound.average_volume_for_last_15_minutes) {
-      const resultUpdate = await updateInstrumentVolumeBound({
-        boundId: bound._id,
+        if (percentPerPrice <= LIMITER_RANGE_FOR_LIMIT_ORDERS) {
+          boundsToAdd.push({
+            isAsk,
+            price,
+            quantity,
+          });
+        }
+      }
+    });
 
-        isActive: false,
+  if (boundsToAdd.length) {
+    await Promise.all(boundsToAdd.map(async bound => {
+      const resultCreate = await createInstrumentVolumeBound({
+        instrumentId: cacheInstrumentDoc._id,
+        price: bound.price,
+        quantity: bound.quantity,
+        averageVolumeForLast15Minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+        isAsk: bound.isAsk,
       });
 
-      if (!resultUpdate || !resultUpdate.status) {
-        const message = resultUpdate.message || 'Cant updateInstrumentVolumeBound';
+      if (!resultCreate || !resultCreate.status) {
+        const message = resultCreate.message || 'Cant createInstrumentVolumeBound';
         log.warn(message);
         return null;
       }
 
-      wereChangedInstrumentVolumeBounds = true;
+      const newBound = resultCreate.result;
 
-      cacheInstrumentVolumeBounds = cacheInstrumentVolumeBounds.filter(
-        targetBound => targetBound._id.toString() !== bound._id.toString(),
-      );
+      await redis.hmsetAsync(keyInstrumentVolumeBounds, bound.price, JSON.stringify({
+        bound_id: newBound._id,
+        quantity: newBound.quantity,
+        average_volume_for_last_15_minutes: newBound.average_volume_for_last_15_minutes,
+      }));
+
+      newBound.instrument_doc = cacheInstrumentDoc;
 
       sendData({
-        actionName: 'deactivateInstrumentVolumeBound',
-        data: bound,
+        actionName: 'newInstrumentVolumeBound',
+        data: newBound,
       });
-    }
-  }));
-
-  if (wereChangedInstrumentVolumeBounds) {
-    await redis.setAsync([
-      keyInstrumentVolumeBounds,
-      JSON.stringify(cacheInstrumentVolumeBounds),
-    ]);
+    }));
   }
 
   return {

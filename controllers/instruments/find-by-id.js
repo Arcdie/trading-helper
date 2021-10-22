@@ -8,7 +8,7 @@ const {
 
 const logger = require('../../libs/logger');
 
-const Instrument = require('../../models/Instrument');
+const InstrumentNew = require('../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
   const {
@@ -33,7 +33,7 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const instrumentDoc = await Instrument.findById(instrumentId).exec();
+  const instrumentDoc = await InstrumentNew.findById(instrumentId).exec();
 
   if (!instrumentDoc) {
     return res.json({

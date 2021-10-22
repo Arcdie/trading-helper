@@ -6,7 +6,7 @@ const {
   DEFAULT_INDENT_IN_PERCENTS,
 } = require('./constants');
 
-const Instrument = require('../../models/Instrument');
+const InstrumentNew = require('../../models/InstrumentNew');
 const UserLevelBound = require('../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
@@ -39,7 +39,7 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const instrumentDoc = await Instrument.findById(instrumentId, {
+  const instrumentDoc = await InstrumentNew.findById(instrumentId, {
     price: 1,
   }).exec();
 
