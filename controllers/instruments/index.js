@@ -5,6 +5,7 @@ const getActiveInstruments = require('./get-active-instruments');
 const getInstrumentsWithActiveRobots = require('./get-instruments-with-active-robots');
 
 const createInstrument = require('./create-instrument');
+const updateInstrument = require('./update-instrument');
 
 const uploadNewInstrumentsFromBinance = require('./upload-new-instuments-from-binance');
 
@@ -16,6 +17,7 @@ module.exports = {
   getInstrumentsWithActiveRobots,
 
   createInstrument,
+  updateInstrument,
 
   uploadNewInstrumentsFromBinance,
 };

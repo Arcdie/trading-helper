@@ -248,10 +248,24 @@ input:checked + .slider:before {
 
 .volume-monitoring {
   padding: 15px; }
+  .volume-monitoring .container #spot, .volume-monitoring .container #futures {
+    width: 50%;
+    float: left;
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 0 17px; }
+    .volume-monitoring .container #spot#futures, .volume-monitoring .container #futures#futures {
+      border-left: 1px solid black; }
+    .volume-monitoring .container #spot h2, .volume-monitoring .container #futures h2 {
+      text-align: center;
+      text-transform: uppercase;
+      font: 21px sans-serif;
+      padding-bottom: 10px;
+      border-bottom: 1px solid black;
+      margin-bottom: 17px; }
   .volume-monitoring .container .instrument {
     width: 260px;
     display: inline-block;
-    float: left;
     position: relative;
     border: 1px solid black;
     padding: 15px 10px;

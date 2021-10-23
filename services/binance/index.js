@@ -7,19 +7,25 @@ const getPricesForFuturesInstruments = require('./futures/get-prices-for-futures
 const getLimitOrdersForFuturesInstruments = require('./futures/get-limit-orders-for-futures-instruments');
 
 module.exports = async (instrumentsDocs = []) => {
+  const spotDocs = instrumentsDocs
+    .filter(doc => !doc.is_futures).map(doc => doc._doc);
+
   const futuresDocs = instrumentsDocs
     .filter(doc => doc.is_futures).map(doc => doc._doc);
 
-  const spotDocs = instrumentsDocs
-    .filter(doc => !doc.is_futures).map(doc => doc._doc);
+  const spotDocsWithoutIgnoredVolume = spotDocs
+    .filter(doc => !doc.does_ignore_volume);
+
+  const futuresDocsWithoutIgnoredVolume = futuresDocs
+    .filter(doc => !doc.does_ignore_volume);
 
   /* set websocket connections */
   await getTicksForSpotInstruments(spotDocs);
   await getPricesForSpotInstruments(spotDocs);
-  await getLimitOrdersForSpotInstruments(spotDocs);
+  await getLimitOrdersForSpotInstruments(spotDocsWithoutIgnoredVolume);
 
   await getTicksForFuturesInstruments(futuresDocs);
   await getPricesForFuturesInstruments(futuresDocs);
-  await getLimitOrdersForFuturesInstruments(futuresDocs);
+  await getLimitOrdersForFuturesInstruments(futuresDocsWithoutIgnoredVolume);
   /* end */
 };

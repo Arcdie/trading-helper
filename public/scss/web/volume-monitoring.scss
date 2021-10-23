@@ -2,6 +2,27 @@
   padding: 15px;
 
   .container {
+    #spot, #futures {
+      width: 50%;
+      float: left;
+      display: inline-block;
+      box-sizing: border-box;
+      padding: 0 17px;
+
+      &#futures {
+        border-left: 1px solid black;
+      }
+
+      h2 {
+        text-align: center;
+        text-transform: uppercase;
+        font: 21px sans-serif;
+        padding-bottom: 10px;
+        border-bottom: 1px solid black;
+        margin-bottom: 17px;
+      }
+    }
+
     .instrument {
       &.is_monitoring {
         background-color: #06d73c40 !important;
@@ -13,7 +34,7 @@
 
       width: 260px;
       display: inline-block;
-      float: left;
+      // float: left;
       position: relative;
       border: 1px solid black;
       padding: 15px 10px;

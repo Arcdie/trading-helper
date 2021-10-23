@@ -20,5 +20,6 @@ router.post('/', commonMiddlewares, instrumentControllers.createInstrument);
 router.get('/upload-new-instruments-from-binance', commonMiddlewares, instrumentControllers.uploadNewInstrumentsFromBinance);
 
 router.get('/:id', commonMiddlewares, instrumentControllers.findOneById);
+router.patch('/:id', commonMiddlewares, instrumentControllers.updateInstrument);
 
 module.exports = router;

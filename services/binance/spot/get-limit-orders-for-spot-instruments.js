@@ -33,7 +33,7 @@ module.exports = async (instrumentsDocs = []) => {
 
     instrumentsDocs.forEach(doc => {
       const cutName = doc.name.toLowerCase();
-      connectStr += `${cutName}@depth@500ms/`;
+      connectStr += `${cutName}@depth@1000ms/`;
     });
 
     connectStr = connectStr.substring(0, connectStr.length - 1);

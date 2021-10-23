@@ -215,7 +215,9 @@ $(document).ready(async () => {
 });
 
 const addNewInstrument = (instrumentDoc) => {
-  $container.append(`<div class="instrument" id="instrument-${instrumentDoc._id}">
+  const container = instrumentDoc.is_futures ? 'futures' : 'spot';
+
+  $(`#${container}`).append(`<div class="instrument" id="instrument-${instrumentDoc._id}">
     <span class="instrument-name">${instrumentDoc.name}</span>
 
     <div class="asks"></div>

@@ -55,7 +55,10 @@ module.exports = async () => {
   */
 
   // update average volume per 15 minutes
-  await intervalUpdateAverageVolume(instrumentsDocs, 5 * 60 * 1000); // 5 minutes
+  await intervalUpdateAverageVolume(
+    instrumentsDocs.filter(doc => !doc.does_ignore_volume),
+    5 * 60 * 1000,
+  ); // 5 minutes
 
   // update price for instrument in database
   await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute

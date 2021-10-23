@@ -34,7 +34,11 @@ module.exports = async (req, res, next) => {
 
   const instrumentVolumeBounds = [];
 
-  await Promise.all(resultGetInstruments.result.map(async doc => {
+  const instrumentsDocsWithoutIgnoredVolume = resultGetInstruments.result.filter(
+    doc => !doc.does_ignore_volume,
+  );
+
+  await Promise.all(instrumentsDocsWithoutIgnoredVolume.map(async doc => {
     const key = `INSTRUMENT:${doc.name}:VOLUME_BOUNDS`;
 
     const data = await redis.hgetallAsync(key);
