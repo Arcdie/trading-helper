@@ -138,7 +138,7 @@ const checkInstrumentVolumeBounds = async ({
       const boundInRedis = JSON.parse(cacheInstrumentVolumeBounds[index]);
 
       if (boundInRedis) {
-        if (quantity < boundInRedis.average_volume_for_last_15_minutes) {
+        if (quantity < cacheInstrumentDoc) {
           boundsToRemove.push({
             price,
             quantity,
@@ -219,7 +219,7 @@ const checkInstrumentVolumeBounds = async ({
           is_ask: bound.isAsk,
           bound_id: bound.boundId,
           quantity: bound.quantity,
-          average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+          // average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
         }));
 
         sendData({
@@ -283,7 +283,7 @@ const checkInstrumentVolumeBounds = async ({
         bound_id: boundId,
         is_ask: bound.isAsk,
         quantity: bound.quantity,
-        average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+        // average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
       }));
 
       sendData({
