@@ -10,6 +10,7 @@ const commonMiddlewares = [
   getUser,
 ];
 
+router.post('/new-order', commonMiddlewares, binanceControllers.newOrder);
 router.post('/save-history-for-instruments', commonMiddlewares, binanceControllers.getAndSaveHistoryForInstruments);
 
 module.exports = router;

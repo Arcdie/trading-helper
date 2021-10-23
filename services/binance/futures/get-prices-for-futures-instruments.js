@@ -37,7 +37,6 @@ module.exports = async (instrumentsDocs = []) => {
 
       client.on('open', () => {
         log.info(`${CONNECTION_NAME} was opened`);
-        sendMessage(260325716, `${CONNECTION_NAME} was opened`);
 
         sendPongInterval = setInterval(() => {
           client.pong();
@@ -50,7 +49,11 @@ module.exports = async (instrumentsDocs = []) => {
 
       client.on('close', (message) => {
         log.info(`${CONNECTION_NAME} was closed`);
-        sendMessage(260325716, `${CONNECTION_NAME} was closed (${message})`);
+
+        if (message !== 1006) {
+          sendMessage(260325716, `${CONNECTION_NAME} was closed (${message})`);
+        }
+
         clearInterval(sendPongInterval);
         websocketConnect();
       });
