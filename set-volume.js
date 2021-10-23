@@ -1,6 +1,7 @@
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
+const moment = require('moment');
 const xml2js = require('xml2js');
 const readline = require('readline');
 
@@ -49,10 +50,14 @@ const setVolume = async () => {
     return false;
   }
 
-  const symbols = resultGetExchangeInfo.result.symbols
+  let symbols = resultGetExchangeInfo.result.symbols
     .map(elem => elem.symbol)
     .filter(elem => elem.includes('USDT'));
     // .filter(elem => elem.includes('ADAUSDT'));
+
+  const prevDay = moment().startOf('day').add(-1, 'days');
+
+  symbols = symbols.filter(symbol => ['BELUSDT', 'COMPUSDT', 'LINKUSDT', 'SOLUSDT', 'ALPHAUSDT'].includes(symbol));
 
   await (async () => {
     const lSymbols = symbols.length;
@@ -62,8 +67,9 @@ const setVolume = async () => {
 
       const resultGetCandles = await getCandles({
         symbol,
-        interval: '30m',
+        interval: '1d',
         limit: 1,
+        startTime: prevDay.unix() * 1000,
       });
 
       if (!resultGetCandles || !resultGetCandles.status) {
@@ -72,7 +78,7 @@ const setVolume = async () => {
       }
 
       const volume = parseFloat(resultGetCandles.result[0][5]);
-      const averageVolume = Math.ceil(volume / (30 / 5));
+      const averageVolume = Math.ceil(volume / 17280);
       const x2AverageVolume = Math.ceil(averageVolume * 2);
 
       // console.log('symbol', symbol);

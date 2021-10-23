@@ -127,7 +127,7 @@ const setWorkAmounts = async workAmounts => {
         }
       }
 
-      return tmp.toString().replace('.', ',');
+      return tmp.toFixed(3).toString().replace('.', ',');
     });
 
     filesNames.forEach(async fileName => {
@@ -147,9 +147,9 @@ const setWorkAmounts = async workAmounts => {
       const builder = new xml2js.Builder();
       const xml = builder.buildObject(parsedContent);
       fs.writeFileSync(`${pathToSettingsFolder}/${fileName}`, xml);
-
-      log.info(`Finished ${instrument.symbol}`);
     });
+
+    log.info(`Finished ${instrument.symbol}`);
   });
 };
 
