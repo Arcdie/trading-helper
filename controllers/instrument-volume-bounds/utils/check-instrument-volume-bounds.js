@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 const {
   isMongoId,
 } = require('validator');
@@ -151,6 +153,7 @@ const checkInstrumentVolumeBounds = async ({
             quantity,
             isAsk,
             boundId: boundInRedis.bound_id,
+            createdAt: boundInRedis.created_at,
           });
         }
       }
@@ -219,6 +222,7 @@ const checkInstrumentVolumeBounds = async ({
           is_ask: bound.isAsk,
           bound_id: bound.boundId,
           quantity: bound.quantity,
+          created_at: bound.createdAt,
           // average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
         }));
 
@@ -257,6 +261,8 @@ const checkInstrumentVolumeBounds = async ({
     });
 
   if (boundsToAdd.length) {
+    const createdAt = moment().unix();
+
     await Promise.all(boundsToAdd.map(async bound => {
       /*
       const resultCreate = await createInstrumentVolumeBound({
@@ -283,6 +289,7 @@ const checkInstrumentVolumeBounds = async ({
         bound_id: boundId,
         is_ask: bound.isAsk,
         quantity: bound.quantity,
+        created_at: createdAt,
         // average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
       }));
 
@@ -294,6 +301,7 @@ const checkInstrumentVolumeBounds = async ({
           price: bound.price,
           is_ask: bound.isAsk,
           quantity: bound.quantity,
+          created_at: createdAt,
           instrument_id: cacheInstrumentDoc._id,
           average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
         },

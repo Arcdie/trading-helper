@@ -16,6 +16,8 @@ const $mdcontent = $('div.md-content');
 const $modalWindow = $('div.pop-up div.md-modal');
 
 /* Functions */
+const getTimestamp = () => parseInt(new Date().getTime() / 1000, 10);
+
 const initPopWindow = (str) => {
   $modalWindow
     .find('div.md-content')

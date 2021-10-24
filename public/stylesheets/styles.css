@@ -270,12 +270,12 @@ input:checked + .slider:before {
     width: 260px;
     position: relative;
     border: 1px solid black;
-    padding: 15px 10px 45px;
+    padding: 10px 10px 45px;
     margin-right: 20px;
     margin-bottom: 20px;
     display: flex;
     flex-direction: column; }
-    .volume-monitoring .instrument.is_monitoring {
+    .volume-monitoring .instrument.is_monitoring span.instrument-name {
       background-color: #06d73c40 !important; }
     .volume-monitoring .instrument.not_processed {
       background-color: #ffca6a78; }
@@ -283,8 +283,10 @@ input:checked + .slider:before {
       text-align: center;
       display: block;
       cursor: pointer;
-      margin-bottom: 15px;
-      font: 19px sans-serif; }
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font: 19px sans-serif;
+      margin-bottom: 10px; }
     .volume-monitoring .instrument .instrument-price {
       text-align: right;
       border-top: 1px solid black;
@@ -301,10 +303,10 @@ input:checked + .slider:before {
       width: 100%;
       display: block;
       font: 16px monospace; }
-      .volume-monitoring .instrument .asks .level .quantity, .volume-monitoring .instrument .asks .level .price, .volume-monitoring .instrument .bids .level .quantity, .volume-monitoring .instrument .bids .level .price {
+      .volume-monitoring .instrument .asks .level .quantity, .volume-monitoring .instrument .asks .level .lifetime, .volume-monitoring .instrument .asks .level .price, .volume-monitoring .instrument .bids .level .quantity, .volume-monitoring .instrument .bids .level .lifetime, .volume-monitoring .instrument .bids .level .price {
         display: inline-block;
         box-sizing: border-box; }
-        .volume-monitoring .instrument .asks .level .quantity.price span.price_original, .volume-monitoring .instrument .asks .level .price.price span.price_original, .volume-monitoring .instrument .bids .level .quantity.price span.price_original, .volume-monitoring .instrument .bids .level .price.price span.price_original {
+        .volume-monitoring .instrument .asks .level .quantity.price span.price_original, .volume-monitoring .instrument .asks .level .lifetime.price span.price_original, .volume-monitoring .instrument .asks .level .price.price span.price_original, .volume-monitoring .instrument .bids .level .quantity.price span.price_original, .volume-monitoring .instrument .bids .level .lifetime.price span.price_original, .volume-monitoring .instrument .bids .level .price.price span.price_original {
           border-right: 1px solid black;
           margin-right: 5px;
           padding-right: 5px; }
@@ -313,7 +315,10 @@ input:checked + .slider:before {
     .volume-monitoring .instrument .asks.bids .price, .volume-monitoring .instrument .bids.bids .price {
       background-color: #a2ff9c96; }
     .volume-monitoring .instrument .level .quantity {
-      width: 40%; }
+      width: 23%; }
+    .volume-monitoring .instrument .level .lifetime {
+      width: 15%;
+      text-align: right; }
     .volume-monitoring .instrument .level .price {
       width: 56%;
       float: right; }

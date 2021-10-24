@@ -1,4 +1,4 @@
-/* global makeRequest,
+/* global makeRequest, getTimestamp,
 wsClient */
 
 /* Constants */
@@ -7,6 +7,7 @@ const URL_GET_ACTIVE_INSTRUMENTS = '/api/instruments/active';
 const URL_GET_INSTRUMENT_VOLUME_BOUNDS = '/api/instrument-volume-bounds';
 
 let instrumentsDocs = [];
+let nowTimestamp = getTimestamp();
 
 /* JQuery */
 const $container = $('.container');
@@ -73,15 +74,17 @@ wsClient.onmessage = async data => {
             break;
           }
 
-          targetBound.quantity = quantity;
-
           const $bound = $(`#bound-${boundId}`);
 
           const differenceBetweenPriceAndOrder = Math.abs(targetDoc.price - targetBound.price);
           const percentPerPrice = 100 / (targetDoc.price / differenceBetweenPriceAndOrder);
 
+          targetBound.quantity = quantity;
+          targetBound.price_original_percent = percentPerPrice;
+
           $bound.find('.quantity span').text(formatNumberToPretty(targetBound.quantity));
           $bound.find('.price .percent').text(`${percentPerPrice.toFixed(1)}%`);
+          recalculateOrderVolume();
         }
 
         break;
@@ -118,6 +121,8 @@ wsClient.onmessage = async data => {
             $(`#instrument-${instrumentId}`).remove();
             targetDoc.is_rendered = false;
           }
+
+          recalculateOrderVolume();
         }
 
         break;
@@ -191,9 +196,57 @@ $(document).ready(async () => {
         return 1;
       });
 
-    if (doc.asks.length || doc.bids.length) {
-      addNewInstrument(doc);
+    [...doc.asks, ...doc.bids].forEach(bound => {
+      const differenceBetweenPriceAndOrder = Math.abs(doc.price - bound.price);
+      const percentPerPrice = 100 / (doc.price / differenceBetweenPriceAndOrder);
+
+      bound.price_original_percent = percentPerPrice;
+      bound.lifetime = parseInt((nowTimestamp - bound.created_at) / 60, 10);
+    });
+  });
+
+  const docsToRender = instrumentsDocs
+    .filter(doc => doc.asks.length || doc.bids.length)
+    .sort((a, b) => {
+      let minPercentAskA = 100;
+      let minPercentBidA = 100;
+
+      let minPercentAskB = 100;
+      let minPercentBidB = 100;
+
+      let minPercentAsk = 100;
+      let minPercentBid = 100;
+
+      if (a.asks.length) {
+        minPercentAskA = a.asks[0].price_original_percent;
+      }
+
+      if (a.bids.length) {
+        minPercentBidA = a.bids[0].price_original_percent;
+      }
+
+      if (b.asks.length) {
+        minPercentAskB = b.asks[0].price_original_percent;
+      }
+
+      if (b.bids.length) {
+        minPercentBidB = b.bids[0].price_original_percent;
+      }
+
+      minPercentAsk = minPercentAskA <= minPercentBidA ? minPercentAskA : minPercentBidA;
+      minPercentBid = minPercentAskB <= minPercentBidB ? minPercentAskB : minPercentBidB;
+
+      if (minPercentAsk < minPercentBid) {
+        return -1;
+      }
+
+      return 1;
+    })
+    .forEach((doc, index) => {
       doc.is_rendered = true;
+      doc.index_order = index;
+
+      addNewInstrument(doc);
 
       doc.asks.forEach((bound, index) => {
         addNewVolumeToInstrument(doc, bound, index);
@@ -202,24 +255,39 @@ $(document).ready(async () => {
       doc.bids.forEach((bound, index) => {
         addNewVolumeToInstrument(doc, bound, index);
       });
-    }
-  });
+    });
 
   // update prices and calculate percents
   setInterval(updatePrices, 10 * 1000);
+
+  // update bounds lifetime
+  setInterval(() => updateLifetimes, 60 * 1000); // 1 minute
+
+  // update timestampt
+  setInterval(() => { nowTimestamp = getTimestamp(); }, 1000);
 
   $container
     .on('click', 'span.instrument-name', function () {
       const $instrument = $(this).closest('.instrument');
 
+      const instrumentId = $instrument.data('instrumentid');
+      const targetDoc = instrumentsDocs.find(doc => doc._id.toString() === instrumentId);
+
+      targetDoc.is_monitoring = !targetDoc.is_monitoring;
       $instrument.toggleClass('is_monitoring');
+      recalculateOrderVolume();
     });
 });
 
 const addNewInstrument = (instrumentDoc) => {
   const volumeContainer = instrumentDoc.is_futures ? 'futures' : 'spot';
 
-  $(`#${volumeContainer} .container`).append(`<div class="instrument" id="instrument-${instrumentDoc._id}">
+  $(`#${volumeContainer} .container`).append(`<div
+    class="instrument"
+    id="instrument-${instrumentDoc._id}"
+    data-instrumentid="${instrumentDoc._id}"
+    style="order: ${instrumentDoc.index_order || instrumentsDocs.length}"
+  >
     <span class="instrument-name">${instrumentDoc.name}</span>
 
     <div class="asks"></div>
@@ -233,17 +301,13 @@ const addNewInstrument = (instrumentDoc) => {
 const addNewVolumeToInstrument = (instrument, bound, index) => {
   const $instrument = $(`#instrument-${instrument._id}`);
 
-  const differenceBetweenPriceAndOrder = Math.abs(instrument.price - bound.price);
-  const percentPerPrice = 100 / (instrument.price / differenceBetweenPriceAndOrder);
-
   const blockWithLevel = `<div
     class="level"
     id="bound-${bound._id}"
   >
     <div class="quantity"><span>${formatNumberToPretty(bound.quantity)}</span></div>
-    <div class="price">
-      <span class="price_original">${bound.price}</span><span class="percent">${percentPerPrice.toFixed(1)}%</span>
-    </div>
+    <div class="lifetime"><span>${bound.lifetime}m</span></div>
+    <div class="price"><span class="price_original">${bound.price}</span><span class="percent">${bound.price_original_percent.toFixed(1)}%</span></div>
   </div>`;
 
   if (bound.is_ask) {
@@ -287,6 +351,15 @@ const updatePrices = () => {
   });
 };
 
+const updateLifetimes = () => {
+  instrumentsDocs.forEach(doc => {
+    [...doc.asks, ...doc.bids].forEach(bound => {
+      bound.lifetime = parseInt((nowTimestamp - bound.created_at) / 60, 10);
+      $(`#bound-${bound._id} .lifetime span`).text(`${bound.lifetime}m`);
+    });
+  });
+};
+
 const handlerNewInstrumentVolumeBound = (newBound) => {
   const {
     _id: boundId,
@@ -309,6 +382,12 @@ const handlerNewInstrumentVolumeBound = (newBound) => {
   }
 
   let indexOfElement = 0;
+
+  const differenceBetweenPriceAndOrder = Math.abs(instrumentDoc.price - newBound.price);
+  const percentPerPrice = 100 / (instrumentDoc.price / differenceBetweenPriceAndOrder);
+
+  newBound.price_original_percent = percentPerPrice;
+  newBound.lifetime = parseInt((nowTimestamp - newBound.created_at) / 60, 10);
 
   if (isAsk) {
     instrumentDoc.asks.push(newBound);
@@ -335,6 +414,68 @@ const handlerNewInstrumentVolumeBound = (newBound) => {
   }
 
   addNewVolumeToInstrument(instrumentDoc, newBound, indexOfElement);
+};
+
+const recalculateOrderVolume = () => {
+  let indexOrder = 1;
+
+  const favoriteDocs = instrumentsDocs
+    .filter(doc => doc.is_monitoring)
+    .forEach(doc => {
+      if (doc.index_order !== indexOrder) {
+        doc.index_order = indexOrder;
+        const $instrument = $(`#instrument-${doc._id}`);
+        $instrument.css('order', indexOrder);
+      }
+
+      indexOrder += 1;
+    });
+
+  const renderedDocs = instrumentsDocs
+    .filter(doc => doc.is_rendered && !doc.is_monitoring)
+    .sort((a, b) => {
+      let minPercentAskA = 100;
+      let minPercentBidA = 100;
+
+      let minPercentAskB = 100;
+      let minPercentBidB = 100;
+
+      let minPercentAsk = 100;
+      let minPercentBid = 100;
+
+      if (a.asks.length) {
+        minPercentAskA = a.asks[0].price_original_percent;
+      }
+
+      if (a.bids.length) {
+        minPercentBidA = a.bids[0].price_original_percent;
+      }
+
+      if (b.asks.length) {
+        minPercentAskB = b.asks[0].price_original_percent;
+      }
+
+      if (b.bids.length) {
+        minPercentBidB = b.bids[0].price_original_percent;
+      }
+
+      minPercentAsk = minPercentAskA <= minPercentBidA ? minPercentAskA : minPercentBidA;
+      minPercentBid = minPercentAskB <= minPercentBidB ? minPercentAskB : minPercentBidB;
+
+      if (minPercentAsk < minPercentBid) {
+        return -1;
+      }
+
+      return 1;
+    })
+    .forEach(doc => {
+      if (doc.index_order !== indexOrder) {
+        const $instrument = $(`#instrument-${doc._id}`);
+        $instrument.css('order', indexOrder);
+      }
+
+      indexOrder += 1;
+    });
 };
 
 const formatNumberToPretty = n => {

@@ -29,7 +29,9 @@
 
   .instrument {
     &.is_monitoring {
-      background-color: #06d73c40 !important;
+      span.instrument-name {
+        background-color: #06d73c40 !important;
+      }
     }
 
     &.not_processed {
@@ -40,7 +42,7 @@
     // float: left;
     position: relative;
     border: 1px solid black;
-    padding: 15px 10px 45px;
+    padding: 10px 10px 45px;
     margin-right: 20px;
     margin-bottom: 20px;
     display: flex;
@@ -50,8 +52,10 @@
       text-align: center;
       display: block;
       cursor: pointer;
-      margin-bottom: 15px;
+      padding-top: 5px;
+      padding-bottom: 5px;
       font: 19px sans-serif;
+      margin-bottom: 10px;
     }
 
     .instrument-price {
@@ -80,7 +84,7 @@
         display: block;
         font: 16px monospace;
 
-        .quantity, .price {
+        .quantity, .lifetime, .price {
           display: inline-block;
           box-sizing: border-box;
 
@@ -109,7 +113,12 @@
 
     .level {
       .quantity {
-        width: 40%;
+        width: 23%;
+      }
+
+      .lifetime {
+        width: 15%;
+        text-align: right;
       }
 
       .price {

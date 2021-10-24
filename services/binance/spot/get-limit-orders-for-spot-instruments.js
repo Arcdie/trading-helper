@@ -67,6 +67,7 @@ module.exports = async (instrumentsDocs = []) => {
       instrumentsQueues[doc.name] = new InstrumentQueue(doc.name);
     });
 
+    /*
     setInterval(() => {
       Object.keys(instrumentsQueues).forEach(key => {
         const lQueue = instrumentsQueues[key].queue.length;
@@ -76,6 +77,7 @@ module.exports = async (instrumentsDocs = []) => {
         }
       });
     }, 5000);
+    */
 
     let sendPongInterval;
     let connectStr = 'wss://stream.binance.com/stream?streams=';
