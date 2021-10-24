@@ -1,6 +1,7 @@
 const getMainPage = require('./get-main-page');
 const getTestPage = require('./get-test-page');
 const getProfilePage = require('./get-profile-page');
+const getExperimentPage = require('./get-experiment-page');
 const getLevelsMonitoringPage = require('./get-levels-monitoring-page');
 const getVolumeMonitoringPage = require('./get-volume-monitoring-page');
 const getRobotsStatisticsPage = require('./get-robots-statistics-page');
@@ -13,6 +14,7 @@ module.exports = {
   getMainPage,
   getTestPage,
   getProfilePage,
+  getExperimentPage,
   getLevelsMonitoringPage,
   getVolumeMonitoringPage,
   getRobotsStatisticsPage,

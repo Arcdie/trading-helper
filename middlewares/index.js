@@ -14,7 +14,9 @@ const morgan = require('../libs/morgan');
 
 const log = require('../libs/logger');
 const migrations = require('../migrations');
+const experiments = require('../experiments');
 const initServices = require('../services');
+
 
 const app = express();
 
@@ -67,5 +69,6 @@ process.on('uncaughtException', (err) => {
 
 initServices();
 migrations();
+experiments();
 
 module.exports = app;

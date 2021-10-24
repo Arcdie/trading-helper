@@ -1,0 +1,34 @@
+extends ../app
+
+block variables
+	-
+		const pageTitle = 'Эксперимент';
+
+block content
+	.page.experiment
+		.legend
+			p.values
+				| ОТКР
+				span.open 0
+				| МАКС
+				span.high 0
+				| МИН
+				span.low 0
+				| ЗАКР
+				span.close 0
+		
+		.charts-periods
+			.minute(data-type='minute')
+				span 10M
+			.hour(data-type='hour')
+				span 1Ч
+			.day.active(data-type='day')
+				span Д
+			.month(data-type='month')
+				span Мес
+				
+		.charts
+
+block scripts
+	script(src='/libs/trading-view-charts.min.js')
+	script(src='/javascripts/web/experiment.js')

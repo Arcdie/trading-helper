@@ -15,4 +15,5 @@ atom-sftp-sync.json
 off-atom-sftp-sync.json
 
 /logs
+/files
 .env

@@ -26,12 +26,9 @@ router.get('/robots-statistics', extendedMiddlewares, webControllers.getRobotsSt
 
 router.get('/instrument-tick-bounds', extendedMiddlewares, webControllers.getInstrumentTickBoundsPage);
 
+router.get('/experiment', extendedMiddlewares, webControllers.getExperimentPage);
+
 router.get('/auth/login', commonMiddlewares, webControllers.getLoginPage);
-router.get('/auth/registration', commonMiddlewares, webControllers.getRegistrationPage);
-
-
-router.get('/instructions/', commonMiddlewares, webControllers.getRegistrationPage);
-router.get('/auth/registration', commonMiddlewares, webControllers.getRegistrationPage);
 router.get('/auth/registration', commonMiddlewares, webControllers.getRegistrationPage);
 
 module.exports = router;
