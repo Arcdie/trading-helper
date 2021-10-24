@@ -20,13 +20,62 @@ const {
 
 const CONNECTION_NAME = 'Futures:Depth';
 
+class InstrumentQueue {
+  constructor(instrumentName) {
+    this.queue = [];
+    this.isActive = false;
+    this.instrumentName = instrumentName;
+  }
+
+  addIteration({ asks, bids }) {
+    this.queue.push([asks, bids]);
+
+    if (!this.isActive) {
+      this.isActive = true;
+      this.nextStep();
+    }
+  }
+
+  async nextStep() {
+    const lQueue = this.queue.length;
+
+    if (lQueue > 0) {
+      const [asks, bids] = this.queue.shift();
+
+      await checkInstrumentVolumeBounds({
+        asks,
+        bids,
+        instrumentName: this.instrumentName,
+      });
+
+      this.nextStep();
+    } else {
+      this.isActive = false;
+    }
+  }
+}
+
 module.exports = async (instrumentsDocs = []) => {
   try {
     if (!instrumentsDocs || !instrumentsDocs.length) {
       return true;
     }
 
-    const queue = [];
+    const instrumentsQueues = [];
+
+    instrumentsDocs.forEach(doc => {
+      instrumentsQueues[doc.name] = new InstrumentQueue(doc.name);
+    });
+
+    setInterval(() => {
+      Object.keys(instrumentsQueues).forEach(key => {
+        const lQueue = instrumentsQueues[key].queue.length;
+
+        if (lQueue > 0) {
+          console.log(key, lQueue);
+        }
+      });
+    }, 5000);
 
     let sendPongInterval;
     let connectStr = 'wss://fstream.binance.com/stream?streams=';
@@ -40,7 +89,6 @@ module.exports = async (instrumentsDocs = []) => {
 
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);
-      nextStep(queue);
 
       client.on('open', () => {
         log.info(`${CONNECTION_NAME} was opened`);
@@ -82,13 +130,17 @@ module.exports = async (instrumentsDocs = []) => {
           },
         } = parsedData;
 
+        instrumentsQueues[`${instrumentName}PERP`].addIteration({
+          asks, bids,
+        });
+
+        /*
         await checkInstrumentVolumeBounds({
           asks,
           bids,
           instrumentName: `${instrumentName}PERP`,
         });
 
-        /*
         queue.push({
           asks,
           bids,
@@ -105,6 +157,7 @@ module.exports = async (instrumentsDocs = []) => {
   }
 };
 
+/*
 const nextStep = async (queue) => {
   const targetElement = queue.shift();
 
@@ -124,3 +177,4 @@ const nextStep = async (queue) => {
 
   await nextStep(queue);
 };
+*/

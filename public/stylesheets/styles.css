@@ -248,74 +248,79 @@ input:checked + .slider:before {
 
 .volume-monitoring {
   padding: 15px; }
-  .volume-monitoring .container #spot, .volume-monitoring .container #futures {
+  .volume-monitoring #spot, .volume-monitoring #futures {
     width: 50%;
     float: left;
     display: inline-block;
     box-sizing: border-box;
     padding: 0 17px; }
-    .volume-monitoring .container #spot#futures, .volume-monitoring .container #futures#futures {
+    .volume-monitoring #spot#spot, .volume-monitoring #futures#spot {
       border-left: 1px solid black; }
-    .volume-monitoring .container #spot h2, .volume-monitoring .container #futures h2 {
+    .volume-monitoring #spot h2, .volume-monitoring #futures h2 {
       text-align: center;
       text-transform: uppercase;
       font: 21px sans-serif;
       padding-bottom: 10px;
       border-bottom: 1px solid black;
       margin-bottom: 17px; }
-  .volume-monitoring .container .instrument {
+  .volume-monitoring .container {
+    display: inline-flex;
+    flex-wrap: wrap; }
+  .volume-monitoring .instrument {
     width: 260px;
-    display: inline-block;
     position: relative;
     border: 1px solid black;
-    padding: 15px 10px;
+    padding: 15px 10px 45px;
     margin-right: 20px;
-    margin-bottom: 20px; }
-    .volume-monitoring .container .instrument.is_monitoring {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column; }
+    .volume-monitoring .instrument.is_monitoring {
       background-color: #06d73c40 !important; }
-    .volume-monitoring .container .instrument.not_processed {
+    .volume-monitoring .instrument.not_processed {
       background-color: #ffca6a78; }
-    .volume-monitoring .container .instrument span.instrument-name {
+    .volume-monitoring .instrument span.instrument-name {
       text-align: center;
       display: block;
       cursor: pointer;
       margin-bottom: 15px;
       font: 19px sans-serif; }
-    .volume-monitoring .container .instrument .instrument-price {
+    .volume-monitoring .instrument .instrument-price {
       text-align: right;
       border-top: 1px solid black;
       border-bottom: 1px solid black; }
-      .volume-monitoring .container .instrument .instrument-price span {
+      .volume-monitoring .instrument .instrument-price span {
         font: 18px monospace; }
-    .volume-monitoring .container .instrument .volume-5m {
-      margin-top: 10px;
-      font: 15px sans-serif; }
-      .volume-monitoring .container .instrument .volume-5m span {
+    .volume-monitoring .instrument .volume-5m {
+      font: 15px sans-serif;
+      position: absolute;
+      bottom: 15px; }
+      .volume-monitoring .instrument .volume-5m span {
         font-weight: bold; }
-    .volume-monitoring .container .instrument .asks .level, .volume-monitoring .container .instrument .bids .level {
+    .volume-monitoring .instrument .asks .level, .volume-monitoring .instrument .bids .level {
       width: 100%;
       display: block;
       font: 16px monospace; }
-      .volume-monitoring .container .instrument .asks .level .quantity, .volume-monitoring .container .instrument .asks .level .price, .volume-monitoring .container .instrument .bids .level .quantity, .volume-monitoring .container .instrument .bids .level .price {
+      .volume-monitoring .instrument .asks .level .quantity, .volume-monitoring .instrument .asks .level .price, .volume-monitoring .instrument .bids .level .quantity, .volume-monitoring .instrument .bids .level .price {
         display: inline-block;
         box-sizing: border-box; }
-        .volume-monitoring .container .instrument .asks .level .quantity.price span.price_original, .volume-monitoring .container .instrument .asks .level .price.price span.price_original, .volume-monitoring .container .instrument .bids .level .quantity.price span.price_original, .volume-monitoring .container .instrument .bids .level .price.price span.price_original {
+        .volume-monitoring .instrument .asks .level .quantity.price span.price_original, .volume-monitoring .instrument .asks .level .price.price span.price_original, .volume-monitoring .instrument .bids .level .quantity.price span.price_original, .volume-monitoring .instrument .bids .level .price.price span.price_original {
           border-right: 1px solid black;
           margin-right: 5px;
           padding-right: 5px; }
-    .volume-monitoring .container .instrument .asks.asks .price, .volume-monitoring .container .instrument .bids.asks .price {
+    .volume-monitoring .instrument .asks.asks .price, .volume-monitoring .instrument .bids.asks .price {
       background-color: #ff9c9c96; }
-    .volume-monitoring .container .instrument .asks.bids .price, .volume-monitoring .container .instrument .bids.bids .price {
+    .volume-monitoring .instrument .asks.bids .price, .volume-monitoring .instrument .bids.bids .price {
       background-color: #a2ff9c96; }
-    .volume-monitoring .container .instrument .level .quantity {
+    .volume-monitoring .instrument .level .quantity {
       width: 40%; }
-    .volume-monitoring .container .instrument .level .price {
+    .volume-monitoring .instrument .level .price {
       width: 56%;
       float: right; }
-      .volume-monitoring .container .instrument .level .price .price_original {
+      .volume-monitoring .instrument .level .price .price_original {
         width: 64%;
         display: inline-block; }
-      .volume-monitoring .container .instrument .level .price .percent {
+      .volume-monitoring .instrument .level .price .percent {
         width: 28%;
         float: right; }
 

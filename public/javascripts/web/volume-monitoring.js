@@ -80,7 +80,7 @@ wsClient.onmessage = async data => {
           const differenceBetweenPriceAndOrder = Math.abs(targetDoc.price - targetBound.price);
           const percentPerPrice = 100 / (targetDoc.price / differenceBetweenPriceAndOrder);
 
-          $bound.find('.quantity span').text(targetBound.quantity);
+          $bound.find('.quantity span').text(formatNumberToPretty(targetBound.quantity));
           $bound.find('.price .percent').text(`${percentPerPrice.toFixed(1)}%`);
         }
 
@@ -116,6 +116,7 @@ wsClient.onmessage = async data => {
             );
 
             $(`#instrument-${instrumentId}`).remove();
+            targetDoc.is_rendered = false;
           }
         }
 
@@ -134,7 +135,7 @@ wsClient.onmessage = async data => {
           targetDoc.average_volume_for_last_15_minutes = parseInt(averageVolumeForLast15Minutes, 10);
 
           const $instrument = $(`#instrument-${instrumentId}`);
-          $instrument.find('.volume-5m span').text(targetDoc.average_volume_for_last_15_minutes);
+          $instrument.find('.volume-5m span').text(formatNumberToPretty(targetDoc.average_volume_for_last_15_minutes));
         }
 
         break;
@@ -192,6 +193,7 @@ $(document).ready(async () => {
 
     if (doc.asks.length || doc.bids.length) {
       addNewInstrument(doc);
+      doc.is_rendered = true;
 
       doc.asks.forEach((bound, index) => {
         addNewVolumeToInstrument(doc, bound, index);
@@ -215,16 +217,16 @@ $(document).ready(async () => {
 });
 
 const addNewInstrument = (instrumentDoc) => {
-  const container = instrumentDoc.is_futures ? 'futures' : 'spot';
+  const volumeContainer = instrumentDoc.is_futures ? 'futures' : 'spot';
 
-  $(`#${container}`).append(`<div class="instrument" id="instrument-${instrumentDoc._id}">
+  $(`#${volumeContainer} .container`).append(`<div class="instrument" id="instrument-${instrumentDoc._id}">
     <span class="instrument-name">${instrumentDoc.name}</span>
 
     <div class="asks"></div>
     <div class="instrument-price"><span>${instrumentDoc.price}</span></div>
     <div class="bids"></div>
 
-    <div class="volume-5m">5М объем: <span>${parseInt(instrumentDoc.average_volume_for_last_15_minutes, 10)}</span></div>
+    <div class="volume-5m">5М объем: <span>${formatNumberToPretty(parseInt(instrumentDoc.average_volume_for_last_15_minutes, 10))}</span></div>
   </div>`);
 };
 
@@ -238,7 +240,7 @@ const addNewVolumeToInstrument = (instrument, bound, index) => {
     class="level"
     id="bound-${bound._id}"
   >
-    <div class="quantity"><span>${bound.quantity}</span></div>
+    <div class="quantity"><span>${formatNumberToPretty(bound.quantity)}</span></div>
     <div class="price">
       <span class="price_original">${bound.price}</span><span class="percent">${percentPerPrice.toFixed(1)}%</span>
     </div>
@@ -301,6 +303,11 @@ const handlerNewInstrumentVolumeBound = (newBound) => {
     return false;
   }
 
+  if (!instrumentDoc.is_rendered) {
+    addNewInstrument(instrumentDoc);
+    instrumentDoc.is_rendered = true;
+  }
+
   let indexOfElement = 0;
 
   if (isAsk) {
@@ -328,4 +335,12 @@ const handlerNewInstrumentVolumeBound = (newBound) => {
   }
 
   addNewVolumeToInstrument(instrumentDoc, newBound, indexOfElement);
+};
+
+const formatNumberToPretty = n => {
+  if (n < 1e3) return n;
+  if (n >= 1e3 && n < 1e6) return +(n / 1e3).toFixed(1) + 'K';
+  if (n >= 1e6 && n < 1e9) return +(n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e9 && n < 1e12) return +(n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e12) return +(n / 1e12).toFixed(1) + 'T';
 };

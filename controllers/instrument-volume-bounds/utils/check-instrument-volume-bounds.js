@@ -138,7 +138,7 @@ const checkInstrumentVolumeBounds = async ({
       const boundInRedis = JSON.parse(cacheInstrumentVolumeBounds[index]);
 
       if (boundInRedis) {
-        if (quantity < cacheInstrumentDoc) {
+        if (quantity < cacheInstrumentDoc.average_volume_for_last_15_minutes) {
           boundsToRemove.push({
             price,
             quantity,
