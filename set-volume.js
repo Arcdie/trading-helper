@@ -1,33 +1,17 @@
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
-const moment = require('moment');
 const xml2js = require('xml2js');
-const readline = require('readline');
-
-const {
-  isNumber,
-} = require('lodash');
-
-const {
-  sleep,
-} = require('./libs/support');
-
-const {
-  getCandles,
-} = require('./controllers/binance/utils/get-candles');
 
 xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
+require('./middlewares/utils/set-env');
+require('./libs/mongodb');
+
 const log = require('./libs/logger');
 
-const {
-  getExchangeInfo,
-} = require('./controllers/binance/utils/get-exchange-info');
-
-const {
-  getBinanceInstruments,
-} = require('./controllers/binance/utils/get-binance-instruments');
+const Candle = require('./models/Candle');
+const InstrumentNew = require('./models/InstrumentNew');
 
 const pathToRoot = path.parse(process.cwd()).root;
 // const pathToSettingsFolder = path.join(__dirname, './files/MVS');
@@ -41,73 +25,77 @@ if (!fs.existsSync(pathToSettingsFolder)) {
 const filesNames = fs.readdirSync(pathToSettingsFolder);
 
 const setVolume = async () => {
-  log.info('Это может занять некоторое время');
+  const instrumentsDocs = await InstrumentNew.find({
+    is_active: true,
+  }).exec();
 
-  const resultGetExchangeInfo = await getExchangeInfo();
+  for (const doc of instrumentsDocs) {
+    const candlesDocs = await Candle
+      .find({ instrument_id: doc._id }, { data: 1 })
+      .sort({ time: -1 })
+      .limit(1440)
+      .exec();
 
-  if (!resultGetExchangeInfo || !resultGetExchangeInfo.status) {
-    log.error(resultGetExchangeInfo.message || 'Cant getExchangeInfo');
-    return false;
-  }
+    if (!candlesDocs || !candlesDocs.length) {
+      log.warn(`No candles for ${doc.name}`);
+      continue;
+    }
 
-  let symbols = resultGetExchangeInfo.result.symbols
-    .map(elem => elem.symbol)
-    .filter(elem => elem.includes('USDT'));
-    // .filter(elem => elem.includes('ADAUSDT'));
+    let maxVolume = candlesDocs[0].data[4];
 
-  const prevDay = moment().startOf('day').add(-1, 'days');
+    candlesDocs.forEach(candleDoc => {
+      if (candleDoc.data[4] > maxVolume) {
+        maxVolume = candleDoc.data[4];
+      }
+    });
 
-  symbols = symbols.filter(symbol => ['BELUSDT', 'COMPUSDT', 'LINKUSDT', 'SOLUSDT', 'ALPHAUSDT'].includes(symbol));
+    if (!maxVolume) {
+      log.warn(`maxVolume = 0 for ${doc.name}`);
+      continue;
+    }
 
-  await (async () => {
-    const lSymbols = symbols.length;
+    const halfFromMaxVolume = Math.ceil(maxVolume / 2);
 
-    for (let i = 0; i < lSymbols; i += 1) {
-      const symbol = symbols[i];
+    let docName = doc.name;
+    const isFutures = doc.is_futures;
 
-      const resultGetCandles = await getCandles({
-        symbol,
-        interval: '1d',
-        limit: 1,
-        startTime: prevDay.unix() * 1000,
-      });
+    if (isFutures) {
+      docName = docName.replace('PERP', '');
+    }
 
-      if (!resultGetCandles || !resultGetCandles.status) {
-        log.warn(resultGetCandles.message || 'Cant getCandles');
-        continue;
+    filesNames.forEach(async fileName => {
+      if (!fileName.includes(docName)) {
+        return true;
       }
 
-      const volume = parseFloat(resultGetCandles.result[0][5]);
-      const averageVolume = Math.ceil(volume / 17280);
-      const x2AverageVolume = Math.ceil(averageVolume * 2);
-
-      // console.log('symbol', symbol);
-      // console.log('volume', volume);
-      // console.log('averageVolume', averageVolume);
-
-      filesNames.forEach(async fileName => {
-        if (!fileName.includes(symbol)) {
+      if (isFutures) {
+        if (!fileName.includes(`CCUR_FUT.${docName}`)) {
           return true;
         }
+      } else {
+        if (!fileName.includes(`CCUR.${docName}`)) {
+          return true;
+        }
+      }
 
-        const fileContent = fs.readFileSync(`${pathToSettingsFolder}/${fileName}`, 'utf8');
-        const parsedContent = await xml2js.parseStringPromise(fileContent);
+      const fileContent = fs.readFileSync(`${pathToSettingsFolder}/${fileName}`, 'utf8');
+      const parsedContent = await xml2js.parseStringPromise(fileContent);
 
-        parsedContent.Settings.DOM[0].FilledAt[0].$.Value = averageVolume.toString();
-        parsedContent.Settings.DOM[0].BigAmount[0].$.Value = averageVolume.toString();
-        parsedContent.Settings.DOM[0].HugeAmount[0].$.Value = x2AverageVolume.toString();
+      parsedContent.Settings.DOM[0].FilledAt[0].$.Value = halfFromMaxVolume.toString();
+      parsedContent.Settings.DOM[0].BigAmount[0].$.Value = halfFromMaxVolume.toString();
+      parsedContent.Settings.DOM[0].HugeAmount[0].$.Value = maxVolume.toString();
 
-        parsedContent.Settings.CLUSTER_PANEL[0].FilledAt[0].$.Value = averageVolume.toString();
+      parsedContent.Settings.CLUSTER_PANEL[0].FilledAt[0].$.Value = maxVolume.toString();
 
-        const builder = new xml2js.Builder();
-        const xml = builder.buildObject(parsedContent);
-        fs.writeFileSync(`${pathToSettingsFolder}/${fileName}`, xml);
-      });
+      const builder = new xml2js.Builder();
+      const xml = builder.buildObject(parsedContent);
+      fs.writeFileSync(`${pathToSettingsFolder}/${fileName}`, xml);
+    });
 
-      await sleep(500);
-      log.info(`Ended ${symbol}`);
-    }
-  })();
+    log.info(`Ended ${doc.name}`);
+  }
+
+  log.info('Finished');
 };
 
 setVolume();

@@ -6,30 +6,8 @@ const Candle = new mongoose.Schema({
     required: true,
   },
 
-  high: {
-    type: Number,
-    required: true,
-  },
-
-  low: {
-    type: Number,
-    required: true,
-  },
-
-  open: {
-    type: Number,
-    required: true,
-  },
-
-  close: {
-    type: Number,
-    required: true,
-  },
-
-  volume: {
-    type: Number,
-    required: true,
-  },
+  // open, close, low, high, volume
+  data: [Number, Number, Number, Number, Number],
 
   time: {
     type: Date,
@@ -37,12 +15,6 @@ const Candle = new mongoose.Schema({
   },
 
   created_at: {
-    type: Date,
-    required: true,
-    default: Date.now,
-  },
-
-  updated_at: {
     type: Date,
     required: true,
     default: Date.now,

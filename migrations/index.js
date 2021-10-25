@@ -1,19 +1,7 @@
-const addIsModeratedAndIsActiveToInstruments = require('./add-is-moderated-and-is-active-to-instruments');
-
-const addDoesExistRobotToInstruments = require('./add-does-exist-robot-to-instruments');
-const addDoesIgnoreVolumeToInstruments = require('./add-does-ignore-volume-to-instruments');
-
-const addTimeframeToLevelBounds = require('./add-timeframe-to-level-bounds');
-
-const changeNewInstruments = require('./change-new-instruments');
+const loadDailyKlines = require('./load-daily-klines');
+const createCandlesUsingDailyFiles = require('./create-candles-using-daily-files');
 
 module.exports = () => {
-  // addIsModeratedAndIsActiveToInstruments();
-
-  // addDoesExistRobotToInstruments();
-  // addDoesIgnoreVolumeToInstruments();
-
-  // addTimeframeToLevelBounds();
-
-  // changeNewInstruments();
+  // loadDailyKlines();
+  // createCandlesUsingDailyFiles();
 };

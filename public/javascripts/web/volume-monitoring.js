@@ -273,8 +273,14 @@ $(document).ready(async () => {
       const instrumentId = $instrument.data('instrumentid');
       const targetDoc = instrumentsDocs.find(doc => doc._id.toString() === instrumentId);
 
-      targetDoc.is_monitoring = !targetDoc.is_monitoring;
-      $instrument.toggleClass('is_monitoring');
+      if (targetDoc.is_monitoring) {
+        targetDoc.is_monitoring = false;
+        $instrument.removeClass('is_monitoring');
+      } else {
+        targetDoc.is_monitoring = true;
+        $instrument.addClass('is_monitoring');
+      }
+
       recalculateOrderVolume();
     });
 });

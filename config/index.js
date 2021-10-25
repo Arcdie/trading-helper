@@ -7,7 +7,7 @@ module.exports = {
   },
 
   mongodbConf: {
-    url: `mongodb+srv://${process.env.MONGODB_LOGIN}:${process.env.MONGODB_PASSWORD}@cluster0.xqo13.mongodb.net/${process.env.MONGODB_DATABASE}?retryWrites=true&w=majority`,
+    url: `mongodb://${process.env.MONGODB_HOST}:${process.env.MONGODB_PORT}/${process.env.MONGODB_DATABASE}`,
     options: {
       connectTimeoutMS: 30000,
     },

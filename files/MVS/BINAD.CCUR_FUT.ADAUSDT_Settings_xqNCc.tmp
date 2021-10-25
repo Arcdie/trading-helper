@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Settings>
   <DOM>
-    <FilledAt Value="322359"/>
+    <FilledAt Value="1748584"/>
     <AutoScroll Value="True"/>
     <ScrollStepTurbo Value="100"/>
     <StringHeight Value="11"/>
-    <BigAmount Value="322359"/>
-    <HugeAmount Value="644718"/>
+    <BigAmount Value="1748584"/>
+    <HugeAmount Value="3497167"/>
     <PlayBigAmount Value="False"/>
     <PlayHugeAmount Value="False"/>
     <RulerDataType Value="2"/>
@@ -33,7 +33,7 @@
     <PlayBigAmount Value="False"/>
   </TICK_PANEL>
   <CLUSTER_PANEL>
-    <FilledAt Value="322359"/>
+    <FilledAt Value="3497167"/>
     <ShowClusterPanel Value="True"/>
     <TimeFrame Value="5"/>
     <GridWidth Value="543"/>

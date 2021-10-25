@@ -93,11 +93,13 @@ const createCandle = async ({
 
   const newCandle = new Candle({
     instrument_id: instrumentId,
-    open: parseFloat(open),
-    high: parseFloat(high),
-    low: parseFloat(low),
-    close: parseFloat(close),
-    volume: parseFloat(volume),
+    data: [
+      parseFloat(open),
+      parseFloat(close),
+      parseFloat(low),
+      parseFloat(high),
+      parseFloat(volume),
+    ],
     time: startTime,
   });
 
