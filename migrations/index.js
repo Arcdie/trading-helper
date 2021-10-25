@@ -7,5 +7,5 @@ module.exports = () => {
   // loadDailyKlines();
   // createCandlesUsingDailyFiles();
 
-  addVolumeToCandles();
+  // addVolumeToCandles();
 };

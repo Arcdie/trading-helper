@@ -77,6 +77,8 @@ const checkInstrumentVolumeBounds = async ({
 
   cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
 
+  const halfAverageVolume = Math.ceil(cacheInstrumentDoc.average_volume / 2);
+
   if (!cacheInstrumentVolumeBoundsKeys) {
     cacheInstrumentVolumeBoundsKeys = [];
   }
@@ -140,7 +142,7 @@ const checkInstrumentVolumeBounds = async ({
       const boundInRedis = JSON.parse(cacheInstrumentVolumeBounds[index]);
 
       if (boundInRedis) {
-        if (quantity < cacheInstrumentDoc.average_volume_for_last_15_minutes * 2) {
+        if (quantity < halfAverageVolume) {
           boundsToRemove.push({
             price,
             quantity,
@@ -246,7 +248,7 @@ const checkInstrumentVolumeBounds = async ({
   [...asks, ...bids]
     .filter(([price]) => !cacheInstrumentVolumeBoundsKeys.some(key => parseFloat(key) === price))
     .forEach(([price, quantity, isAsk]) => {
-      if (quantity > cacheInstrumentDoc.average_volume_for_last_15_minutes * 2) {
+      if (quantity > halfAverageVolume) {
         const differenceBetweenPriceAndOrder = Math.abs(cacheInstrumentDoc.price - price);
         const percentPerPrice = 100 / (cacheInstrumentDoc.price / differenceBetweenPriceAndOrder);
 
@@ -303,7 +305,7 @@ const checkInstrumentVolumeBounds = async ({
           quantity: bound.quantity,
           created_at: createdAt,
           instrument_id: cacheInstrumentDoc._id,
-          average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+          // average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
         },
       });
     }));
