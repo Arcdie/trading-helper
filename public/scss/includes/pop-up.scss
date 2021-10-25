@@ -78,7 +78,24 @@ div.md-show.md-modal div.md-content {
   padding: 20px;
   background-color: white;
 
-  .tv-chart-window {
+  &.tv-chart-window {
 
+  }
+
+  &.volume-monitroing-settings {
+    width: 300px;
+    height: 200px;
+
+    .volume-monitroing-settings-container {
+      h2 {
+        font: 15px sans-serif;
+        border-bottom: 1px solid black;
+      }
+
+      div {
+        margin-top: 8px;
+        margin-bottom: 8px;
+      }
+    }
   }
 }

@@ -99,6 +99,15 @@ div.md-show.md-modal div.md-content {
 .window {
   padding: 20px;
   background-color: white; }
+  .window.volume-monitroing-settings {
+    width: 300px;
+    height: 200px; }
+    .window.volume-monitroing-settings .volume-monitroing-settings-container h2 {
+      font: 15px sans-serif;
+      border-bottom: 1px solid black; }
+    .window.volume-monitroing-settings .volume-monitroing-settings-container div {
+      margin-top: 8px;
+      margin-bottom: 8px; }
 
 .switch {
   position: relative;
@@ -297,7 +306,8 @@ input:checked + .slider:before {
     float: left;
     display: inline-block;
     box-sizing: border-box;
-    padding: 0 17px; }
+    padding: 0 17px;
+    position: relative; }
     .volume-monitoring #spot#spot, .volume-monitoring #futures#spot {
       border-left: 1px solid black; }
     .volume-monitoring #spot h2, .volume-monitoring #futures h2 {
@@ -306,7 +316,16 @@ input:checked + .slider:before {
       font: 21px sans-serif;
       padding-bottom: 10px;
       border-bottom: 1px solid black;
-      margin-bottom: 17px; }
+      margin-bottom: 17px;
+      position: relative;
+      z-index: 8; }
+  .volume-monitoring .settings {
+    position: absolute;
+    right: 20px;
+    top: 5px;
+    z-index: 9; }
+    .volume-monitoring .settings img {
+      width: 22px; }
   .volume-monitoring .container {
     display: inline-flex;
     flex-wrap: wrap; }

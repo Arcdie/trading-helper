@@ -27,6 +27,43 @@ const windows = {
     </div>`;
   },
 
+  getVolumeMonitoringSettings(settings) {
+    return `<div class="window volume-monitroing-settings">
+      <button class="close"></button>
+
+      <div class="volume-monitroing-settings-container">
+        <h2>Spot</h2>
+        <div class="spot-settings">
+          <ul>
+            <li>
+              <input type="checkbox" id="spot-direction">
+              <label for="spot-direction">Сортировка по % от цены</label>
+            <li/>
+
+            <li>
+              <input type="checkbox" id="spot-lifetime">
+              <label for="spot-lifetime">Сортировка по времени жизни</label>
+            <li/>
+          </ul>
+        </div>
+
+        <h2>Futures</h2>
+        <div class="futures-settings">
+          <ul>
+            <li>
+              <input type="checkbox" id="futures-direction">
+              <label for="futures-direction">Сортировка по % от цены</label>
+            <li/>
+            <li>
+              <input type="checkbox" id="futures-lifetime">
+              <label for="futures-lifetime">Сортировка по времени жизни</label>
+            <li/>
+          </ul>
+        </div>
+      </div>
+    </div>`;
+  },
+
   // <iframe src="https://google.com" width="700" height="200" align="left">
   //    Ваш браузер не поддерживает плавающие фреймы!
   // </iframe>

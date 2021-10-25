@@ -1,5 +1,5 @@
-/* global makeRequest, getTimestamp,
-wsClient */
+/* global makeRequest, getTimestamp, initPopWindow,
+windows, wsClient */
 
 /* Constants */
 
@@ -8,6 +8,18 @@ const URL_GET_INSTRUMENT_VOLUME_BOUNDS = '/api/instrument-volume-bounds';
 
 let instrumentsDocs = [];
 let nowTimestamp = getTimestamp();
+
+const settings = {
+  spot: {
+    sortByDistaceToPrice: true,
+    sortByLifeTimeVolume: false,
+  },
+
+  futures: {
+    sortByDistaceToPrice: true,
+    sortByLifeTimeVolume: false,
+  },
+};
 
 /* JQuery */
 const $container = $('.container');
@@ -152,6 +164,7 @@ wsClient.onmessage = async data => {
 };
 
 $(document).ready(async () => {
+  // initPopWindow(windows.getVolumeMonitoringSettings(settings));
   const resultGetInstruments = await makeRequest({
     method: 'GET',
     url: URL_GET_ACTIVE_INSTRUMENTS,
@@ -282,6 +295,11 @@ $(document).ready(async () => {
       }
 
       recalculateOrderVolume();
+    });
+
+  $('.settings')
+    .on('click', () => {
+      initPopWindow(windows.getVolumeMonitoringSettings(settings));
     });
 });
 
