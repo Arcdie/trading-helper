@@ -1,6 +1,7 @@
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
+const moment = require('moment');
 const xml2js = require('xml2js');
 
 xml2js.parseStringPromise = util.promisify(xml2js.parseString);
@@ -10,7 +11,6 @@ require('./libs/mongodb');
 
 const log = require('./libs/logger');
 
-const Candle = require('./models/Candle');
 const InstrumentNew = require('./models/InstrumentNew');
 
 const pathToRoot = path.parse(process.cwd()).root;
@@ -29,32 +29,8 @@ const setVolume = async () => {
     is_active: true,
   }).exec();
 
-  for (const doc of instrumentsDocs) {
-    const candlesDocs = await Candle
-      .find({ instrument_id: doc._id }, { data: 1 })
-      .sort({ time: -1 })
-      .limit(1440)
-      .exec();
-
-    if (!candlesDocs || !candlesDocs.length) {
-      log.warn(`No candles for ${doc.name}`);
-      continue;
-    }
-
-    let maxVolume = candlesDocs[0].data[4];
-
-    candlesDocs.forEach(candleDoc => {
-      if (candleDoc.data[4] > maxVolume) {
-        maxVolume = candleDoc.data[4];
-      }
-    });
-
-    if (!maxVolume) {
-      log.warn(`maxVolume = 0 for ${doc.name}`);
-      continue;
-    }
-
-    const halfFromMaxVolume = Math.ceil(maxVolume / 2);
+  await Promise.all(instrumentsDocs.map(async doc => {
+    const halfFromAverageVolume = Math.ceil(doc.average_volume / 2);
 
     let docName = doc.name;
     const isFutures = doc.is_futures;
@@ -81,11 +57,11 @@ const setVolume = async () => {
       const fileContent = fs.readFileSync(`${pathToSettingsFolder}/${fileName}`, 'utf8');
       const parsedContent = await xml2js.parseStringPromise(fileContent);
 
-      parsedContent.Settings.DOM[0].FilledAt[0].$.Value = halfFromMaxVolume.toString();
-      parsedContent.Settings.DOM[0].BigAmount[0].$.Value = halfFromMaxVolume.toString();
-      parsedContent.Settings.DOM[0].HugeAmount[0].$.Value = maxVolume.toString();
+      parsedContent.Settings.DOM[0].FilledAt[0].$.Value = halfFromAverageVolume.toString();
+      parsedContent.Settings.DOM[0].BigAmount[0].$.Value = halfFromAverageVolume.toString();
+      parsedContent.Settings.DOM[0].HugeAmount[0].$.Value = doc.average_volume.toString();
 
-      parsedContent.Settings.CLUSTER_PANEL[0].FilledAt[0].$.Value = maxVolume.toString();
+      parsedContent.Settings.CLUSTER_PANEL[0].FilledAt[0].$.Value = doc.average_volume.toString();
 
       const builder = new xml2js.Builder();
       const xml = builder.buildObject(parsedContent);
@@ -93,7 +69,7 @@ const setVolume = async () => {
     });
 
     log.info(`Ended ${doc.name}`);
-  }
+  }));
 
   log.info('Finished');
 };

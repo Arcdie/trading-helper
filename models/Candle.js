@@ -6,8 +6,13 @@ const Candle = new mongoose.Schema({
     required: true,
   },
 
-  // open, close, low, high, volume
-  data: [Number, Number, Number, Number, Number],
+  // open, close, low, high
+  data: [Number, Number, Number, Number],
+
+  volume: {
+    type: Number,
+    required: true,
+  },
 
   time: {
     type: Date,

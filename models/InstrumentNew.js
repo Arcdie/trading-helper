@@ -22,6 +22,11 @@ const InstrumentNew = new mongoose.Schema({
     required: true,
   },
 
+  average_volume: {
+    type: Number,
+    default: 0,
+  },
+
   average_volume_for_last_15_minutes: {
     type: Number,
     default: 0,

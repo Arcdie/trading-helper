@@ -13,6 +13,7 @@ const updateInstrument = async ({
   instrumentId,
 
   price,
+  averageVolume,
   doesIgnoreVolume,
   averageVolumeForLast15Minutes,
 }) => {
@@ -27,6 +28,10 @@ const updateInstrument = async ({
 
   if (price) {
     updateObj.price = parseFloat(price);
+  }
+
+  if (averageVolume) {
+    updateObj.average_volume = averageVolume;
   }
 
   if (averageVolumeForLast15Minutes) {

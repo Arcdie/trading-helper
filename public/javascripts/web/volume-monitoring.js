@@ -131,16 +131,16 @@ wsClient.onmessage = async data => {
       case 'updateAverageVolume': {
         const {
           instrumentId,
-          averageVolumeForLast15Minutes,
+          averageVolume,
         } = parsedData.data;
 
         const targetDoc = instrumentsDocs.find(doc => doc._id.toString() === instrumentId);
 
         if (targetDoc) {
-          targetDoc.average_volume_for_last_15_minutes = parseInt(averageVolumeForLast15Minutes, 10);
+          targetDoc.average_volume = parseInt(averageVolume, 10);
 
           const $instrument = $(`#instrument-${instrumentId}`);
-          $instrument.find('.volume-5m span').text(formatNumberToPretty(targetDoc.average_volume_for_last_15_minutes));
+          $instrument.find('.volume-5m span').text(formatNumberToPretty(targetDoc.average_volume));
         }
 
         break;
@@ -300,7 +300,7 @@ const addNewInstrument = (instrumentDoc) => {
     <div class="instrument-price"><span>${instrumentDoc.price}</span></div>
     <div class="bids"></div>
 
-    <div class="volume-5m">5М объем: <span>${formatNumberToPretty(parseInt(instrumentDoc.average_volume_for_last_15_minutes, 10))}</span></div>
+    <div class="volume-5m">Объем: <span>${formatNumberToPretty(parseInt(instrumentDoc.average_volume, 10))}</span></div>
   </div>`);
 };
 

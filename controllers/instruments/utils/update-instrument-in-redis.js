@@ -6,6 +6,7 @@ const updateInstrumentInRedis = async ({
   instrumentName,
 
   price,
+  averageVolume,
   averageVolumeForLast15Minutes,
 }) => {
   if (!instrumentName) {
@@ -37,6 +38,10 @@ const updateInstrumentInRedis = async ({
 
   if (price) {
     cacheDoc.price = parseFloat(price);
+  }
+
+  if (averageVolume) {
+    cacheDoc.average_volume = averageVolume;
   }
 
   if (averageVolumeForLast15Minutes) {

@@ -54,48 +54,35 @@ module.exports = async () => {
   }, 10 * 1000); // 10 seconds
   */
 
-  // update average volume per 15 minutes
-  await intervalUpdateAverageVolume(
-    instrumentsDocs.filter(doc => !doc.does_ignore_volume),
-    5 * 60 * 1000,
-  ); // 5 minutes
-
   // update price for instrument in database
   await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
+
+  // update average volume
+  const nowTimeUnix = moment().unix();
+  const startNextDayUnix = moment().add(1, 'days').startOf('day').unix();
+  const differenceBetweenNowAndTomorrow = startNextDayUnix - nowTimeUnix;
+
+  setTimeout(async () => {
+    await intervalUpdateAverageVolume(
+      instrumentsDocs.filter(doc => !doc.does_ignore_volume),
+      24 * 60 * 60 * 1000, // 24 hours
+    );
+  }, differenceBetweenNowAndTomorrow * 1000);
 };
 
 const intervalUpdateAverageVolume = async (instrumentsDocs = [], interval) => {
-  console.log('update average volume per 15 minutes');
-
-  const nowTime = moment().startOf('minute');
-  const nowMinites = nowTime.minutes();
-
-  const remainder = nowMinites / 5;
-  const startTimeCurrent5MSeries = moment(nowTime).add(-remainder.minutes, 'minutes');
-  const startTime15MSeries = moment(startTimeCurrent5MSeries).add(-15, 'minutes').unix();
-
-  let targetTimestamp = startTime15MSeries;
-  const arrSeries = [targetTimestamp];
-
-  for (let i = 0; i < 14; i += 1) {
-    targetTimestamp += 60;
-    arrSeries.push(targetTimestamp);
-  }
+  console.log('update average volume');
 
   await Promise.all(instrumentsDocs.map(async doc => {
     await updateAverageVolume({
       instrumentId: doc._id,
       instrumentName: doc.name,
-
-      arrSeries,
     });
   }));
 
   setTimeout(() => {
     intervalUpdateAverageVolume(instrumentsDocs, interval);
   }, interval);
-
-  return true;
 };
 
 const intervalUpdateInstrument = async (instrumentsDocs = [], interval) => {
