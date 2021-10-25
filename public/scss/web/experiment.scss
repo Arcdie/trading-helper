@@ -1,3 +1,62 @@
 .experiment {
+  padding: 20px;
+  position: relative;
 
+  .legend {
+    position: absolute;
+    z-index: 999;
+    margin-top: 10px;
+    margin-left: 10px;
+
+    p.value {
+      span {
+        color: #000FFF;
+        margin-left: 2px;
+      }
+    }
+  }
+
+  .charts-periods {
+    position: absolute;
+    z-index: 999;
+    margin-top: 43px;
+    margin-left: 10px;
+
+    div {
+      &.active {
+        border-color: #00bf20;
+      }
+
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      box-sizing: border-box;
+      margin-right: 2px;
+      position: relative;
+      display: inline-block;
+      border: 1px dashed #d9d9d9;
+      background-color: white;
+
+      span {
+        margin: 8px auto;
+        text-align: center;
+        display: block;
+      }
+    }
+  }
+
+  #chart-candles {
+    width: 100%;
+    height: 100%;
+    /* height: 70%; */
+    /* height: 50%; */
+    border: 1px solid black;
+  }
+
+  #chart-volume {
+    width: 100%;
+    height: 30%;
+    border: 1px solid black;
+    border-top: none;
+  }
 }

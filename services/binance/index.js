@@ -1,9 +1,9 @@
 const getTicksForSpotInstruments = require('./spot/get-ticks-for-spot-instruments');
-const getPricesForSpotInstruments = require('./spot/get-prices-for-spot-instruments');
+const getCandlesForSpotInstruments = require('./spot/get-candles-for-spot-instruments');
 const getLimitOrdersForSpotInstruments = require('./spot/get-limit-orders-for-spot-instruments');
 
 const getTicksForFuturesInstruments = require('./futures/get-ticks-for-futures-instruments');
-const getPricesForFuturesInstruments = require('./futures/get-prices-for-futures-instruments');
+const getCandlesForFuturesInstruments = require('./futures/get-candles-for-futures-instruments');
 const getLimitOrdersForFuturesInstruments = require('./futures/get-limit-orders-for-futures-instruments');
 
 module.exports = async (instrumentsDocs = []) => {
@@ -21,11 +21,11 @@ module.exports = async (instrumentsDocs = []) => {
 
   /* set websocket connections */
   await getTicksForSpotInstruments(spotDocs);
-  await getPricesForSpotInstruments(spotDocs);
+  await getCandlesForSpotInstruments(spotDocs);
   await getLimitOrdersForSpotInstruments(spotDocsWithoutIgnoredVolume);
 
   await getTicksForFuturesInstruments(futuresDocs);
-  await getPricesForFuturesInstruments(futuresDocs);
+  await getCandlesForFuturesInstruments(futuresDocs);
   await getLimitOrdersForFuturesInstruments(futuresDocsWithoutIgnoredVolume);
   /* end */
 };

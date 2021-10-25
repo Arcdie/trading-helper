@@ -246,6 +246,50 @@ input:checked + .slider:before {
     .profile .common-instruction video {
       margin-top: 10px; }
 
+.experiment {
+  padding: 20px;
+  position: relative; }
+  .experiment .legend {
+    position: absolute;
+    z-index: 999;
+    margin-top: 10px;
+    margin-left: 10px; }
+    .experiment .legend p.value span {
+      color: #000FFF;
+      margin-left: 2px; }
+  .experiment .charts-periods {
+    position: absolute;
+    z-index: 999;
+    margin-top: 43px;
+    margin-left: 10px; }
+    .experiment .charts-periods div {
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      box-sizing: border-box;
+      margin-right: 2px;
+      position: relative;
+      display: inline-block;
+      border: 1px dashed #d9d9d9;
+      background-color: white; }
+      .experiment .charts-periods div.active {
+        border-color: #00bf20; }
+      .experiment .charts-periods div span {
+        margin: 8px auto;
+        text-align: center;
+        display: block; }
+  .experiment #chart-candles {
+    width: 100%;
+    height: 100%;
+    /* height: 70%; */
+    /* height: 50%; */
+    border: 1px solid black; }
+  .experiment #chart-volume {
+    width: 100%;
+    height: 30%;
+    border: 1px solid black;
+    border-top: none; }
+
 .volume-monitoring {
   padding: 15px; }
   .volume-monitoring #spot, .volume-monitoring #futures {

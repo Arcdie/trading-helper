@@ -140,7 +140,7 @@ const checkInstrumentVolumeBounds = async ({
       const boundInRedis = JSON.parse(cacheInstrumentVolumeBounds[index]);
 
       if (boundInRedis) {
-        if (quantity < cacheInstrumentDoc.average_volume_for_last_15_minutes) {
+        if (quantity < cacheInstrumentDoc.average_volume_for_last_15_minutes * 2) {
           boundsToRemove.push({
             price,
             quantity,
@@ -246,7 +246,7 @@ const checkInstrumentVolumeBounds = async ({
   [...asks, ...bids]
     .filter(([price]) => !cacheInstrumentVolumeBoundsKeys.some(key => parseFloat(key) === price))
     .forEach(([price, quantity, isAsk]) => {
-      if (quantity > cacheInstrumentDoc.average_volume_for_last_15_minutes) {
+      if (quantity > cacheInstrumentDoc.average_volume_for_last_15_minutes * 2) {
         const differenceBetweenPriceAndOrder = Math.abs(cacheInstrumentDoc.price - price);
         const percentPerPrice = 100 / (cacheInstrumentDoc.price / differenceBetweenPriceAndOrder);
 

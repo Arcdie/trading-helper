@@ -11,10 +11,14 @@ const {
 } = require('../../websocket-server');
 
 const {
+  createCandle,
+} = require('../../../controllers/candles/utils/create-candle');
+
+const {
   updateInstrumentInRedis,
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
-const CONNECTION_NAME = 'Spot:BookTicker';
+const CONNECTION_NAME = 'Spot:Kline';
 
 module.exports = async (instrumentsDocs = []) => {
   try {
@@ -27,7 +31,7 @@ module.exports = async (instrumentsDocs = []) => {
 
     instrumentsDocs.forEach(doc => {
       const cutName = doc.name.toLowerCase();
-      connectStr += `${cutName}@bookTicker/`;
+      connectStr += `${cutName}@kline_1m/`;
     });
 
     connectStr = connectStr.substring(0, connectStr.length - 1);
@@ -61,7 +65,7 @@ module.exports = async (instrumentsDocs = []) => {
       client.on('message', async bufferData => {
         const parsedData = JSON.parse(bufferData.toString());
 
-        if (!parsedData.data || !parsedData.data.b) {
+        if (!parsedData.data || !parsedData.data.s) {
           log.warn(`${CONNECTION_NAME}: ${JSON.stringify(parsedData)}`);
           return true;
         }
@@ -69,21 +73,42 @@ module.exports = async (instrumentsDocs = []) => {
         const {
           data: {
             s: instrumentName,
-            b: bidPrice,
-            a: askPrice,
+            E: eventTimeUnix,
+            k: {
+              t: startTime,
+              T: closeTime,
+              o: open,
+              c: close,
+              h: high,
+              l: low,
+              v: volume,
+              x: isClosed,
+            },
           },
         } = parsedData;
 
         await updateInstrumentInRedis({
           instrumentName,
-          price: parseFloat(askPrice),
+          price: parseFloat(close),
         });
+
+        if (isClosed) {
+          await createCandle({
+            instrumentName: `${instrumentName}PERP`,
+            startTime: new Date(startTime),
+            open,
+            close,
+            high,
+            low,
+            volume,
+          });
+        }
 
         sendData({
           actionName: 'newInstrumentPrice',
           data: {
             instrumentName,
-            newPrice: askPrice,
+            newPrice: close,
           },
         });
       });
