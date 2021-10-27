@@ -6,34 +6,50 @@ block variables
 
 block content
 	.page.experiment
-		.legend
-			p.values
-				| ОТКР
-				span.open 0
-				| МАКС
-				span.high 0
-				| МИН
-				span.low 0
-				| ЗАКР
-				span.close 0
+		.chart-container
+			.legend
+				p.values
+					| ОТКР
+					span.open 0
+					| МАКС
+					span.high 0
+					| МИН
+					span.low 0
+					| ЗАКР
+					span.close 0
+			
+			.chart-periods
+				.1m(data-period='1m')
+					span 1M
+				.5m(data-period='5m')
+					span 5M
+				.1h(data-period='1h')
+					span 1Ч
+				.4h(data-period='4h')
+					span 4Ч
+				.day(data-period='day')
+					span Д
+				.month(data-period='month')
+					span Мес
+
+			.charts
+
+		.instruments-container
+			.search
+				input(type="text" placeholder="Поиск")
 		
-		.charts-periods
-			.minute(data-type='minute')
-				span 10M
-			.hour(data-type='hour')
-				span 1Ч
-			.day.active(data-type='day')
-				span Д
-			.month(data-type='month')
-				span Мес
+			.instruments-list
+				.headlines
+					span Инструмент
 				
-		.charts
-			.chart-candles
-			.chart-volume
+				.list
 
 block scripts
+	script(src='/libs/moment.min.js')
 	script(src='/libs/trading-view-charts.min.js')
 	
+	script(src='/javascripts/chart-functions/chart-candles.js')
+	script(src='/javascripts/chart-functions/chart-volume.js')
 	script(src='/javascripts/chart-functions/chart-periods.js')
 
 	script(src='/javascripts/web/experiment.js')

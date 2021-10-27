@@ -16,6 +16,10 @@ const {
 } = require('../controllers/instruments/utils/update-instrument');
 
 const {
+  calculate1hCandle,
+} = require('../controllers/candles/utils/calculate-1h-candle');
+
+const {
   updateAverageVolume,
 } = require('../controllers/instruments/utils/update-average-volume');
 
@@ -27,6 +31,7 @@ const {
   DOCS_LIMITER_FOR_QUEUES,
 } = require('../controllers/instruments/constants');
 
+const Candle = require('../models/Candle');
 const InstrumentNew = require('../models/InstrumentNew');
 
 module.exports = async () => {
@@ -47,6 +52,10 @@ module.exports = async () => {
 
   await binanceProcesses(instrumentsDocs);
 
+  const nowTimeUnix = moment().unix();
+  const startNextDayUnix = moment().add(1, 'days').startOf('day').unix();
+  const differenceBetweenNowAndTomorrow = startNextDayUnix - nowTimeUnix;
+
   // check memory
   /*
   setInterval(() => {
@@ -57,17 +66,40 @@ module.exports = async () => {
   // update price for instrument in database
   await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
 
-  // update average volume
-  const nowTimeUnix = moment().unix();
-  const startNextDayUnix = moment().add(1, 'days').startOf('day').unix();
-  const differenceBetweenNowAndTomorrow = startNextDayUnix - nowTimeUnix;
-
   setTimeout(async () => {
+    // update average volume
     await intervalUpdateAverageVolume(
       instrumentsDocs.filter(doc => !doc.does_ignore_volume),
       24 * 60 * 60 * 1000, // 24 hours
     );
+
+    // create hour candles
+    /*
+    await intervalCreateHourCandles(
+      instrumentsDocs.filter(doc => doc.is_futures && doc.name === 'RUNEUSDTPERP'),
+      24 * 60 * 60 * 1000, // 24 hours
+    );
+    */
   }, differenceBetweenNowAndTomorrow * 1000);
+};
+
+const intervalCreateHourCandles = async (instrumentsDocs = [], interval) => {
+  console.log('calculate hour candles');
+
+  const startHourTime = moment().startOf('hour');
+  const hourBeforeTime = moment(startHourTime).add(-1, 'hours');
+
+  for (const doc of instrumentsDocs) {
+    await calculate1hCandle({
+      instrumentId: doc._id,
+      startTime: startHourTime,
+      endTime: hourBeforeTime,
+    });
+  }
+
+  setTimeout(() => {
+    intervalCreateHourCandles(instrumentsDocs, interval);
+  }, interval);
 };
 
 const intervalUpdateAverageVolume = async (instrumentsDocs = [], interval) => {

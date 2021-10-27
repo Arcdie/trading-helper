@@ -256,48 +256,100 @@ input:checked + .slider:before {
       margin-top: 10px; }
 
 .experiment {
-  padding: 20px;
-  position: relative; }
-  .experiment .legend {
-    position: absolute;
-    z-index: 999;
-    margin-top: 10px;
-    margin-left: 10px; }
-    .experiment .legend p.value span {
-      color: #000FFF;
-      margin-left: 2px; }
-  .experiment .charts-periods {
-    position: absolute;
-    z-index: 999;
-    margin-top: 43px;
-    margin-left: 10px; }
-    .experiment .charts-periods div {
-      width: 40px;
-      height: 40px;
-      cursor: pointer;
-      box-sizing: border-box;
-      margin-right: 2px;
-      position: relative;
-      display: inline-block;
-      border: 1px dashed #d9d9d9;
-      background-color: white; }
-      .experiment .charts-periods div.active {
-        border-color: #00bf20; }
-      .experiment .charts-periods div span {
-        margin: 8px auto;
-        text-align: center;
-        display: block; }
-  .experiment #chart-candles {
-    width: 100%;
-    height: 100%;
-    /* height: 70%; */
-    /* height: 50%; */
+  padding: 10px;
+  position: relative;
+  display: flex; }
+  .experiment .instruments-container {
+    width: 20%;
+    overflow-y: hidden;
+    display: inline-block;
+    box-sizing: border-box;
     border: 1px solid black; }
-  .experiment #chart-volume {
-    width: 100%;
-    height: 30%;
-    border: 1px solid black;
-    border-top: none; }
+    .experiment .instruments-container .search {
+      width: 100%;
+      height: 35px; }
+      .experiment .instruments-container .search input[type="text"] {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        border-right: none;
+        border-top: none;
+        border-left: none;
+        padding: 0 8px;
+        outline: none; }
+    .experiment .instruments-container .instruments-list {
+      width: 100%; }
+      .experiment .instruments-container .instruments-list .headlines {
+        text-align: left;
+        padding: 5px 10px;
+        border-bottom: 1px solid black; }
+      .experiment .instruments-container .instruments-list .list {
+        overflow-y: scroll; }
+        .experiment .instruments-container .instruments-list .list .instrument {
+          cursor: pointer;
+          padding: 10px 10px;
+          border-bottom: 1px solid black; }
+          .experiment .instruments-container .instruments-list .list .instrument.is_active {
+            background-color: #0066ff61; }
+          .experiment .instruments-container .instruments-list .list .instrument:hover {
+            background-color: #0066ff1f; }
+          .experiment .instruments-container .instruments-list .list .instrument:last-child {
+            border-bottom: none; }
+  .experiment .chart-container {
+    width: 80%;
+    display: inline-block;
+    box-sizing: border-box;
+    border-bottom: 1px solid black; }
+    .experiment .chart-container .legend {
+      position: absolute;
+      z-index: 999;
+      margin-top: 10px;
+      margin-left: 10px; }
+      .experiment .chart-container .legend p.values span {
+        color: #000FFF;
+        margin-left: 2px;
+        margin-right: 5px; }
+    .experiment .chart-container .chart-periods {
+      position: absolute;
+      z-index: 999;
+      display: flex;
+      margin-top: 43px;
+      margin-left: 10px; }
+      .experiment .chart-container .chart-periods div {
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        display: none;
+        box-sizing: border-box;
+        margin-right: 5px;
+        position: relative;
+        border: 1px dashed #d9d9d9;
+        background-color: white; }
+        .experiment .chart-container .chart-periods div.is_worked {
+          display: flex;
+          justify-content: center;
+          align-items: center; }
+        .experiment .chart-container .chart-periods div.is_active {
+          border-color: #00bf20; }
+        .experiment .chart-container .chart-periods div span {
+          margin: 8px auto;
+          text-align: center;
+          display: block; }
+    .experiment .chart-container .chart-candles {
+      width: 100%;
+      height: 70%;
+      /* height: 70%; */
+      /* height: 50%; */
+      border: 1px solid black;
+      border-right: none;
+      box-sizing: border-box; }
+    .experiment .chart-container .chart-volume {
+      width: 100%;
+      height: 30%;
+      border: 1px solid black;
+      border-top: none;
+      border-right: none;
+      box-sizing: border-box; }
 
 .volume-monitoring {
   padding: 15px; }

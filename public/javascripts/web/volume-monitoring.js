@@ -171,7 +171,7 @@ $(document).ready(async () => {
   });
 
   if (!resultGetInstruments || !resultGetInstruments.status) {
-    alert(resultGetBounds.message || 'Cant URL_GET_ACTIVE_INSTRUMENTS');
+    alert(resultGetInstruments.message || 'Cant URL_GET_ACTIVE_INSTRUMENTS');
     return true;
   }
 

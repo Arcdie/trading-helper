@@ -94,7 +94,7 @@ module.exports = async (instrumentsDocs = []) => {
 
         if (isClosed) {
           await createCandle({
-            instrumentName: `${instrumentName}PERP`,
+            instrumentName,
             startTime: new Date(startTime),
             open,
             close,

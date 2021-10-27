@@ -5,7 +5,7 @@ class ChartVolume {
     this.containerName = 'chart-volume';
     this.appendChart(rootContainer);
 
-    this.containerDocument = document.getElementById(this.containerName);
+    this.containerDocument = document.getElementsByClassName(this.containerName)[0];
 
     this.settings = {};
 
@@ -26,13 +26,17 @@ class ChartVolume {
         mode: 0,
       },
 
+      timeScale: {
+        secondsVisible: false,
+      },
+
       // timeScale: {
       //   visible: false,
       // },
     });
 
     this.series = this.chart.addHistogramSeries({
-      color: '#26A69A',
+      color: 'rgba(12, 50, 153, .5)',
 
       priceFormat: {
         type: 'volume',
@@ -41,7 +45,7 @@ class ChartVolume {
   }
 
   appendChart(rootContainer) {
-    rootContainer.insertAdjacentHTML('beforeend', `<div id="${this.containerName}"></div>`);
+    rootContainer.insertAdjacentHTML('beforeend', `<div class="${this.containerName}"></div>`);
   }
 
   drawSeries(data) {

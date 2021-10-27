@@ -8,6 +8,10 @@ const InstrumentNew = require('../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
   const {
+    query: {
+      isOnlyFutures,
+    },
+
     user,
   } = req;
 
@@ -18,7 +22,15 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const resultGetInstruments = await getActiveInstruments();
+  const funcObj = {};
+
+  if (isOnlyFutures && isOnlyFutures === 'true') {
+    funcObj.isOnlyFutures = true;
+  } else {
+    funcObj.isOnlyFutures = false;
+  }
+
+  const resultGetInstruments = await getActiveInstruments(funcObj);
 
   if (!resultGetInstruments || !resultGetInstruments.status) {
     return res.json({

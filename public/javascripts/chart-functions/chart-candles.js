@@ -5,7 +5,7 @@ class ChartCandles {
     this.containerName = 'chart-candles';
     this.appendChart(rootContainer);
 
-    this.containerDocument = document.getElementById(this.containerName);
+    this.containerDocument = document.getElementsByClassName(this.containerName)[0];
 
     this.settings = {};
 
@@ -18,13 +18,16 @@ class ChartCandles {
   }
 
   appendChart(rootContainer) {
-    rootContainer.insertAdjacentHTML('beforeend', `<div id="${this.containerName}"></div>`);
+    rootContainer.insertAdjacentHTML('beforeend', `<div class="${this.containerName}"></div>`);
   }
 
   drawSeries(data) {
     if (Array.isArray(data)) {
       this.series.setData(data);
-    } else this.series.update(data);
+    } else {
+      console.log('here', data);
+      this.series.update(data);
+    }
   }
 
   hideSeries() {

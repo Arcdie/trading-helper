@@ -4,7 +4,11 @@ const {
   isMongoId,
 } = require('validator');
 
-const Candle = require('../../models/Candle');
+const {
+  getCandles,
+} = require('../binance/utils/get-candles');
+
+const CandleHour = require('../../models/CandleHour');
 const InstrumentNew = require('../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
@@ -70,11 +74,11 @@ module.exports = async (req, res, next) => {
   };
 
   if (startTime && endTime) {
-    const momentEndTime = moment(endTime).startOf('minute');
-    const momentStartTime = moment(startTime).startOf('minute');
+    const momentEndTime = moment(endTime).startOf('hour');
+    const momentStartTime = moment(startTime).startOf('hour');
 
-    const startTimeMinusExtraTime = momentStartTime.add(-5, 'minutes');
-    const endTimePlusExtraTime = momentEndTime.add(6, 'minutes');
+    const startTimeMinusExtraTime = momentStartTime.add(-5, 'hours');
+    const endTimePlusExtraTime = momentEndTime.add(6, 'hours');
 
     matchObj.$and = [{
       time: {
@@ -87,7 +91,7 @@ module.exports = async (req, res, next) => {
     }];
   }
 
-  const candlesDocs = await Candle
+  const candlesDocs = await CandleHour
     .find(matchObj)
     .sort({ time: 1 })
     .exec();

@@ -9,6 +9,10 @@ const {
   createCandle,
 } = require('../controllers/candles/utils/create-candle');
 
+const {
+  create1hCandle,
+} = require('../controllers/candles/utils/create-1h-candle');
+
 const log = require('../libs/logger');
 
 const InstrumentNew = require('../models/InstrumentNew');
@@ -64,6 +68,7 @@ module.exports = async () => {
 
     for (const fileName of filesNames) {
       const pathToFile = `${pathToInstrumentFolder}/${fileName}`;
+      const period = pathToFile.split('-')[1];
 
       const resultGetFile = await parseCSVToJSON({
         pathToFile,
@@ -72,6 +77,12 @@ module.exports = async () => {
       if (!resultGetFile || !resultGetFile.status) {
         log.warn(resultGetFile.message || 'Cant parseCSVToJSON');
         continue;
+      }
+
+      let workFunc = createCandle;
+
+      if (period === '1h') {
+        workFunc = create1hCandle;
       }
 
       await Promise.all(resultGetFile.result.map(async data => {
@@ -85,7 +96,7 @@ module.exports = async () => {
           closeTime,
         ] = data;
 
-        const resultCreateCandle = await createCandle({
+        const resultCreateCandle = await workFunc({
           instrumentId: doc._id,
           startTime: new Date(parseInt(openTime, 10)),
           open,

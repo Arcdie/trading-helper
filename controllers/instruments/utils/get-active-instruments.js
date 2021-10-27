@@ -1,9 +1,17 @@
 const InstrumentNew = require('../../../models/InstrumentNew');
 
-const getActiveInstruments = async () => {
-  const instrumentsDocs = await InstrumentNew.find({
+const getActiveInstruments = async ({
+  isOnlyFutures,
+}) => {
+  const matchObj = {
     is_active: true,
-  }).exec();
+  };
+
+  if (isOnlyFutures) {
+    matchObj.is_futures = true;
+  }
+
+  const instrumentsDocs = await InstrumentNew.find(matchObj).exec();
 
   return {
     status: true,

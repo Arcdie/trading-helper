@@ -11,5 +11,6 @@ const commonMiddlewares = [
 ];
 
 router.get('/', commonMiddlewares, candleControllers.getCandles);
+router.get('/1h', commonMiddlewares, candleControllers.get1hCandles);
 
 module.exports = router;
