@@ -92,6 +92,7 @@ const createCandle = async ({
   }
 
   const existCandle = await Candle.findOne({
+    instrument_id: instrumentId,
     time: startTime,
   }).exec();
 
