@@ -19,26 +19,26 @@ module.exports = async (req, res, next) => {
   if (!fullname) {
     return res.json({
       status: false,
-      text: 'No fullname',
+      message: 'No fullname',
     });
   }
 
   if (!password) {
     return res.json({
       status: false,
-      text: 'No password',
+      message: 'No password',
     });
   }
 
   const userDoc = await User.findOne({
     fullname,
     password,
-  }).exec();
+  }, { password: 0 }).exec();
 
   if (!userDoc) {
     return res.json({
       status: false,
-      text: 'No user with these login & password',
+      message: 'No user with these login & password',
     });
   }
 
@@ -46,5 +46,8 @@ module.exports = async (req, res, next) => {
 
   res
     .cookie('token', newToken, { maxAge: jwtConf.lifetime, httpOnly: true })
-    .json({ status: true });
+    .json({
+      status: true,
+      result: userDoc._doc,
+    });
 };

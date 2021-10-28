@@ -43,7 +43,7 @@
 
         .instrument {
           &.is_active {
-            background-color: #0066ff61;
+            background-color: #0066ff61 !important;
           }
 
           &:hover {

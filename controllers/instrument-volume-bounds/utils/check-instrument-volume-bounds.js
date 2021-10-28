@@ -13,7 +13,7 @@ const redis = require('../../../libs/redis');
 
 const {
   sendData,
-} = require('../../../services/websocket-server');
+} = require('../../../websocket/websocket-server');
 
 const {
   generateMongoId,

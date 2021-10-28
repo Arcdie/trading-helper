@@ -8,7 +8,7 @@ const {
 
 const {
   sendData,
-} = require('../../websocket-server');
+} = require('../../../websocket/websocket-server');
 
 const {
   createCandle,
@@ -87,7 +87,7 @@ module.exports = async (instrumentsDocs = []) => {
           },
         } = parsedData;
 
-        await updateInstrumentInRedis({
+        const resultUpdateInstrument = await updateInstrumentInRedis({
           instrumentName: `${instrumentName}PERP`,
           price: parseFloat(close),
         });
@@ -103,6 +103,19 @@ module.exports = async (instrumentsDocs = []) => {
             volume,
           });
         }
+
+        sendData({
+          actionName: 'candleData',
+          data: {
+            instrumentId: resultUpdateInstrument.result._id,
+            startTime,
+            open,
+            close,
+            high,
+            low,
+            volume,
+          },
+        });
 
         sendData({
           actionName: 'newInstrumentPrice',

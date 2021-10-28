@@ -4,7 +4,7 @@ const {
 
 const {
   sendData,
-} = require('../../services/websocket-server');
+} = require('../../websocket/websocket-server');
 
 const {
   createUserLevelBound,

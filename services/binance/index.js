@@ -22,10 +22,10 @@ module.exports = async (instrumentsDocs = []) => {
   /* set websocket connections */
   // await getTicksForSpotInstruments(spotDocs);
   await getCandlesForSpotInstruments(spotDocs);
-  await getLimitOrdersForSpotInstruments(spotDocsWithoutIgnoredVolume);
+  // await getLimitOrdersForSpotInstruments(spotDocsWithoutIgnoredVolume);
 
   // await getTicksForFuturesInstruments(futuresDocs);
   await getCandlesForFuturesInstruments(futuresDocs);
-  await getLimitOrdersForFuturesInstruments(futuresDocsWithoutIgnoredVolume);
+  // await getLimitOrdersForFuturesInstruments(futuresDocsWithoutIgnoredVolume);
   /* end */
 };

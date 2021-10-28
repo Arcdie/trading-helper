@@ -35,6 +35,8 @@ const Candle = require('../models/Candle');
 const InstrumentNew = require('../models/InstrumentNew');
 
 module.exports = async () => {
+  await redis.flushallAsync();
+
   const instrumentsDocs = await InstrumentNew.find({
     is_active: true,
   }).exec();
@@ -72,34 +74,7 @@ module.exports = async () => {
       instrumentsDocs.filter(doc => !doc.does_ignore_volume),
       24 * 60 * 60 * 1000, // 24 hours
     );
-
-    // create hour candles
-    /*
-    await intervalCreateHourCandles(
-      instrumentsDocs.filter(doc => doc.is_futures && doc.name === 'RUNEUSDTPERP'),
-      24 * 60 * 60 * 1000, // 24 hours
-    );
-    */
   }, differenceBetweenNowAndTomorrow * 1000);
-};
-
-const intervalCreateHourCandles = async (instrumentsDocs = [], interval) => {
-  console.log('calculate hour candles');
-
-  const startHourTime = moment().startOf('hour');
-  const hourBeforeTime = moment(startHourTime).add(-1, 'hours');
-
-  for (const doc of instrumentsDocs) {
-    await calculate1hCandle({
-      instrumentId: doc._id,
-      startTime: startHourTime,
-      endTime: hourBeforeTime,
-    });
-  }
-
-  setTimeout(() => {
-    intervalCreateHourCandles(instrumentsDocs, interval);
-  }, interval);
 };
 
 const intervalUpdateAverageVolume = async (instrumentsDocs = [], interval) => {

@@ -290,7 +290,7 @@ input:checked + .slider:before {
           padding: 10px 10px;
           border-bottom: 1px solid black; }
           .experiment .instruments-container .instruments-list .list .instrument.is_active {
-            background-color: #0066ff61; }
+            background-color: #0066ff61 !important; }
           .experiment .instruments-container .instruments-list .list .instrument:hover {
             background-color: #0066ff1f; }
           .experiment .instruments-container .instruments-list .list .instrument:last-child {

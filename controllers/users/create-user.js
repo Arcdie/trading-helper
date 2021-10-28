@@ -19,14 +19,14 @@ module.exports = async (req, res, next) => {
   if (!fullname) {
     return res.json({
       status: false,
-      text: 'No fullname',
+      message: 'No fullname',
     });
   }
 
   if (!password) {
     return res.json({
       status: false,
-      text: 'No password',
+      message: 'No password',
     });
   }
 
@@ -37,7 +37,7 @@ module.exports = async (req, res, next) => {
   if (doesExistUserWithThisName) {
     return res.json({
       status: false,
-      text: 'User with this name already exists',
+      message: 'User with this name already exists',
     });
   }
 
@@ -50,7 +50,12 @@ module.exports = async (req, res, next) => {
 
   const newToken = createToken({ _id: newUser._id.toString() });
 
+  delete newUser._doc.password;
+
   res
     .cookie('token', newToken, { maxAge: jwtConf.lifetime, httpOnly: true })
-    .json({ status: true });
+    .json({
+      status: true,
+      result: newUser._doc,
+    });
 };

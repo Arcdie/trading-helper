@@ -8,7 +8,7 @@ const {
 
 const {
   sendData,
-} = require('../../websocket-server');
+} = require('../../../websocket/websocket-server');
 
 const {
   checkInstrumentVolumeBounds,

@@ -1,5 +1,5 @@
 /* global makeRequest
-ChartCandles, ChartVolume, ChartPeriods */
+moment, wsClient, ChartCandles, ChartVolume, ChartPeriods */
 
 /* Constants */
 
@@ -46,6 +46,53 @@ const $high = $legend.find('span.high');
 const $low = $legend.find('span.low');
 
 /* Functions */
+wsClient.onmessage = async data => {
+  const parsedData = JSON.parse(data.data);
+
+  if (parsedData.actionName) {
+    switch (parsedData.actionName) {
+      case 'candleData': {
+        if (parsedData.data.instrumentId !== choosedInstrumentId) {
+          break;
+        }
+
+        const {
+          instrumentId,
+          startTime,
+          open,
+          close,
+          high,
+          low,
+          volume,
+        } = parsedData.data;
+
+        let validTime = startTime / 1000;
+
+        if ([!'5m', '1h', '4h'].includes(choosenPeriod)) {
+          validTime = moment.unix(validTime).format('YYYY-MM-DD');
+        }
+
+        chartCandles.drawSeries({
+          open: parseFloat(open),
+          close: parseFloat(close),
+          high: parseFloat(high),
+          low: parseFloat(low),
+          time: validTime,
+        });
+
+        chartVolume.drawSeries({
+          volume: parseFloat(volume),
+          time: validTime,
+        });
+
+        break;
+      }
+
+      default: break;
+    }
+  }
+};
+
 $(document).ready(async () => {
   const windowHeight = `${window.innerHeight - 20}px`;
   $rootContainer.style.height = windowHeight;
@@ -128,6 +175,8 @@ $(document).ready(async () => {
         .find('.instrument')
         .removeClass('is_active');
 
+      $instrument.addClass('is_active');
+
       console.log('start loading');
 
       const resultGetCandles = await makeRequest({
@@ -146,8 +195,6 @@ $(document).ready(async () => {
       chartVolume = {};
       chartPeriods = {};
       $($rootContainer).empty();
-
-      $instrument.addClass('is_active');
 
       if (!resultGetCandles.result || !resultGetCandles.result.length) {
         return true;
@@ -168,6 +215,14 @@ $(document).ready(async () => {
 
       chartCandles.drawSeries(instrumentData);
       chartVolume.drawSeries(instrumentData);
+
+      wsClient.send(JSON.stringify({
+        actionName: 'subscribe',
+        data: {
+          subscriptionName: 'candleData',
+          instrumentId: choosedInstrumentId,
+        },
+      }));
 
       chartCandles.chart.subscribeCrosshairMove((param) => {
         if (param.time) {
