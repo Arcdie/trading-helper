@@ -73,8 +73,8 @@ module.exports = async (req, res, next) => {
     const momentEndTime = moment(endTime).startOf('minute');
     const momentStartTime = moment(startTime).startOf('minute');
 
-    const startTimeMinusExtraTime = momentStartTime.add(-5, 'minutes');
-    const endTimePlusExtraTime = momentEndTime.add(6, 'minutes');
+    const startTimeMinusExtraTime = momentStartTime.add(-15, 'minutes');
+    const endTimePlusExtraTime = momentEndTime.add(16, 'minutes');
 
     matchObj.$and = [{
       time: {

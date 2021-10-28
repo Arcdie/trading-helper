@@ -4,6 +4,7 @@ const Candle = new mongoose.Schema({
   instrument_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
+    index: true,
   },
 
   // open, close, low, high
@@ -17,6 +18,7 @@ const Candle = new mongoose.Schema({
   time: {
     type: Date,
     required: true,
+    index: true,
   },
 
   created_at: {

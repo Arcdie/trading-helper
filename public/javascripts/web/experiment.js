@@ -3,11 +3,10 @@ ChartCandles, ChartVolume, ChartPeriods */
 
 /* Constants */
 
-const URL_GET_1H_CANDLES = '/api/candles';
+const URL_GET_CANDLES = '/api/candles';
 const URL_GET_ACTIVE_INSTRUMENTS = '/api/instruments/active';
 
 const AVAILABLE_PERIODS = new Map([
-  ['1M', '1m'],
   ['5M', '5m'],
   ['1H', '1h'],
   ['4H', '4h'],
@@ -16,7 +15,6 @@ const AVAILABLE_PERIODS = new Map([
 ]);
 
 const WORKING_PERIODS = [
-  AVAILABLE_PERIODS.get('1M'),
   AVAILABLE_PERIODS.get('5M'),
   AVAILABLE_PERIODS.get('1H'),
   AVAILABLE_PERIODS.get('4H'),
@@ -24,7 +22,7 @@ const WORKING_PERIODS = [
   AVAILABLE_PERIODS.get('MONTH'),
 ];
 
-const DEFAULT_PERIOD = AVAILABLE_PERIODS.get('1M');
+const DEFAULT_PERIOD = AVAILABLE_PERIODS.get('5M');
 
 let choosedInstrumentId;
 let choosenPeriod = DEFAULT_PERIOD;
@@ -46,8 +44,6 @@ const $open = $legend.find('span.open');
 const $close = $legend.find('span.close');
 const $high = $legend.find('span.high');
 const $low = $legend.find('span.low');
-
-let instrumentData;
 
 /* Functions */
 $(document).ready(async () => {
@@ -132,19 +128,19 @@ $(document).ready(async () => {
         .find('.instrument')
         .removeClass('is_active');
 
-      console.log('start loading..');
+      console.log('start loading');
 
       const resultGetCandles = await makeRequest({
         method: 'GET',
-        url: `${URL_GET_1H_CANDLES}?instrumentId=${instrumentId}`,
+        url: `${URL_GET_CANDLES}?instrumentId=${instrumentId}`,
       });
 
       if (!resultGetCandles || !resultGetCandles.status) {
-        alert(resultGetCandles.message || `Cant makeRequest ${URL_GET_1H_CANDLES}`);
+        alert(resultGetCandles.message || `Cant makeRequest ${URL_GET_CANDLES}`);
         return true;
       }
 
-      console.log('end loading..');
+      console.log('end loading');
 
       chartCandles = {};
       chartVolume = {};
@@ -168,18 +164,10 @@ $(document).ready(async () => {
       chartPeriods.setPeriod(choosenPeriod, [chartCandles.chart, chartVolume.chart]);
       chartPeriods.setOriginalData(resultGetCandles.result, DEFAULT_PERIOD);
 
-      instrumentData = chartPeriods.getDataByPeriod(choosenPeriod) || [];
-
-      for (let i = 0; i < instrumentData.length; i += 1) {
-        for (let j = 0; j < instrumentData.length; j += 1) {
-          if (instrumentData[i].time === instrumentData[j].time && i !== j) {
-            console.log(i, j);
-          }
-        }
-      }
+      const instrumentData = chartPeriods.getDataByPeriod(choosenPeriod) || [];
 
       chartCandles.drawSeries(instrumentData);
-      // chartVolume.drawSeries(instrumentData);
+      chartVolume.drawSeries(instrumentData);
 
       chartCandles.chart.subscribeCrosshairMove((param) => {
         if (param.time) {

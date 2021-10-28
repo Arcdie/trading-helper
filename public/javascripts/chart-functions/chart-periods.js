@@ -6,7 +6,6 @@ class ChartPeriods {
 
     this.period = '';
 
-    this.oneMinuteTimeFrameData = [];
     this.fiveMinutesTimeFrameData = [];
     this.oneHourTimeFrameData = [];
     this.fourHoursTimeFrameData = [];
@@ -18,7 +17,6 @@ class ChartPeriods {
     let returnData = [];
 
     switch (period) {
-      case '1m': returnData = this.oneMinuteTimeFrameData; break;
       case '5m': returnData = this.fiveMinutesTimeFrameData; break;
       case '1h': returnData = this.oneHourTimeFrameData; break;
       case '4h': returnData = this.fourHoursTimeFrameData; break;
@@ -33,7 +31,7 @@ class ChartPeriods {
   setPeriod(newPeriod, charts) {
     const returnData = this.getDataByPeriod(newPeriod);
 
-    if (['1m', '5m', '1h', '4h'].includes(newPeriod)) {
+    if (['5m', '1h', '4h'].includes(newPeriod)) {
       charts.forEach(chart => {
         chart.applyOptions({
           timeScale: {
@@ -73,92 +71,23 @@ class ChartPeriods {
       };
     });
 
-    this.oneMinuteTimeFrameData = [];
     this.fiveMinutesTimeFrameData = [];
     this.oneHourTimeFrameData = [];
     this.fourHoursTimeFrameData = [];
     this.dayTimeFrameData = [];
     this.monthTimeFrameData = [];
 
-    if (startPeriod === '1h') {
-      // tmo solution
-      this.oneHourTimeFrameData = this.originalData.map(data => {
-        const returnObj = data;
-        returnObj.time = data.timeUnix;
-        return returnObj;
-      });
-    } else {
-      console.log('HERE');
-      this.calculateOneHourTimeFrameData();
-    }
-
-    this.calculateOneMinuteTimeFrameData();
     this.calculateFiveMinutesTimeFrameData();
+    this.calculateOneHourTimeFrameData();
     this.calculateFourHoursTimeFrameData();
     this.calculateDayTimeFrameData();
     this.calculateMonthTimeFrameData();
   }
 
-  calculateOneMinuteTimeFrameData() {
-    this.oneMinuteTimeFrameData = this.originalData.map(data => {
+  calculateFiveMinutesTimeFrameData() {
+    this.fiveMinutesTimeFrameData = this.originalData.map(data => {
       data.time = data.timeUnix;
       return data;
-    });
-  }
-
-  calculateFiveMinutesTimeFrameData() {
-    const breakdownBy5MinutePeriods = [];
-
-    let insertArr = [];
-    let currentMinutes = new Date(this.originalData[0].time).getMinutes();
-
-    this.originalData.forEach(candle => {
-      const candleMinutes = new Date(candle.time).getMinutes();
-      const remainder = candleMinutes % 5;
-
-      if (remainder === 0) {
-        if (insertArr.length) {
-          breakdownBy5MinutePeriods.push(insertArr);
-          insertArr = [];
-          currentMinutes = candleMinutes;
-        }
-      }
-
-      insertArr.push(candle);
-    });
-
-    breakdownBy5MinutePeriods.forEach(fiveMinutesCandles => {
-      const arrLength = fiveMinutesCandles.length;
-
-      const open = fiveMinutesCandles[0].open;
-      const close = fiveMinutesCandles[arrLength - 1].close;
-
-      let sumVolume = 0;
-      let minLow = fiveMinutesCandles[0].low;
-      let maxHigh = fiveMinutesCandles[0].high;
-
-      fiveMinutesCandles.forEach(minuteCandle => {
-        if (minuteCandle.high > maxHigh) {
-          maxHigh = minuteCandle.high;
-        }
-
-        if (minuteCandle.low < minLow) {
-          minLow = minuteCandle.low;
-        }
-
-        sumVolume += minuteCandle.volume;
-      });
-
-      this.fiveMinutesTimeFrameData.push({
-        // date: momentDate,
-        time: fiveMinutesCandles[0].timeUnix,
-
-        open,
-        close,
-        high: maxHigh,
-        low: minLow,
-        volume: parseInt(sumVolume, 10),
-      });
     });
   }
 
@@ -188,15 +117,15 @@ class ChartPeriods {
       let currentHourUnix = dayCandles[0].timeUnix;
       let nextCurrentHourUnix = currentHourUnix + 3600;
 
-      dayCandles.forEach(minuteCandle => {
-        if (minuteCandle.timeUnix >= nextCurrentHourUnix) {
+      dayCandles.forEach(candle => {
+        if (candle.timeUnix >= nextCurrentHourUnix) {
           breakdownByHour.push(insertArr);
           insertArr = [];
           currentHourUnix = nextCurrentHourUnix;
           nextCurrentHourUnix += 3600;
         }
 
-        insertArr.push(minuteCandle);
+        insertArr.push(candle);
       });
 
       breakdownByHour.push(insertArr);
@@ -213,16 +142,16 @@ class ChartPeriods {
       let minLow = hourCandles[0].low;
       let maxHigh = hourCandles[0].high;
 
-      hourCandles.forEach(minuteCandle => {
-        if (minuteCandle.high > maxHigh) {
-          maxHigh = minuteCandle.high;
+      hourCandles.forEach(candle => {
+        if (candle.high > maxHigh) {
+          maxHigh = candle.high;
         }
 
-        if (minuteCandle.low < minLow) {
-          minLow = minuteCandle.low;
+        if (candle.low < minLow) {
+          minLow = candle.low;
         }
 
-        sumVolume += minuteCandle.volume;
+        sumVolume += candle.volume;
       });
 
       this.oneHourTimeFrameData.push({
@@ -264,15 +193,15 @@ class ChartPeriods {
       let currentHourUnix = dayCandles[0].timeUnix;
       let nextCurrentHourUnix = currentHourUnix + (3600 * 4);
 
-      dayCandles.forEach(minuteCandle => {
-        if (minuteCandle.timeUnix >= nextCurrentHourUnix) {
+      dayCandles.forEach(candle => {
+        if (candle.timeUnix >= nextCurrentHourUnix) {
           breakdownByHour.push(insertArr);
           insertArr = [];
           currentHourUnix = nextCurrentHourUnix;
           nextCurrentHourUnix += (3600 * 4);
         }
 
-        insertArr.push(minuteCandle);
+        insertArr.push(candle);
       });
 
       breakdownByHour.push(insertArr);
@@ -289,16 +218,16 @@ class ChartPeriods {
       let minLow = hourCandles[0].low;
       let maxHigh = hourCandles[0].high;
 
-      hourCandles.forEach(minuteCandle => {
-        if (minuteCandle.high > maxHigh) {
-          maxHigh = minuteCandle.high;
+      hourCandles.forEach(candle => {
+        if (candle.high > maxHigh) {
+          maxHigh = candle.high;
         }
 
-        if (minuteCandle.low < minLow) {
-          minLow = minuteCandle.low;
+        if (candle.low < minLow) {
+          minLow = candle.low;
         }
 
-        sumVolume += minuteCandle.volume;
+        sumVolume += candle.volume;
       });
 
       this.fourHoursTimeFrameData.push({
@@ -345,16 +274,16 @@ class ChartPeriods {
       let minLow = dayCandles[0].low;
       let maxHigh = dayCandles[0].high;
 
-      dayCandles.forEach(minuteCandle => {
-        if (minuteCandle.high > maxHigh) {
-          maxHigh = minuteCandle.high;
+      dayCandles.forEach(candle => {
+        if (candle.high > maxHigh) {
+          maxHigh = candle.high;
         }
 
-        if (minuteCandle.low < minLow) {
-          minLow = minuteCandle.low;
+        if (candle.low < minLow) {
+          minLow = candle.low;
         }
 
-        sumVolume += minuteCandle.volume;
+        sumVolume += candle.volume;
       });
 
       const momentDate = moment(candleDate).startOf('day');
@@ -403,16 +332,16 @@ class ChartPeriods {
       let minLow = monthCandles[0].low;
       let maxHigh = monthCandles[0].high;
 
-      monthCandles.forEach(minuteCandle => {
-        if (minuteCandle.high > maxHigh) {
-          maxHigh = minuteCandle.high;
+      monthCandles.forEach(candle => {
+        if (candle.high > maxHigh) {
+          maxHigh = candle.high;
         }
 
-        if (minuteCandle.low < minLow) {
-          minLow = minuteCandle.low;
+        if (candle.low < minLow) {
+          minLow = candle.low;
         }
 
-        sumVolume += minuteCandle.volume;
+        sumVolume += candle.volume;
       });
 
       const momentDate = moment(candleDate).startOf('day');

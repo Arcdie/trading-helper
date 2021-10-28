@@ -25,7 +25,6 @@ class ChartCandles {
     if (Array.isArray(data)) {
       this.series.setData(data);
     } else {
-      console.log('here', data);
       this.series.update(data);
     }
   }

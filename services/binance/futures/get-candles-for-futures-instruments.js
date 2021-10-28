@@ -31,7 +31,7 @@ module.exports = async (instrumentsDocs = []) => {
 
     instrumentsDocs.forEach(doc => {
       const cutName = doc.name.toLowerCase().replace('perp', '');
-      connectStr += `${cutName}@kline_1m/`;
+      connectStr += `${cutName}@kline_5m/`;
     });
 
     connectStr = connectStr.substring(0, connectStr.length - 1);
