@@ -1,7 +1,6 @@
 /* global */
 
 /* Constants */
-
 const classie = {
   has($elem) {
     return $elem.hasClass('md-show');

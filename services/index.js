@@ -7,6 +7,10 @@ const memoryUsage = require('./memory-usage');
 const binanceProcesses = require('./binance');
 
 const {
+  createWebsocketRooms,
+} = require('../websocket/websocket-server');
+
+const {
   sleep,
   getQueue,
 } = require('../libs/support');
@@ -41,6 +45,7 @@ module.exports = async () => {
     is_active: true,
   }).exec();
 
+  /*
   await Promise.all(instrumentsDocs.map(async doc => {
     const key = `INSTRUMENT:${doc.name}`;
     const cacheDoc = await redis.getAsync(key);
@@ -51,8 +56,10 @@ module.exports = async () => {
 
     return null;
   }));
+  */
 
   await binanceProcesses(instrumentsDocs);
+  await createWebsocketRooms(instrumentsDocs);
 
   const nowTimeUnix = moment().unix();
   const startNextDayUnix = moment().add(1, 'days').startOf('day').unix();
@@ -66,7 +73,7 @@ module.exports = async () => {
   */
 
   // update price for instrument in database
-  await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
+  // await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
 
   setTimeout(async () => {
     // update average volume

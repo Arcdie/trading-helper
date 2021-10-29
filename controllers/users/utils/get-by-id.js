@@ -2,6 +2,8 @@ const {
   isMongoId,
 } = require('validator');
 
+const redis = require('../../../libs/redis');
+
 const User = require('../../../models/User');
 
 const getById = async ({
@@ -14,18 +16,36 @@ const getById = async ({
     };
   }
 
-  const userDoc = await User.findById(userId).exec();
+  const keyUser = `USER:${userId}`;
+  let userDoc = await redis.getAsync(keyUser);
 
   if (!userDoc) {
-    return {
-      status: false,
-      message: 'No User',
-    };
+    userDoc = await User.findById(userId, {
+      password: 0,
+    }).exec();
+
+    if (!userDoc) {
+      return {
+        status: false,
+        message: 'No User',
+      };
+    }
+
+    await redis.setAsync([
+      keyUser,
+      JSON.stringify(userDoc._doc),
+      'EX',
+      60 * 60 * 24, // 1 day (in seconds)
+    ]);
+
+    userDoc = userDoc._doc;
+  } else {
+    userDoc = JSON.parse(userDoc);
   }
 
   return {
     status: true,
-    result: userDoc._doc,
+    result: userDoc,
   };
 };
 

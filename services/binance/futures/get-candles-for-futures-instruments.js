@@ -92,9 +92,12 @@ module.exports = async (instrumentsDocs = []) => {
           price: parseFloat(close),
         });
 
+        const instrumentDoc = resultUpdateInstrument.result;
+
+        /*
         if (isClosed) {
           await createCandle({
-            instrumentName: `${instrumentName}PERP`,
+            instrumentName: instrumentDoc.name,
             startTime: new Date(startTime),
             open,
             close,
@@ -103,11 +106,13 @@ module.exports = async (instrumentsDocs = []) => {
             volume,
           });
         }
+        */
 
         sendData({
           actionName: 'candleData',
           data: {
-            instrumentId: resultUpdateInstrument.result._id,
+            instrumentId: instrumentDoc._id,
+            instrumentName: instrumentDoc.name,
             startTime,
             open,
             close,
@@ -121,7 +126,7 @@ module.exports = async (instrumentsDocs = []) => {
           actionName: 'newInstrumentPrice',
           data: {
             newPrice: close,
-            instrumentName: `${instrumentName}PERP`,
+            instrumentName: instrumentDoc.name,
           },
         });
       });

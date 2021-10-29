@@ -201,6 +201,7 @@ $(document).ready(async () => {
       }
 
       choosedInstrumentId = instrumentId;
+      const targetDoc = instrumentsDocs.find(doc => doc._id === instrumentId);
 
       chartPeriods = new ChartPeriods();
       chartCandles = new ChartCandles($rootContainer);
@@ -220,7 +221,7 @@ $(document).ready(async () => {
         actionName: 'subscribe',
         data: {
           subscriptionName: 'candleData',
-          instrumentId: choosedInstrumentId,
+          instrumentName: targetDoc.name,
         },
       }));
 

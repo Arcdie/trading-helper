@@ -10,6 +10,7 @@ const commonMiddlewares = [
   getUser,
 ];
 
+// router.get('/me', commonMiddlewares.getMe);
 router.get('/:userid', commonMiddlewares, userControllers.getById);
 router.patch('/:userid', commonMiddlewares, userControllers.updateUser);
 

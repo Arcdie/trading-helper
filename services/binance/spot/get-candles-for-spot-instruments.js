@@ -11,6 +11,10 @@ const {
 } = require('../../../websocket/websocket-server');
 
 const {
+  createCandle,
+} = require('../../../controllers/candles/utils/create-candle');
+
+const {
   updateInstrumentInRedis,
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
@@ -83,10 +87,24 @@ module.exports = async (instrumentsDocs = []) => {
           },
         } = parsedData;
 
+        /*
         await updateInstrumentInRedis({
           instrumentName,
           price: parseFloat(close),
         });
+
+        if (isClosed) {
+          await createCandle({
+            instrumentName,
+            startTime: new Date(startTime),
+            open,
+            close,
+            high,
+            low,
+            volume,
+          });
+        }
+        */
 
         sendData({
           actionName: 'newInstrumentPrice',

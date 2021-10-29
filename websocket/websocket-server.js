@@ -1,20 +1,46 @@
 const ws = require('ws');
 const url = require('url');
 
+const {
+  isMongoId,
+} = require('validator');
+
 const log = require('../libs/logger');
 const redis = require('../libs/redis');
+
+const {
+  getById,
+} = require('../controllers/users/get-by-id');
 
 const {
   ACTION_NAMES,
 } = require('./constants');
 
-const wss = new ws.WebSocketServer({
-  port: 3001,
-});
+const WebSocketRoom = require('./websocket-room');
 
-wss.on('connection', (ws, req, client) => {
+const rooms = [];
+const wss = new ws.WebSocketServer({ port: 3001 });
+
+wss.on('connection', async (ws, req) => {
+  const {
+    query,
+  } = url.parse(req.url, true);
+
+  if (!query || !query.userId || !isMongoId(query.userId)) {
+    return ws.terminate();
+  }
+
+  const socketId = new Date().getTime().toString();
+
+  await redis.hsetAsync([
+    `USER:${query.userId}:SOCKETS`,
+    socketId,
+    JSON.stringify([]),
+  ]);
+
   ws.isAlive = true;
-  ws.socketId = new Date().getTime().toString();
+  ws.socketId = socketId;
+  ws.userId = query.userId;
 
   ws.on('pong', () => {
     ws.isAlive = true;
@@ -29,42 +55,65 @@ wss.on('connection', (ws, req, client) => {
     }
 
     switch (data.actionName) {
-      case 'subscribe': await newSubscribe(data.data, ws.socketId); break;
+      case 'subscribe': {
+        await newSubscribe({
+          data: data.data,
+          userId: ws.userId,
+          socketId: ws.socketId,
+        }); break;
+      }
+
       default: break;
     }
   });
 });
 
-const sendData = async obj => {
-  if (!wss.clients || !wss.clients.size) {
-    return true;
-  }
+const createWebsocketRooms = (instrumentsDocs = []) => {
+  [...ACTION_NAMES.values()].forEach(value => {
+    rooms.push(new WebSocketRoom(value));
+  });
 
+  [ACTION_NAMES.get('candleData')].forEach(actionName => {
+    const targetRoom = rooms.find(room => room.roomName === actionName);
+
+    instrumentsDocs
+      .filter(doc => doc.is_futures)
+      .forEach(doc => {
+        const newRoom = new WebSocketRoom(doc.name);
+        targetRoom.addRoom(newRoom);
+      });
+  });
+};
+
+const sendData = obj => {
   const { actionName } = obj;
 
   const socketsIds = [];
+  const targetRoom = rooms.find(room => room.roomName === actionName);
+
+  if (!targetRoom) {
+    return true;
+  }
 
   if (actionName === 'candleData') {
-    const { instrumentId } = obj.data;
-    const subscriptionKeysAndValues = await redis.hgetallAsync(`SUBSCRIPTION:${actionName}`);
+    const { instrumentName } = obj.data;
 
-    if (!subscriptionKeysAndValues) {
-      return true;
+    const targetInstrumentRoom = targetRoom.rooms.find(
+      room => room.roomName === instrumentName,
+    );
+
+    if (!targetInstrumentRoom) {
+      log.warn('No targetInstrumentRoom');
+      return false;
     }
 
-    Object.keys(subscriptionKeysAndValues).forEach(key => {
-      if (subscriptionKeysAndValues[key] === instrumentId) {
-        socketsIds.push(key);
-      }
-    });
+    socketsIds.push(...targetInstrumentRoom.members);
   } else {
-    const subscriptionKeys = await redis.hkeysAsync(`subscription:${actionName}`);
+    socketsIds.push(...targetRoom.members);
+  }
 
-    if (!subscriptionKeys || !subscriptionKeys.length) {
-      return true;
-    }
-
-    socketsIds.push(...subscriptionKeys);
+  if (!socketsIds || !socketsIds.length) {
+    return true;
   }
 
   const targetClients = [...wss.clients].filter(
@@ -72,20 +121,83 @@ const sendData = async obj => {
   );
 
   targetClients.forEach(ws => {
-    if (ws.isAlive === false) return ws.terminate();
-    ws.send(JSON.stringify(obj));
+    if (ws.isAlive) {
+      ws.send(JSON.stringify(obj));
+    }
   });
 };
 
+const newSubscribe = async ({
+  data,
+  userId,
+  socketId,
+}) => {
+  if (!data || !data.subscriptionName) {
+    log.warn('No data or subscriptionName');
+    return false;
+  }
+
+  if (!ACTION_NAMES.get(data.subscriptionName)) {
+    log.warn('No or invalid subscriptionName');
+    return false;
+  }
+
+  const keyUserSubscriptions = `USER:${userId}:SOCKETS`;
+
+  let userSubscriptions = await redis.hgetAsync(
+    keyUserSubscriptions,
+    socketId,
+  );
+
+  if (!userSubscriptions) {
+    userSubscriptions = [];
+  } else {
+    userSubscriptions = JSON.parse(userSubscriptions);
+  }
+
+  const doesExistSubscription = userSubscriptions.some(
+    subscription => subscription === data.subscriptionName,
+  );
+
+  if (!doesExistSubscription) {
+    userSubscriptions.push(data.subscriptionName);
+
+    await redis.hsetAsync([
+      keyUserSubscriptions,
+      socketId,
+      JSON.stringify(userSubscriptions),
+    ]);
+  }
+
+  const targetRoom = rooms.find(room => room.roomName === data.subscriptionName);
+
+  targetRoom.join(socketId);
+
+  if (data.subscriptionName === ACTION_NAMES.get('candleData')) {
+    if (!data.instrumentName) {
+      log.warn('No or invalid instrumentName');
+      return false;
+    }
+
+    const targetInstrumentRoom = targetRoom.rooms.find(
+      room => room.roomName === data.instrumentName,
+    );
+
+    if (!targetInstrumentRoom) {
+      log.warn('No targetInstrumentRoom');
+      return false;
+    }
+
+    targetInstrumentRoom.join(socketId);
+  }
+};
+
 module.exports = {
+  createWebsocketRooms,
   sendData,
 };
 
 /*
-  subscription:candleData = key:userId = { additionalParams }
-  socket:socketId = [candleData, updateAverageVolume]
-*/
-
 const intervalCheckDeadConnections = async (clients, interval) => {
   for (const client of clients) {
     if (!client.isAlive) {
@@ -100,84 +212,6 @@ const intervalCheckDeadConnections = async (clients, interval) => {
     intervalCheckDeadConnections(clients, interval);
   }, interval);
 };
+*/
 
 // intervalCheckDeadConnections(wss.clients, 10 * 60 * 1000); // 10 minutes
-
-const clearUserFromSubscription = async socketId => {
-  const keySocketId = `SOCKET_ID:${socketId}`;
-  let cacheDoc = await redis.getAsync(keySocketId);
-
-  if (!cacheDoc) {
-    return true;
-  }
-
-  cacheDoc = JSON.parse(cacheDoc);
-
-  const fetchPromises = [];
-
-  cacheDoc.forEach(subscriptionName => {
-    fetchPromises.push(
-      redis.hdelAsync(`SUBSCRIPTION:${subscriptionName}`, socketId),
-    );
-  });
-
-  fetchPromises.push(
-    redis.del(keySocketId),
-  );
-
-  await Promise.all(fetchPromises);
-};
-
-const newSubscribe = async (data = {}, socketId) => {
-  if (!data || !data.subscriptionName) {
-    log.warn('No data or subscriptionName');
-    return false;
-  }
-
-  if (!ACTION_NAMES.get(data.subscriptionName)) {
-    log.warn('No or invalid subscriptionName');
-    return false;
-  }
-
-  let additionalParam = '*';
-
-  if (data.subscriptionName === ACTION_NAMES.get('candleData')) {
-    additionalParam = data.instrumentId;
-  }
-
-  const keySocketId = `SOCKET_ID:${socketId}`;
-  let cacheDoc = await redis.getAsync(keySocketId);
-
-  if (!cacheDoc) {
-    cacheDoc = [];
-  } else {
-    cacheDoc = JSON.parse(cacheDoc);
-  }
-
-  const fetchPromises = [];
-
-  const doesExistSubscription = cacheDoc.some(
-    subscription => subscription === data.subscriptionName,
-  );
-
-  if (!doesExistSubscription) {
-    cacheDoc.push(data.subscriptionName);
-
-    fetchPromises.push(
-      redis.setAsync([
-        keySocketId,
-        JSON.stringify(cacheDoc),
-      ]),
-    );
-  }
-
-  fetchPromises.push(
-    redis.hmsetAsync(
-      `SUBSCRIPTION:${data.subscriptionName}`,
-      socketId,
-      additionalParam,
-    ),
-  );
-
-  await Promise.all(fetchPromises);
-};
