@@ -3,8 +3,11 @@ const {
 } = require('validator');
 
 const {
-  getById,
-} = require('./utils/get-by-id');
+  isBoolean,
+  isUndefined,
+} = require('lodash');
+
+const redis = require('../../libs/redis');
 
 const User = require('../../models/User');
 
@@ -25,6 +28,13 @@ module.exports = async (req, res, next) => {
       // tradingviewTargetListId,
 
       indentInPercents,
+
+      isDrawLevelsFor1hCandles,
+      isDrawLevelsFor4hCandles,
+      isDrawLevelsForDayCandles,
+      numberCandlesForCalculate1hLevels,
+      numberCandlesForCalculate4hLevels,
+      numberCandlesForCalculateDayLevels,
     },
   } = req;
 
@@ -79,6 +89,7 @@ module.exports = async (req, res, next) => {
     // tradingview_list_id: 1,
 
     settings: 1,
+    levels_monitoring_settings: 1,
   }).exec();
 
   if (!userDoc) {
@@ -90,6 +101,10 @@ module.exports = async (req, res, next) => {
 
   if (!userDoc.settings) {
     userDoc.settings = {};
+  }
+
+  if (!userDoc.levels_monitoring_settings) {
+    userDoc.levels_monitoring_settings = {};
   }
 
   if (tradingviewUserId) {
@@ -121,7 +136,35 @@ module.exports = async (req, res, next) => {
     userDoc.settings.indent_in_percents = parseFloat(indentInPercents);
   }
 
+  if (!isUndefined(isDrawLevelsFor1hCandles) && isBoolean(isDrawLevelsFor1hCandles)) {
+    userDoc.levels_monitoring_settings.is_draw_levels_for_1h_candles = isDrawLevelsFor1hCandles;
+  }
+
+  if (!isUndefined(isDrawLevelsFor4hCandles) && isBoolean(isDrawLevelsFor4hCandles)) {
+    userDoc.levels_monitoring_settings.is_draw_levels_for_4h_candles = isDrawLevelsFor4hCandles;
+  }
+
+  if (!isUndefined(isDrawLevelsForDayCandles) && isBoolean(isDrawLevelsForDayCandles)) {
+    userDoc.levels_monitoring_settings.is_draw_levels_for_day_candles = isDrawLevelsForDayCandles;
+  }
+
+  if (numberCandlesForCalculate1hLevels) {
+    userDoc.levels_monitoring_settings.number_candles_for_calculate_1h_levels = parseInt(numberCandlesForCalculate1hLevels, 10);
+  }
+
+  if (numberCandlesForCalculate4hLevels) {
+    userDoc.levels_monitoring_settings.number_candles_for_calculate_4h_levels = parseInt(numberCandlesForCalculate4hLevels, 10);
+  }
+
+  if (numberCandlesForCalculateDayLevels) {
+    userDoc.levels_monitoring_settings.number_candles_for_calculate_day_levels = parseInt(numberCandlesForCalculateDayLevels, 10);
+  }
+
   await userDoc.save();
+
+  delete userDoc._doc.password;
+
+  redis.delAsync(`USER:${userDoc._id.toString()}`);
 
   return res.json({
     status: true,

@@ -16,8 +16,13 @@ const UserLevelBound = new mongoose.Schema({
     required: true,
   },
 
-  price_original: {
+  level_price: {
     type: Number,
+    required: true,
+  },
+
+  level_timeframe: {
+    type: String,
     required: true,
   },
 
@@ -41,12 +46,6 @@ const UserLevelBound = new mongoose.Schema({
   is_sended_in_telegram: {
     type: Boolean,
     default: false,
-  },
-
-  level_timeframe: {
-    type: String,
-    required: true,
-    default: '4h',
   },
 
   created_at: {

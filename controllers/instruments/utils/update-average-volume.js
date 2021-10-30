@@ -52,7 +52,7 @@ const updateAverageVolume = async ({
       // time: { $gte: dayBefore }, replace logic after some time
     }, { volume: 1 })
     .sort({ time: -1 })
-    .limit(1440)
+    .limit(288)
     .exec();
 
   if (!candlesDocs || !candlesDocs.length) {

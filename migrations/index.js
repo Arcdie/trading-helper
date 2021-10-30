@@ -5,10 +5,14 @@ const findAndRemoveCandleDuplicates = require('./find-and-remove-candle-duplicat
 
 const addVolumeToCandles = require('./add-volume-to-candles');
 
+const loadAndSaveFuturesKlinesHistory = require('./load-and-save-futures-klines-history');
+
 module.exports = () => {
   // loadDailyKlines();
   // createCandlesUsingDailyFiles();
 
   // addVolumeToCandles();
   // findAndRemoveCandleDuplicates();
+
+  // loadAndSaveFuturesKlinesHistory();
 };

@@ -67,18 +67,6 @@ module.exports = async (instrumentsDocs = []) => {
       instrumentsQueues[doc.name] = new InstrumentQueue(doc.name);
     });
 
-    /*
-    setInterval(() => {
-      Object.keys(instrumentsQueues).forEach(key => {
-        const lQueue = instrumentsQueues[key].queue.length;
-
-        if (lQueue > 0) {
-          console.log(key, lQueue);
-        }
-      });
-    }, 5000);
-    */
-
     let sendPongInterval;
     let connectStr = 'wss://stream.binance.com/stream?streams=';
 
@@ -135,18 +123,6 @@ module.exports = async (instrumentsDocs = []) => {
         instrumentsQueues[instrumentName].addIteration({
           asks, bids,
         });
-
-        /*
-        await checkInstrumentVolumeBounds({
-          asks, bids, instrumentName,
-        });
-
-        queue.push({
-          asks,
-          bids,
-          instrumentName,
-        });
-        */
       });
     };
 
@@ -156,25 +132,3 @@ module.exports = async (instrumentsDocs = []) => {
     return false;
   }
 };
-
-/*
-const nextStep = async (queue) => {
-  const targetElement = queue.shift();
-
-  if (!targetElement) {
-    setTimeout(() => {
-      nextStep(queue);
-    }, 5 * 1000); // 5 seconds
-
-    return true;
-  }
-
-  await checkInstrumentVolumeBounds({
-    asks: targetElement.asks,
-    bids: targetElement.bids,
-    instrumentName: targetElement.instrumentName,
-  });
-
-  await nextStep(queue);
-};
-*/

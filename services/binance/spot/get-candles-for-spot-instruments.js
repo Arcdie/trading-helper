@@ -87,7 +87,6 @@ module.exports = async (instrumentsDocs = []) => {
           },
         } = parsedData;
 
-        /*
         await updateInstrumentInRedis({
           instrumentName,
           price: parseFloat(close),
@@ -104,7 +103,6 @@ module.exports = async (instrumentsDocs = []) => {
             volume,
           });
         }
-        */
 
         sendData({
           actionName: 'newInstrumentPrice',

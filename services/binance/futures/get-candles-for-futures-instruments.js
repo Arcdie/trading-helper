@@ -94,7 +94,6 @@ module.exports = async (instrumentsDocs = []) => {
 
         const instrumentDoc = resultUpdateInstrument.result;
 
-        /*
         if (isClosed) {
           await createCandle({
             instrumentName: instrumentDoc.name,
@@ -106,7 +105,6 @@ module.exports = async (instrumentsDocs = []) => {
             volume,
           });
         }
-        */
 
         sendData({
           actionName: 'candleData',

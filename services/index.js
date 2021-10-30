@@ -45,7 +45,6 @@ module.exports = async () => {
     is_active: true,
   }).exec();
 
-  /*
   await Promise.all(instrumentsDocs.map(async doc => {
     const key = `INSTRUMENT:${doc.name}`;
     const cacheDoc = await redis.getAsync(key);
@@ -56,7 +55,6 @@ module.exports = async () => {
 
     return null;
   }));
-  */
 
   await binanceProcesses(instrumentsDocs);
   await createWebsocketRooms(instrumentsDocs);
@@ -73,7 +71,7 @@ module.exports = async () => {
   */
 
   // update price for instrument in database
-  // await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
+  await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
 
   setTimeout(async () => {
     // update average volume

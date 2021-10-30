@@ -46,6 +46,14 @@ module.exports = async (req, res, next) => {
     password,
   });
 
+  if (!newUser.settings) {
+    newUser.settings = {};
+  }
+
+  if (!newUser.levels_monitoring_settings) {
+    newUser.levels_monitoring_settings = {};
+  }
+
   await newUser.save();
 
   const newToken = createToken({ _id: newUser._id.toString() });

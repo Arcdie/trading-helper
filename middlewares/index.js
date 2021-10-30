@@ -16,14 +16,16 @@ const log = require('../libs/logger');
 
 const app = express();
 
+const frontFolder = path.join(__dirname, '../../trading-helper-front');
+
 // app.use(helmet());
 
 // Page Rendering
-app.set('views', path.join(__dirname, '../views'));
+app.set('views', `${frontFolder}/views`);
 app.set('view engine', 'pug');
 
 // Favicon
-app.use(favicon(path.join(__dirname, '../public/images', 'favicon.ico')));
+app.use(favicon(path.join(frontFolder, '/public/images', 'favicon.ico')));
 
 // bodyParser
 app.use(bodyParser.json({}));
@@ -31,7 +33,7 @@ app.use(bodyParser.urlencoded({
   extended: false,
 }));
 
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(`${frontFolder}/public`));
 
 app.use(morgan);
 app.use(cookieParser());

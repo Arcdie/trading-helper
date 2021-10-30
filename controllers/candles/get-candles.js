@@ -13,6 +13,7 @@ module.exports = async (req, res, next) => {
       instrumentId,
       startTime,
       endTime,
+      limit,
     },
 
     user,
@@ -70,27 +71,41 @@ module.exports = async (req, res, next) => {
   };
 
   if (startTime && endTime) {
-    const momentEndTime = moment(endTime).startOf('minute');
     const momentStartTime = moment(startTime).startOf('minute');
-
-    const startTimeMinusExtraTime = momentStartTime.add(-15, 'minutes');
-    const endTimePlusExtraTime = momentEndTime.add(16, 'minutes');
+    const momentEndTime = moment(endTime).startOf('minute');
 
     matchObj.$and = [{
       time: {
-        $gte: startTimeMinusExtraTime,
+        $gt: momentStartTime,
       },
     }, {
       time: {
-        $lte: endTimePlusExtraTime,
+        $lt: momentEndTime,
       },
     }];
+  } else if (startTime) {
+    const momentStartTime = moment(startTime).startOf('minute');
+
+    matchObj.time = {
+      $gt: momentStartTime,
+    };
+  } else if (endTime) {
+    const momentEndTime = moment(endTime).startOf('minute');
+
+    matchObj.time = {
+      $lt: momentEndTime,
+    };
   }
 
-  const candlesDocs = await Candle
+  const Query = Candle
     .find(matchObj)
-    .sort({ time: 1 })
-    .exec();
+    .sort({ time: -1 });
+
+  if (limit) {
+    Query.limit(parseInt(limit, 10));
+  }
+
+  const candlesDocs = await Query.exec();
 
   return res.json({
     status: true,

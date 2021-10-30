@@ -42,10 +42,6 @@ wss.on('connection', async (ws, req) => {
   ws.socketId = socketId;
   ws.userId = query.userId;
 
-  ws.on('pong', () => {
-    ws.isAlive = true;
-  });
-
   ws.on('message', async message => {
     const data = JSON.parse(message.toString());
 
@@ -55,6 +51,11 @@ wss.on('connection', async (ws, req) => {
     }
 
     switch (data.actionName) {
+      case 'pong': {
+        ws.isAlive = true;
+        break;
+      }
+
       case 'subscribe': {
         await newSubscribe({
           data: data.data,
@@ -171,6 +172,11 @@ const newSubscribe = async ({
 
   const targetRoom = rooms.find(room => room.roomName === data.subscriptionName);
 
+  if (!targetRoom) {
+    log.warn(`No targetRoom; subscriptionName: ${data.subscriptionName}`);
+    return false;
+  }
+
   targetRoom.join(socketId);
 
   if (data.subscriptionName === ACTION_NAMES.get('candleData')) {
@@ -197,21 +203,40 @@ module.exports = {
   sendData,
 };
 
-/*
-const intervalCheckDeadConnections = async (clients, interval) => {
-  for (const client of clients) {
-    if (!client.isAlive) {
-      await clearUserFromSubscription(client.socketId);
+const intervalCheckDeadConnections = async (interval) => {
+  for (const client of wss.clients) {
+    if (client.isAlive) {
+      client.isAlive = false;
+      continue;
     }
 
-    ws.isAlive = false;
-    ws.ping();
+    let userSubscriptions = await redis.hgetAsync([
+      `USER:${client.userId}:SOCKETS`,
+      client.socketId,
+    ]);
+
+    if (!userSubscriptions) {
+      continue;
+    }
+
+    userSubscriptions = JSON.parse(userSubscriptions);
+
+    userSubscriptions.forEach(subscriptionName => {
+      const targetRoom = rooms.find(room => room.roomName === subscriptionName);
+      targetRoom.leave(client.socketId);
+    });
+
+    await redis.hdelAsync([
+      `USER:${client.userId}:SOCKETS`,
+      client.socketId,
+    ]);
+
+    client.terminate();
   }
 
   setTimeout(() => {
-    intervalCheckDeadConnections(clients, interval);
+    intervalCheckDeadConnections(interval);
   }, interval);
 };
-*/
 
-// intervalCheckDeadConnections(wss.clients, 10 * 60 * 1000); // 10 minutes
+intervalCheckDeadConnections(5 * 60 * 1000); // 5 minutes

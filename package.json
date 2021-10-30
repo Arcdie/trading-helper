@@ -1,12 +1,10 @@
 {
-  "name": "Example",
+  "name": "Trading-Helper",
   "version": "1.0.0",
-  "description": "Example project",
+  "description": "Helper for trading",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon app",
-    "build-css": "node-sass --include-path scss public/scss/styles.scss   public/stylesheets/styles.css",
-    "watcher": "nodemon -e scss -x \"npm run build-css\""
+    "dev": "nodemon app"
   },
   "dependencies": {
     "adm-zip": "^0.5.7",
@@ -39,7 +37,6 @@
   "devDependencies": {
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-import": "^2.12.0",
-    "node-sass": "^6.0.1"
+    "eslint-plugin-import": "^2.12.0"
   }
 }
