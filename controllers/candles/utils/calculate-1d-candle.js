@@ -23,8 +23,8 @@ const calculate1dCandle = async ({
     };
   }
 
-  const startOfDay = moment().startOf('day');
-  const endOfDay = moment().endOf('day');
+  const startOfDay = moment().add(-1, 'hours').startOf('day');
+  const endOfDay = moment(startOfDay).endOf('day');
 
   const candlesDocs = await Candle5m
     .find({
