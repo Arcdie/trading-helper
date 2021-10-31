@@ -11,8 +11,8 @@ const {
 } = require('../../../websocket/websocket-server');
 
 const {
-  createCandle,
-} = require('../../../controllers/candles/utils/create-candle');
+  create5mCandle,
+} = require('../../../controllers/candles/utils/create-5m-candle');
 
 const {
   updateInstrumentInRedis,
@@ -95,8 +95,8 @@ module.exports = async (instrumentsDocs = []) => {
         const instrumentDoc = resultUpdateInstrument.result;
 
         if (isClosed) {
-          await createCandle({
-            instrumentName: instrumentDoc.name,
+          await create5mCandle({
+            instrumentId: instrumentDoc._id,
             startTime: new Date(startTime),
             open,
             close,

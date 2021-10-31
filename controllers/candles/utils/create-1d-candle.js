@@ -4,9 +4,9 @@ const {
 
 const log = require('../../../libs/logger');
 
-const Candle1h = require('../../../models/Candle-1h');
+const Candle1d = require('../../../models/Candle-1d');
 
-const create1hCandle = async ({
+const create1dCandle = async ({
   instrumentId,
   startTime,
   open,
@@ -64,7 +64,7 @@ const create1hCandle = async ({
     };
   }
 
-  const existCandle = await Candle1h.findOne({
+  const existCandle = await Candle1d.findOne({
     instrument_id: instrumentId,
     time: startTime,
   }).exec();
@@ -76,7 +76,7 @@ const create1hCandle = async ({
     };
   }
 
-  const newCandle = new Candle1h({
+  const newCandle = new Candle1d({
     instrument_id: instrumentId,
 
     data: [
@@ -99,5 +99,5 @@ const create1hCandle = async ({
 };
 
 module.exports = {
-  create1hCandle,
+  create1dCandle,
 };

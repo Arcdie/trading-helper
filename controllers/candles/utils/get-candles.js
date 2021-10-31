@@ -7,12 +7,16 @@ const {
 const log = require('../../../libs/logger');
 const redis = require('../../../libs/redis');
 
-const Candle = require('../../../models/Candle');
+const Candle5m = require('../../../models/Candle-5m');
+const Candle1h = require('../../../models/Candle-1h');
+const Candle4h = require('../../../models/Candle-4h');
+const Candle1d = require('../../../models/Candle-1d');
 const InstrumentNew = require('../../../models/InstrumentNew');
 
 const getCandles = async ({
   instrumentId,
   startTime,
+  interval,
   endTime,
   limit,
 }) => {
@@ -20,6 +24,13 @@ const getCandles = async ({
     return {
       status: false,
       message: 'No or invalid instrumentId',
+    };
+  }
+
+  if (!interval || !['5m', '1h', '4h', 'day'].includes(interval)) {
+    return {
+      status: false,
+      message: 'No or invalid interval',
     };
   }
 
@@ -35,6 +46,18 @@ const getCandles = async ({
       status: false,
       message: 'Invalid endTime',
     };
+  }
+
+  let SearchModel;
+
+  if (interval === '5m') {
+    SearchModel = Candle5m;
+  } else if (interval === '1h') {
+    SearchModel = Candle1h;
+  } else if (interval === '4h') {
+    SearchModel = Candle4h;
+  } else if (interval === 'day') {
+    SearchModel = Candle1d;
   }
 
   const instrumentDoc = await InstrumentNew.findById(instrumentId, {
@@ -87,7 +110,7 @@ const getCandles = async ({
     };
   }
 
-  const Query = Candle
+  const Query = SearchModel
     .find(matchObj)
     .sort({ time: -1 });
 

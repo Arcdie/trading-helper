@@ -8,12 +8,12 @@ const log = require('../../../libs/logger');
 const redis = require('../../../libs/redis');
 
 const {
-  create1hCandle,
-} = require('./create-1h-candle');
+  create4hCandle,
+} = require('./create-4h-candle');
 
 const Candle5m = require('../../../models/Candle-5m');
 
-const calculate1hCandle = async ({
+const calculate4hCandle = async ({
   instrumentId,
 }) => {
   if (!instrumentId || !isMongoId(instrumentId.toString())) {
@@ -23,17 +23,23 @@ const calculate1hCandle = async ({
     };
   }
 
-  const startOfHour = moment().startOf('hour');
-  const endOfHour = moment().endOf('hour');
+  const nowTimeUnix = moment().unix();
+  const startCurrentDayUnix = moment().startOf('day').unix();
+
+  const differenceBetweenNowAndStartToday = nowTimeUnix - startCurrentDayUnix;
+  const secondsAfterPrevious4HInterval = differenceBetweenNowAndStartToday % 14400;
+
+  const startOf4hPeriod = moment.unix(nowTimeUnix - secondsAfterPrevious4HInterval - 14400);
+  const endOf4hPeriod = moment.unix(startOf4hPeriod + 14399);
 
   const candlesDocs = await Candle5m
     .find({
       instrument_id: instrumentId,
 
       $and: [{
-        time: { $lte: endOfHour },
+        time: { $lte: endOf4hPeriod },
       }, {
-        time: { $gte: startOfHour },
+        time: { $gte: startOf4hPeriod },
       }],
     })
     .sort({ time: 1 })
@@ -58,7 +64,7 @@ const calculate1hCandle = async ({
     sumVolume += candle.volume;
   });
 
-  await create1hCandle({
+  await create4hCandle({
     instrumentId,
     startTime: candlesDocs[0].time,
     open,
@@ -68,10 +74,10 @@ const calculate1hCandle = async ({
     volume: parseInt(sumVolume, 10),
   });
 
-  if (!create1hCandle || !create1hCandle.status) {
+  if (!create4hCandle || !create4hCandle.status) {
     return {
       status: false,
-      message: create1hCandle.message || 'Cant create1hCandle',
+      message: create4hCandle.message || 'Cant create4hCandle',
     };
   }
 
@@ -81,5 +87,5 @@ const calculate1hCandle = async ({
 };
 
 module.exports = {
-  calculate1hCandle,
+  calculate4hCandle,
 };

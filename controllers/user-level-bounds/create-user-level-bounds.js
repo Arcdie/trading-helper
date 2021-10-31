@@ -26,7 +26,9 @@ const {
   DEFAULT_INDENT_IN_PERCENTS,
 } = require('./constants');
 
-const Candle = require('../../models/Candle');
+const Candle1h = require('../../models/Candle-1h');
+const Candle4h = require('../../models/Candle-4h');
+const Candle1d = require('../../models/Candle-1d');
 const InstrumentNew = require('../../models/InstrumentNew');
 const UserLevelBound = require('../../models/UserLevelBound');
 
@@ -81,33 +83,13 @@ module.exports = async (req, res, next) => {
   }
 
   const result = [];
+  const newLevels = [];
 
   await UserLevelBound.deleteMany({
     user_id: userId,
   });
 
   for (const instrumentDoc of instrumentsDocs) {
-    const resultGetCandles = await getCandles({
-      instrumentId: instrumentDoc._id,
-    });
-
-    if (!resultGetCandles || !resultGetCandles.status) {
-      log.warn(resultGetCandles.message || 'Cant getCandles');
-      continue;
-    }
-
-    const newLevels = [];
-    const candles = resultGetCandles.result;
-
-    candles.forEach(candle => {
-      candle.timeUnix = getUnix(candle.time);
-
-      candle.open = candle.data[0];
-      candle.close = candle.data[1];
-      candle.low = candle.data[2];
-      candle.high = candle.data[3];
-    });
-
     if (!user.levels_monitoring_settings) {
       user.levels_monitoring_settings = {};
     }
@@ -123,9 +105,18 @@ module.exports = async (req, res, next) => {
         number_candles_for_calculate_day_levels: numberCandlesForCalculateDayLevels,
       } = user.levels_monitoring_settings;
 
-      const dayCandles = calculateDayTimeFrameData(candles);
-      const highLevels = findHighLevels(dayCandles, numberCandlesForCalculateDayLevels);
-      const lowLevels = findLowLevels(dayCandles, numberCandlesForCalculateDayLevels);
+      const resultGetCandles = await getValidCandles({
+        interval: 'day',
+        instrumentId: instrumentDoc._id,
+      });
+
+      if (!resultGetCandles || !resultGetCandles.status) {
+        log.warn(resultGetCandles.message || 'Cant getCandles');
+        continue;
+      }
+
+      const highLevels = findHighLevels(resultGetCandles.result, numberCandlesForCalculateDayLevels);
+      const lowLevels = findLowLevels(resultGetCandles.result, numberCandlesForCalculateDayLevels);
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
@@ -147,9 +138,18 @@ module.exports = async (req, res, next) => {
         is_draw_levels_for_4h_candles: numberCandlesForCalculate4hLevels,
       } = user.levels_monitoring_settings;
 
-      const fourHoursCandles = calculateFourHoursTimeFrameData(candles);
-      const highLevels = findHighLevels(fourHoursCandles, numberCandlesForCalculate4hLevels);
-      const lowLevels = findLowLevels(fourHoursCandles, numberCandlesForCalculate4hLevels);
+      const resultGetCandles = await getValidCandles({
+        interval: '4h',
+        instrumentId: instrumentDoc._id,
+      });
+
+      if (!resultGetCandles || !resultGetCandles.status) {
+        log.warn(resultGetCandles.message || 'Cant getCandles');
+        continue;
+      }
+
+      const highLevels = findHighLevels(resultGetCandles.result, numberCandlesForCalculate4hLevels);
+      const lowLevels = findLowLevels(resultGetCandles.result, numberCandlesForCalculate4hLevels);
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
@@ -171,9 +171,18 @@ module.exports = async (req, res, next) => {
         number_candles_for_calculate_1h_levels: numberCandlesForCalculate1hLevels,
       } = user.levels_monitoring_settings;
 
-      const hourCandles = calculateOneHourTimeFrameData(candles);
-      const highLevels = findHighLevels(hourCandles, numberCandlesForCalculate1hLevels);
-      const lowLevels = findLowLevels(hourCandles, numberCandlesForCalculate1hLevels);
+      const resultGetCandles = await getValidCandles({
+        interval: '1h',
+        instrumentId: instrumentDoc._id,
+      });
+
+      if (!resultGetCandles || !resultGetCandles.status) {
+        log.warn(resultGetCandles.message || 'Cant getCandles');
+        continue;
+      }
+
+      const highLevels = findHighLevels(resultGetCandles.result, numberCandlesForCalculate1hLevels);
+      const lowLevels = findLowLevels(resultGetCandles.result, numberCandlesForCalculate1hLevels);
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
@@ -309,206 +318,35 @@ const findLowLevels = (candles, distanceInBars) => {
   return levels;
 };
 
-const calculateOneHourTimeFrameData = (candles) => {
-  const breakdownByDay = [];
-  const breakdownByHour = [];
+const getValidCandles = async ({
+  interval,
+  instrumentId,
+}) => {
+  const resultGetCandles = await getCandles({
+    interval,
+    instrumentId,
+  });
 
-  let insertArr = [];
-  let currentDay = new Date(candles[0].time).getUTCDate();
+  if (!resultGetCandles || !resultGetCandles.status) {
+    return {
+      status: false,
+      message: resultGetCandles.message || 'Cant getCandles',
+    };
+  }
+
+  const candles = resultGetCandles.result;
 
   candles.forEach(candle => {
-    const candleDay = new Date(candle.time).getUTCDate();
+    candle.timeUnix = getUnix(candle.time);
 
-    if (candleDay !== currentDay) {
-      breakdownByDay.push(insertArr);
-      insertArr = [];
-      currentDay = candleDay;
-    }
-
-    insertArr.push(candle);
+    candle.open = candle.data[0];
+    candle.close = candle.data[1];
+    candle.low = candle.data[2];
+    candle.high = candle.data[3];
   });
 
-  breakdownByDay.push(insertArr);
-  insertArr = [];
-
-  breakdownByDay.forEach(dayCandles => {
-    let currentHourUnix = dayCandles[0].timeUnix;
-    let nextCurrentHourUnix = currentHourUnix + 3600;
-
-    dayCandles.forEach(candle => {
-      if (candle.timeUnix >= nextCurrentHourUnix) {
-        breakdownByHour.push(insertArr);
-        insertArr = [];
-        currentHourUnix = nextCurrentHourUnix;
-        nextCurrentHourUnix += 3600;
-      }
-
-      insertArr.push(candle);
-    });
-
-    breakdownByHour.push(insertArr);
-    insertArr = [];
-  });
-
-  const returnData = [];
-
-  breakdownByHour.forEach(hourCandles => {
-    const arrLength = hourCandles.length;
-
-    let minLow = hourCandles[0].low;
-    let maxHigh = hourCandles[0].high;
-
-    let timeMinLow = hourCandles[0].time;
-    let timeMaxHigh = hourCandles[0].time;
-
-    hourCandles.forEach(candle => {
-      if (candle.high > maxHigh) {
-        maxHigh = candle.high;
-        timeMaxHigh = candle.time;
-      }
-
-      if (candle.low < minLow) {
-        minLow = candle.low;
-        timeMinLow = candle.time;
-      }
-    });
-
-    returnData.push({
-      high: maxHigh,
-      low: minLow,
-      timeMinLow,
-      timeMaxHigh,
-    });
-  });
-
-  return returnData;
-};
-
-const calculateFourHoursTimeFrameData = (candles) => {
-  const breakdownByDay = [];
-  const breakdownByHour = [];
-
-  let insertArr = [];
-  let currentDay = new Date(candles[0].time).getUTCDate();
-
-  candles.forEach(candle => {
-    const candleDay = new Date(candle.time).getUTCDate();
-
-    if (candleDay !== currentDay) {
-      breakdownByDay.push(insertArr);
-      insertArr = [];
-      currentDay = candleDay;
-    }
-
-    insertArr.push(candle);
-  });
-
-  breakdownByDay.push(insertArr);
-  insertArr = [];
-
-  breakdownByDay.forEach(dayCandles => {
-    let currentHourUnix = dayCandles[0].timeUnix;
-    let nextCurrentHourUnix = currentHourUnix + (3600 * 4);
-
-    dayCandles.forEach(candle => {
-      if (candle.timeUnix >= nextCurrentHourUnix) {
-        breakdownByHour.push(insertArr);
-        insertArr = [];
-        currentHourUnix = nextCurrentHourUnix;
-        nextCurrentHourUnix += (3600 * 4);
-      }
-
-      insertArr.push(candle);
-    });
-
-    breakdownByHour.push(insertArr);
-    insertArr = [];
-  });
-
-  const returnData = [];
-
-  breakdownByHour.forEach(hourCandles => {
-    const arrLength = hourCandles.length;
-
-    let minLow = hourCandles[0].low;
-    let maxHigh = hourCandles[0].high;
-
-    let timeMinLow = hourCandles[0].time;
-    let timeMaxHigh = hourCandles[0].time;
-
-    hourCandles.forEach(candle => {
-      if (candle.high > maxHigh) {
-        maxHigh = candle.high;
-        timeMaxHigh = candle.time;
-      }
-
-      if (candle.low < minLow) {
-        minLow = candle.low;
-        timeMinLow = candle.time;
-      }
-    });
-
-    returnData.push({
-      high: maxHigh,
-      low: minLow,
-      timeMinLow,
-      timeMaxHigh,
-    });
-  });
-
-  return returnData;
-};
-
-const calculateDayTimeFrameData = (candles) => {
-  const breakdownByDay = [];
-
-  let insertArr = [];
-  let currentDay = new Date(candles[0].time).getUTCDate();
-
-  candles.forEach(candle => {
-    const candleDay = new Date(candle.time).getUTCDate();
-
-    if (candleDay !== currentDay) {
-      breakdownByDay.push(insertArr);
-      insertArr = [];
-      currentDay = candleDay;
-    }
-
-    insertArr.push(candle);
-  });
-
-  breakdownByDay.push(insertArr);
-
-  const returnData = [];
-
-  breakdownByDay.forEach(dayCandles => {
-    const arrLength = dayCandles.length;
-
-    let minLow = dayCandles[0].low;
-    let maxHigh = dayCandles[0].high;
-
-    let timeMinLow = dayCandles[0].time;
-    let timeMaxHigh = dayCandles[0].time;
-
-    dayCandles.forEach(candle => {
-      if (candle.high > maxHigh) {
-        maxHigh = candle.high;
-        timeMaxHigh = candle.time;
-      }
-
-      if (candle.low < minLow) {
-        minLow = candle.low;
-        timeMinLow = candle.time;
-      }
-    });
-
-    returnData.push({
-      high: maxHigh,
-      low: minLow,
-      timeMinLow,
-      timeMaxHigh,
-    });
-  });
-
-  return returnData;
+  return {
+    status: true,
+    result: candles,
+  };
 };

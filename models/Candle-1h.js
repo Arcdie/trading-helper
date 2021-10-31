@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
-const CandleHour = new mongoose.Schema({
+const Candle1h = new mongoose.Schema({
   instrument_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
+    index: true,
   },
 
   // open, close, low, high
@@ -17,6 +18,7 @@ const CandleHour = new mongoose.Schema({
   time: {
     type: Date,
     required: true,
+    index: true,
   },
 
   created_at: {
@@ -26,4 +28,4 @@ const CandleHour = new mongoose.Schema({
   },
 }, { versionKey: false });
 
-module.exports = mongoose.model('CandleHour', CandleHour, 'candles-hour');
+module.exports = mongoose.model('Candle1h', Candle1h, 'candles-1h');

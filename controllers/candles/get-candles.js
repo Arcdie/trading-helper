@@ -10,6 +10,10 @@ const {
 
 module.exports = async (req, res, next) => {
   const {
+    params: {
+      interval,
+    },
+
     query: {
       instrumentId,
       startTime,
@@ -34,6 +38,13 @@ module.exports = async (req, res, next) => {
     });
   }
 
+  if (!interval || !['5m', '1h', '4h', 'day'].includes(interval)) {
+    return res.json({
+      status: false,
+      message: 'No or invalid interval',
+    });
+  }
+
   if (startTime && !moment(startTime).isValid()) {
     return res.json({
       status: false,
@@ -51,6 +62,7 @@ module.exports = async (req, res, next) => {
   const resultGetCandles = await getCandles({
     instrumentId,
     startTime,
+    interval,
     endTime,
     limit,
   });

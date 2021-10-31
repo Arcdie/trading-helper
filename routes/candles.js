@@ -10,7 +10,6 @@ const commonMiddlewares = [
   getUser,
 ];
 
-router.get('/', commonMiddlewares, candleControllers.getCandles);
-router.get('/1h', commonMiddlewares, candleControllers.get1hCandles);
+router.get('/:interval', commonMiddlewares, candleControllers.getCandles);
 
 module.exports = router;

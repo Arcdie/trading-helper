@@ -3,13 +3,11 @@ const {
 } = require('validator');
 
 const log = require('../../../libs/logger');
-const redis = require('../../../libs/redis');
 
-const Candle = require('../../../models/Candle');
+const Candle5m = require('../../../models/Candle-5m');
 
-const createCandle = async ({
+const create5mCandle = async ({
   instrumentId,
-  instrumentName,
   startTime,
   open,
   close,
@@ -17,17 +15,10 @@ const createCandle = async ({
   low,
   volume,
 }) => {
-  if (instrumentId && !isMongoId(instrumentId.toString())) {
+  if (!instrumentId || !isMongoId(instrumentId.toString())) {
     return {
       status: false,
-      message: 'Invalid instrumentId',
-    };
-  }
-
-  if (!instrumentId && !instrumentName) {
-    return {
-      status: false,
-      message: 'No instrumentId and instrumentName',
+      message: 'No or invalid instrumentId',
     };
   }
 
@@ -73,25 +64,7 @@ const createCandle = async ({
     };
   }
 
-  if (instrumentName) {
-    const keyInstrument = `INSTRUMENT:${instrumentName}`;
-    let cacheInstrumentDoc = await redis.getAsync(keyInstrument);
-
-    if (!cacheInstrumentDoc) {
-      const message = `No cacheInstrumentDoc doc; instrumentName: ${instrumentName}`;
-      log.warn(message);
-
-      return {
-        status: false,
-        message,
-      };
-    }
-
-    cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
-    instrumentId = cacheInstrumentDoc._id;
-  }
-
-  const existCandle = await Candle.findOne({
+  const existCandle = await Candle5m.findOne({
     instrument_id: instrumentId,
     time: startTime,
   }).exec();
@@ -103,7 +76,7 @@ const createCandle = async ({
     };
   }
 
-  const newCandle = new Candle({
+  const newCandle = new Candle5m({
     instrument_id: instrumentId,
 
     data: [
@@ -126,5 +99,5 @@ const createCandle = async ({
 };
 
 module.exports = {
-  createCandle,
+  create5mCandle,
 };

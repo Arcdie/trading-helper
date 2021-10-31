@@ -8,12 +8,12 @@ const log = require('../../../libs/logger');
 const redis = require('../../../libs/redis');
 
 const {
-  create1hCandle,
-} = require('./create-1h-candle');
+  create1dCandle,
+} = require('./create-1d-candle');
 
 const Candle5m = require('../../../models/Candle-5m');
 
-const calculate1hCandle = async ({
+const calculate1dCandle = async ({
   instrumentId,
 }) => {
   if (!instrumentId || !isMongoId(instrumentId.toString())) {
@@ -23,17 +23,17 @@ const calculate1hCandle = async ({
     };
   }
 
-  const startOfHour = moment().startOf('hour');
-  const endOfHour = moment().endOf('hour');
+  const startOfDay = moment().startOf('day');
+  const endOfDay = moment().endOf('day');
 
   const candlesDocs = await Candle5m
     .find({
       instrument_id: instrumentId,
 
       $and: [{
-        time: { $lte: endOfHour },
+        time: { $lte: endOfDay },
       }, {
-        time: { $gte: startOfHour },
+        time: { $gte: startOfDay },
       }],
     })
     .sort({ time: 1 })
@@ -58,7 +58,7 @@ const calculate1hCandle = async ({
     sumVolume += candle.volume;
   });
 
-  await create1hCandle({
+  await create1dCandle({
     instrumentId,
     startTime: candlesDocs[0].time,
     open,
@@ -68,10 +68,10 @@ const calculate1hCandle = async ({
     volume: parseInt(sumVolume, 10),
   });
 
-  if (!create1hCandle || !create1hCandle.status) {
+  if (!create1dCandle || !create1dCandle.status) {
     return {
       status: false,
-      message: create1hCandle.message || 'Cant create1hCandle',
+      message: create1dCandle.message || 'Cant create1dCandle',
     };
   }
 
@@ -81,5 +81,5 @@ const calculate1hCandle = async ({
 };
 
 module.exports = {
-  calculate1hCandle,
+  calculate1dCandle,
 };

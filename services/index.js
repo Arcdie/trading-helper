@@ -12,7 +12,6 @@ const {
 
 const {
   sleep,
-  getQueue,
 } = require('../libs/support');
 
 const {
@@ -20,22 +19,25 @@ const {
 } = require('../controllers/instruments/utils/update-instrument');
 
 const {
-  calculate1hCandle,
-} = require('../controllers/candles/utils/calculate-1h-candle');
-
-const {
   updateAverageVolume,
 } = require('../controllers/instruments/utils/update-average-volume');
 
 const {
-  checkInstrumentVolumeBounds,
-} = require('../controllers/instrument-volume-bounds/utils/check-instrument-volume-bounds');
+  calculate1hCandle,
+} = require('../controllers/candles/utils/calculate-1h-candle');
+
+const {
+  calculate4hCandle,
+} = require('../controllers/candles/utils/calculate-4h-candle');
+
+const {
+  calculate1dCandle,
+} = require('../controllers/candles/utils/calculate-1d-candle');
 
 const {
   DOCS_LIMITER_FOR_QUEUES,
 } = require('../controllers/instruments/constants');
 
-const Candle = require('../models/Candle');
 const InstrumentNew = require('../models/InstrumentNew');
 
 module.exports = async () => {
@@ -60,8 +62,13 @@ module.exports = async () => {
   await createWebsocketRooms(instrumentsDocs);
 
   const nowTimeUnix = moment().unix();
-  const startNextDayUnix = moment().add(1, 'days').startOf('day').unix();
+  const startCurrentDayUnix = moment().startOf('day').unix();
+  const startNextDayUnix = startCurrentDayUnix + 86400;
   const differenceBetweenNowAndTomorrow = startNextDayUnix - nowTimeUnix;
+  const differenceBetweenNowAndStartToday = nowTimeUnix - startCurrentDayUnix;
+
+  const secondsBeforeNext1HInterval = 3600 - (nowTimeUnix % 3600);
+  const secondsBeforeNext4HInterval = 14400 - (differenceBetweenNowAndStartToday % 14400); // 14400 = 86400 (day) / 6 (count 4)
 
   // check memory
   /*
@@ -74,12 +81,51 @@ module.exports = async () => {
   await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
 
   setTimeout(async () => {
+    // save 1h candles
+    await intervaCalculate1hCandles(instrumentsDocs, 1 * 60 * 60 * 1000); // 1 hour
+  }, secondsBeforeNext1HInterval * 1000);
+
+  setTimeout(async () => {
+    // save 4h candles
+    await intervalCalculate4hCandles(instrumentsDocs, 4 * 60 * 60 * 1000); // 4 hours
+  }, secondsBeforeNext4HInterval * 1000);
+
+  setTimeout(async () => {
+    // save 1d candles
+    await intervalCalculate1dCandles(instrumentsDocs, 24 * 60 * 60 * 1000); // 24 hours
+  }, differenceBetweenNowAndTomorrow * 1000);
+
+  setTimeout(async () => {
     // update average volume
     await intervalUpdateAverageVolume(
       instrumentsDocs.filter(doc => !doc.does_ignore_volume),
       24 * 60 * 60 * 1000, // 24 hours
     );
   }, differenceBetweenNowAndTomorrow * 1000);
+};
+
+const intervaCalculate1hCandles = async (instrumentsDocs, interval) => {
+  console.log('calculate 1h candles');
+
+  setTimeout(() => {
+    intervaCalculate1hCandles(instrumentsDocs, interval);
+  }, interval);
+};
+
+const intervalCalculate4hCandles = async (instrumentsDocs, interval) => {
+  console.log('calculate 4h candles');
+
+  setTimeout(() => {
+    intervalCalculate4hCandles(instrumentsDocs, interval);
+  }, interval);
+};
+
+const intervalCalculate1dCandles = async (instrumentsDocs, interval) => {
+  console.log('calculate 1d candles');
+
+  setTimeout(() => {
+    intervalCalculate1dCandles(instrumentsDocs, interval);
+  }, interval);
 };
 
 const intervalUpdateAverageVolume = async (instrumentsDocs = [], interval) => {
