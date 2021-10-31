@@ -11,6 +11,7 @@ const commonMiddlewares = [
 ];
 
 router.get('/', commonMiddlewares, userLevelBoundControllers.getUserLevelBounds);
+router.post('/add-levels', commonMiddlewares, userLevelBoundControllers.createUserLevelBounds);
 
 router.post('/add-levels-from-tradingview', commonMiddlewares, userLevelBoundControllers.getLevelsForEveryInstrumentFromTradingView);
 router.post('/add-5m-levels-from-tradingview', commonMiddlewares, userLevelBoundControllers.get5mLevelsForEveryInstrumentFromTradingView);

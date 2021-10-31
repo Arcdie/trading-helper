@@ -5,6 +5,7 @@ const getActiveInstruments = async ({
 }) => {
   const matchObj = {
     is_active: true,
+    // name: 'IOTXUSDTPERP',
   };
 
   if (isOnlyFutures) {

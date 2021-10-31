@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 const {
   isMongoId,
 } = require('validator');
@@ -8,6 +10,7 @@ const {
 
 const {
   DEFAULT_INDENT_IN_PERCENTS,
+  TYPE_CANDLES_FOR_FIND_LEVELS,
 } = require('../constants');
 
 const User = require('../../../models/User');
@@ -16,13 +19,14 @@ const UserLevelBound = require('../../../models/UserLevelBound');
 
 const createUserLevelBound = async ({
   userId,
-  indentInPercents,
+  // indentInPercents,
 
   instrumentId,
   instrumentPrice,
 
-  timeframe,
-  priceOriginal,
+  levelPrice,
+  levelTimeframe,
+  levelStartCandleTime,
 }) => {
   if (!userId || !isMongoId(userId.toString())) {
     return {
@@ -31,47 +35,42 @@ const createUserLevelBound = async ({
     };
   }
 
-  if (!priceOriginal || isNaN(parseFloat(priceOriginal))) {
+  if (!levelPrice || isNaN(parseFloat(levelPrice))) {
     return {
       status: false,
-      message: 'No or invalid priceOriginal',
+      message: 'No or invalid levelPrice',
     };
   }
 
-  if (!timeframe || !['4h', '5m'].includes(timeframe)) {
+  if (!levelTimeframe || !TYPE_CANDLES_FOR_FIND_LEVELS.includes(levelTimeframe)) {
     return {
       status: false,
-      message: 'No or invalid timeframe',
+      message: 'No or invalid levelTimeframe',
     };
   }
 
-  if (!instrumentPrice) {
-    if (!instrumentId || !isMongoId(instrumentId.toString())) {
-      return {
-        status: false,
-        message: 'No or invalid instrumentId',
-      };
-    }
-
-    const instrumentDoc = await Instrument.findById(instrumentId, {
-      price: 1,
-    }).exec();
-
-    if (!instrumentDoc) {
-      return {
-        status: false,
-        text: 'No Instrument',
-      };
-    }
-
-    instrumentPrice = instrumentDoc.price;
-  } else if (isNaN(parseFloat(instrumentPrice))) {
+  if (!levelStartCandleTime || !moment(levelStartCandleTime).isValid()) {
     return {
       status: false,
-      message: 'Invalid instrumentPrice',
+      message: 'No or invalid levelStartCandleTime',
     };
   }
 
+  if (!instrumentId || !isMongoId(instrumentId.toString())) {
+    return {
+      status: false,
+      message: 'No or invalid instrumentId',
+    };
+  }
+
+  if (!instrumentPrice || isNaN(parseFloat(instrumentPrice))) {
+    return {
+      status: false,
+      message: 'No or invalid instrumentPrice',
+    };
+  }
+
+  /*
   if (!indentInPercents) {
     const userDoc = await User.findById(userId, {
       settings: 1,
@@ -95,15 +94,16 @@ const createUserLevelBound = async ({
       message: 'Invalid indentInPercents',
     };
   }
+  */
 
-  const isLong = priceOriginal > instrumentPrice;
+  const isLong = levelPrice > instrumentPrice;
 
   const userLevelBound = await UserLevelBound.findOne({
     user_id: userId,
     instrument_id: instrumentId,
 
     is_long: isLong,
-    price_original: priceOriginal,
+    level_price: levelPrice,
 
     is_worked: false,
   }).exec();
@@ -122,9 +122,11 @@ const createUserLevelBound = async ({
 
     is_long: isLong,
 
-    level_timeframe: timeframe,
-    price_original: priceOriginal,
-    indent_in_percents: indentInPercents,
+    level_price: levelPrice,
+    level_timeframe: levelTimeframe,
+    level_start_candle_time: levelStartCandleTime,
+
+    indent_in_percents: DEFAULT_INDENT_IN_PERCENTS,
   });
 
   await newLevel.save();

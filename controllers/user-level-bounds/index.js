@@ -1,4 +1,5 @@
 const createBound = require('./create-bound');
+const createUserLevelBounds = require('./create-user-level-bounds');
 
 const getUserLevelBounds = require('./get-user-level-bounds');
 
@@ -12,6 +13,8 @@ const removeLevelsForInstrument = require('./remove-levels-for-instrument');
 
 module.exports = {
   createBound,
+  createUserLevelBounds,
+
   getUserLevelBounds,
 
   getLevelsForOneInstrumentFromTradingView,

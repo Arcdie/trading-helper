@@ -8,21 +8,29 @@ const UserLevelBound = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
+    index: true,
   },
 
   instrument_id: {
-    index: true,
     type: mongoose.Schema.ObjectId,
     required: true,
+    index: true,
   },
 
   level_price: {
     type: Number,
     required: true,
+    index: true,
   },
 
   level_timeframe: {
     type: String,
+    required: true,
+  },
+
+  // line has to draw from date point
+  level_start_candle_time: {
+    type: Date,
     required: true,
   },
 
@@ -38,9 +46,9 @@ const UserLevelBound = new mongoose.Schema({
   },
 
   is_worked: {
-    index: true,
     type: Boolean,
     default: false,
+    index: true,
   },
 
   is_sended_in_telegram: {

@@ -37,17 +37,17 @@ const User = new mongoose.Schema({
   levels_monitoring_settings: {
     is_draw_levels_for_1h_candles: {
       type: Boolean,
-      default: true,
+      default: false,
     },
 
     is_draw_levels_for_4h_candles: {
       type: Boolean,
-      default: true,
+      default: false,
     },
 
     is_draw_levels_for_day_candles: {
       type: Boolean,
-      default: true,
+      default: false,
     },
 
     number_candles_for_calculate_1h_levels: {

@@ -7,5 +7,5 @@ module.exports = async (req, res, next) => {
     return res.redirect('/');
   }
 
-  res.render('web/levels-monitoring-page');
+  res.render('web/utilities-page');
 };

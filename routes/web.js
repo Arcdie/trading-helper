@@ -18,9 +18,9 @@ router.get('/', commonMiddlewares, webControllers.getMainPage);
 router.get('/profile', extendedMiddlewares, webControllers.getProfilePage);
 
 router.get('/test', extendedMiddlewares, webControllers.getTestPage);
-
+router.get('/utilities', extendedMiddlewares, webControllers.getUtilitiesPage);
 router.get('/volume-monitoring', extendedMiddlewares, webControllers.getVolumeMonitoringPage);
-router.get('/levels-monitoring/:timeframe', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
+router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 
 router.get('/robots-statistics', extendedMiddlewares, webControllers.getRobotsStatisticsPage);
 
