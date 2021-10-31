@@ -58,7 +58,7 @@ const calculate1dCandle = async ({
     sumVolume += candle.volume;
   });
 
-  await create1dCandle({
+  const resultCreateCandle = await create1dCandle({
     instrumentId,
     startTime: candlesDocs[0].time,
     open,
@@ -68,10 +68,10 @@ const calculate1dCandle = async ({
     volume: parseInt(sumVolume, 10),
   });
 
-  if (!create1dCandle || !create1dCandle.status) {
+  if (!resultCreateCandle || !resultCreateCandle.status) {
     return {
       status: false,
-      message: create1dCandle.message || 'Cant create1dCandle',
+      message: resultCreateCandle.message || 'Cant create1dCandle',
     };
   }
 
