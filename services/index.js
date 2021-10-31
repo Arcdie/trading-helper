@@ -107,6 +107,17 @@ module.exports = async () => {
 const intervaCalculate1hCandles = async (instrumentsDocs, interval) => {
   console.log('calculate 1h candles');
 
+  await Promise.all(instrumentsDocs.map(async doc => {
+    const resultCreateCandle = await calculate1hCandle({
+      instrumentId: doc._id,
+    });
+
+    if (!resultCreateCandle || !resultCreateCandle.status) {
+      log.warn(resultCreateCandle.message || 'Cant calculate1hCandle');
+      return null;
+    }
+  }));
+
   setTimeout(() => {
     intervaCalculate1hCandles(instrumentsDocs, interval);
   }, interval);
@@ -115,6 +126,17 @@ const intervaCalculate1hCandles = async (instrumentsDocs, interval) => {
 const intervalCalculate4hCandles = async (instrumentsDocs, interval) => {
   console.log('calculate 4h candles');
 
+  await Promise.all(instrumentsDocs.map(async doc => {
+    const resultCreateCandle = await calculate4hCandle({
+      instrumentId: doc._id,
+    });
+
+    if (!resultCreateCandle || !resultCreateCandle.status) {
+      log.warn(resultCreateCandle.message || 'Cant calculate4hCandle');
+      return null;
+    }
+  }));
+
   setTimeout(() => {
     intervalCalculate4hCandles(instrumentsDocs, interval);
   }, interval);
@@ -122,6 +144,17 @@ const intervalCalculate4hCandles = async (instrumentsDocs, interval) => {
 
 const intervalCalculate1dCandles = async (instrumentsDocs, interval) => {
   console.log('calculate 1d candles');
+
+  await Promise.all(instrumentsDocs.map(async doc => {
+    const resultCreateCandle = await calculate1dCandle({
+      instrumentId: doc._id,
+    });
+
+    if (!resultCreateCandle || !resultCreateCandle.status) {
+      log.warn(resultCreateCandle.message || 'Cant calculate1dCandle');
+      return null;
+    }
+  }));
 
   setTimeout(() => {
     intervalCalculate1dCandles(instrumentsDocs, interval);
