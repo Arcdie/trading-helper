@@ -135,7 +135,7 @@ module.exports = async (req, res, next) => {
 
     if (isDrawLevelsFor4hCandles) {
       const {
-        is_draw_levels_for_4h_candles: numberCandlesForCalculate4hLevels,
+        number_candles_for_calculate_4h_levels: numberCandlesForCalculate4hLevels,
       } = user.levels_monitoring_settings;
 
       const resultGetCandles = await getValidCandles({
@@ -253,7 +253,7 @@ const findHighLevels = (candles, distanceInBars) => {
 
     if (!isHighCrossed) {
       for (let i = 0; i < distanceInBars; i += 1) {
-        const tmpCandle = revercedCandles[index + i];
+        const tmpCandle = revercedCandles[lCandles - index - i];
 
         if (!tmpCandle) {
           break;
@@ -269,7 +269,7 @@ const findHighLevels = (candles, distanceInBars) => {
     if (!isHighCrossed && isHighest) {
       levels.push({
         levelPrice: candle.high,
-        levelStartCandleTime: candle.timeMaxHigh,
+        levelStartCandleTime: candle.time,
       });
     }
   });
@@ -300,6 +300,10 @@ const findLowLevels = (candles, distanceInBars) => {
       for (let j = 0; j < distanceInBars; j += 1) {
         const tmpCandle = revercedCandles[index - j];
 
+        if (!tmpCandle) {
+          break;
+        }
+
         if (tmpCandle.low < candle.low) {
           isLowest = false;
           break;
@@ -310,7 +314,7 @@ const findLowLevels = (candles, distanceInBars) => {
     if (!isLowCrossed && isLowest) {
       levels.push({
         levelPrice: candle.low,
-        levelStartCandleTime: candle.timeMinLow,
+        levelStartCandleTime: candle.time,
       });
     }
   }

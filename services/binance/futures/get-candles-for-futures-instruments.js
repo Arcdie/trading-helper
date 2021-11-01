@@ -121,7 +121,7 @@ module.exports = async (instrumentsDocs = []) => {
         });
 
         sendData({
-          actionName: 'newInstrumentPrice',
+          actionName: 'newFuturesInstrumentPrice',
           data: {
             newPrice: close,
             instrumentName: instrumentDoc.name,

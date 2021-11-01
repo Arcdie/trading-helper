@@ -10,8 +10,8 @@ const {
 } = require('../controllers/files/utils/parse-csv-to-json');
 
 const {
-  createCandle,
-} = require('../controllers/candles/utils/create-candle');
+  create5mCandle,
+} = require('../controllers/candles/utils/create-5m-candle');
 
 const log = require('../libs/logger');
 
@@ -118,7 +118,7 @@ module.exports = async () => {
           closeTime,
         ] = data;
 
-        const resultCreateCandle = await createCandle({
+        const resultCreateCandle = await create5mCandle({
           instrumentId: instrumentDoc._id,
           startTime: new Date(parseInt(openTime, 10)),
           open,
@@ -129,7 +129,7 @@ module.exports = async () => {
         });
 
         if (!resultCreateCandle || !resultCreateCandle.status) {
-          log.warn(resultCreateCandle.message || 'Cant createCandle');
+          log.warn(resultCreateCandle.message || 'Cant create5mCandle');
         }
       }));
     }

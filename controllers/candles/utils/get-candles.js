@@ -84,8 +84,8 @@ const getCandles = async ({
   };
 
   if (startTime && endTime) {
-    const momentStartTime = moment(startTime).startOf('minute');
-    const momentEndTime = moment(endTime).startOf('minute');
+    const momentStartTime = moment(startTime).utc().startOf('minute');
+    const momentEndTime = moment(endTime).utc().startOf('minute');
 
     matchObj.$and = [{
       time: {
@@ -97,13 +97,13 @@ const getCandles = async ({
       },
     }];
   } else if (startTime) {
-    const momentStartTime = moment(startTime).startOf('minute');
+    const momentStartTime = moment(startTime).utc().startOf('minute');
 
     matchObj.time = {
       $gt: momentStartTime,
     };
   } else if (endTime) {
-    const momentEndTime = moment(endTime).startOf('minute');
+    const momentEndTime = moment(endTime).utc().startOf('minute');
 
     matchObj.time = {
       $lt: momentEndTime,
