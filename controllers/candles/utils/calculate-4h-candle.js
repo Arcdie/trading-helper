@@ -24,7 +24,7 @@ const calculate4hCandle = async ({
   }
 
   const nowTimeUnix = moment().unix();
-  const startCurrentDayUnix = moment().startOf('day').unix();
+  const startCurrentDayUnix = moment().utc().startOf('day').unix();
 
   const differenceBetweenNowAndStartToday = nowTimeUnix - startCurrentDayUnix;
   const secondsAfterPrevious4HInterval = differenceBetweenNowAndStartToday % 14400;
@@ -66,7 +66,7 @@ const calculate4hCandle = async ({
 
   const resultCreateCandle = await create4hCandle({
     instrumentId,
-    startTime: candlesDocs[0].time,
+    startTime: startOf4hPeriod,
     open,
     close,
     high,

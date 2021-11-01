@@ -62,7 +62,7 @@ module.exports = async () => {
   await createWebsocketRooms(instrumentsDocs);
 
   const nowTimeUnix = moment().unix();
-  const startCurrentDayUnix = moment().startOf('day').unix();
+  const startCurrentDayUnix = moment().utc().startOf('day').unix();
   const startNextDayUnix = startCurrentDayUnix + 86400;
   const differenceBetweenNowAndTomorrow = startNextDayUnix - nowTimeUnix;
   const differenceBetweenNowAndStartToday = nowTimeUnix - startCurrentDayUnix;

@@ -23,7 +23,7 @@ const calculate1hCandle = async ({
     };
   }
 
-  const startOfHour = moment().add(-10, 'minutes').startOf('hour');
+  const startOfHour = moment().utc().add(-10, 'minutes').startOf('hour');
   const endOfHour = moment(startOfHour).endOf('hour');
 
   const candlesDocs = await Candle5m
@@ -60,7 +60,7 @@ const calculate1hCandle = async ({
 
   const resultCreateCandle = await create1hCandle({
     instrumentId,
-    startTime: candlesDocs[0].time,
+    startTime: startOfHour,
     open,
     close,
     high,
