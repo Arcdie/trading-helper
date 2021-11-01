@@ -3,6 +3,7 @@ const path = require('path');
 const util = require('util');
 const axios = require('axios');
 const xml2js = require('xml2js');
+const moment = require('moment');
 const AdmZip = require('adm-zip');
 
 const {
@@ -13,11 +14,15 @@ const {
   create5mCandle,
 } = require('../controllers/candles/utils/create-5m-candle');
 
+const {
+  create1hCandle,
+} = require('../controllers/candles/utils/create-1h-candle');
+
 const log = require('../libs/logger');
 
 const InstrumentNew = require('../models/InstrumentNew');
 
-const LOAD_PERIOD = '5m';
+const LOAD_PERIOD = '1h';
 
 xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
@@ -26,24 +31,32 @@ module.exports = async () => {
   console.time('migration');
   console.log('Migration started');
 
-  const instrumentsDocs = await InstrumentNew.find({
-    name: 'IOTXUSDTPERP',
-
-    is_active: true,
-    is_futures: true,
-  }).exec();
+  const instrumentsDocs = await InstrumentNew
+    .find({
+      is_active: true,
+      is_futures: true,
+    })
+    .sort({ name: 1 })
+    .exec();
 
   if (!instrumentsDocs || !instrumentsDocs.length) {
     console.timeEnd('migration');
     return true;
   }
 
+  let processedInstruments = 0;
+  const totalInstruments = instrumentsDocs.length;
+
+  const checkInterval = setInterval(() => {
+    log.info(`${processedInstruments} / ${totalInstruments}`);
+  }, 10 * 1000);
+
   for (const instrumentDoc of instrumentsDocs) {
     console.log(`Started ${instrumentDoc.name}`);
 
     const instrumentName = instrumentDoc.name.replace('PERP', '');
 
-    const pathToFolder = path.join(__dirname, `../files/klines/monthly/${instrumentDoc.name}`);
+    const pathToFolder = path.join(__dirname, `../files/klines/monthly/${LOAD_PERIOD}/${instrumentDoc.name}`);
 
     if (!fs.existsSync(pathToFolder)) {
       fs.mkdirSync(pathToFolder);
@@ -56,6 +69,13 @@ module.exports = async () => {
 
     const links = [];
     const parsedXml = await xml2js.parseStringPromise(responseGetPage.data);
+
+    if (!parsedXml.ListBucketResult
+      || !parsedXml.ListBucketResult.Contents
+      || !parsedXml.ListBucketResult.Contents.length) {
+      log.warn('No ListBucketResult.Contents');
+      continue;
+    }
 
     parsedXml.ListBucketResult.Contents.forEach(content => {
       const {
@@ -118,7 +138,7 @@ module.exports = async () => {
           closeTime,
         ] = data;
 
-        const resultCreateCandle = await create5mCandle({
+        const resultCreateCandle = await create1hCandle({
           instrumentId: instrumentDoc._id,
           startTime: new Date(parseInt(openTime, 10)),
           open,
@@ -129,11 +149,12 @@ module.exports = async () => {
         });
 
         if (!resultCreateCandle || !resultCreateCandle.status) {
-          log.warn(resultCreateCandle.message || 'Cant create5mCandle');
+          log.warn(resultCreateCandle.message || 'Cant create1hCandle');
         }
       }));
     }
 
+    processedInstruments += 1;
     console.log(`Ended ${instrumentDoc.name}`);
   }
 
