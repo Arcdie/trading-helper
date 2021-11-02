@@ -2,9 +2,9 @@ const {
   isMongoId,
 } = require('validator');
 
-const Candle4h = require('../../../models/Candle-4h');
+const Candle1m = require('../../../models/Candle-1m');
 
-const create4hCandle = async ({
+const create1mCandle = async ({
   instrumentId,
   startTime,
   open,
@@ -62,7 +62,7 @@ const create4hCandle = async ({
     };
   }
 
-  const existCandle = await Candle4h.findOne({
+  const existCandle = await Candle1m.findOne({
     instrument_id: instrumentId,
     time: startTime,
   }).exec();
@@ -74,7 +74,7 @@ const create4hCandle = async ({
     };
   }
 
-  const newCandle = new Candle4h({
+  const newCandle = new Candle1m({
     instrument_id: instrumentId,
 
     data: [
@@ -97,5 +97,5 @@ const create4hCandle = async ({
 };
 
 module.exports = {
-  create4hCandle,
+  create1mCandle,
 };

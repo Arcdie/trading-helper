@@ -2,8 +2,6 @@ const {
   isMongoId,
 } = require('validator');
 
-const log = require('../../../libs/logger');
-
 const Candle1d = require('../../../models/Candle-1d');
 
 const create1dCandle = async ({

@@ -15,14 +15,14 @@ const {
 } = require('../../../controllers/candles/utils/create-5m-candle');
 
 const {
-  updateAverageVolume,
-} = require('../../../controllers/instruments/utils/update-average-volume');
-
-const {
   updateInstrumentInRedis,
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
-const CONNECTION_NAME = 'Spot:Kline';
+const {
+  calculateAverageVolumeForLast15Minutes,
+} = require('../../../controllers/instruments/utils/calculate-average-volume-for-last-15-minutes');
+
+const CONNECTION_NAME = 'Spot:Kline_5m';
 
 module.exports = async (instrumentsDocs = []) => {
   try {
@@ -109,10 +109,9 @@ module.exports = async (instrumentsDocs = []) => {
             volume,
           });
 
-          await updateAverageVolume({
+          await calculateAverageVolumeForLast15Minutes({
             instrumentId: instrumentDoc._id,
             instrumentName: instrumentDoc.name,
-            isUpdateForLast24Hours: false,
           });
         }
 

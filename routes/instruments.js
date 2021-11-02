@@ -4,6 +4,7 @@ const getUser = require('../middlewares/get-user');
 const getAuthToken = require('../middlewares/get-auth-token');
 
 const instrumentControllers = require('../controllers/instruments');
+const instrumentCronControllers = require('../controllers/instruments/cron');
 
 const commonMiddlewares = [
   getAuthToken,
@@ -17,6 +18,7 @@ router.get('/by-robots', commonMiddlewares, instrumentControllers.getInstruments
 
 router.post('/', commonMiddlewares, instrumentControllers.createInstrument);
 
+router.get('/calculate-average-volume-for-last-day', instrumentCronControllers.calculateAverageVolumeForLastDay);
 router.get('/upload-new-instruments-from-binance', commonMiddlewares, instrumentControllers.uploadNewInstrumentsFromBinance);
 
 router.get('/:id', commonMiddlewares, instrumentControllers.findOneById);

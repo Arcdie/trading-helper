@@ -4,9 +4,6 @@ const {
   isMongoId,
 } = require('validator');
 
-const log = require('../../../libs/logger');
-const redis = require('../../../libs/redis');
-
 const Candle5m = require('../../../models/Candle-5m');
 const Candle1h = require('../../../models/Candle-1h');
 const Candle4h = require('../../../models/Candle-4h');

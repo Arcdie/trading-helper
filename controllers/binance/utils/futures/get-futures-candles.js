@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const getCandles = async ({
+const getFuturesCandles = async ({
   symbol,
   interval,
   limit,
@@ -33,5 +33,5 @@ const getCandles = async ({
 };
 
 module.exports = {
-  getCandles,
+  getFuturesCandles,
 };
