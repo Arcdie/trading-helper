@@ -7,16 +7,8 @@ const {
 } = require('../../telegram-bot');
 
 const {
-  sendData,
-} = require('../../../websocket/websocket-server');
-
-const {
   checkInstrumentVolumeBounds,
 } = require('../../../controllers/instrument-volume-bounds/utils/check-instrument-volume-bounds');
-
-const {
-  DOCS_LIMITER_FOR_QUEUES,
-} = require('../../../controllers/instruments/constants');
 
 const CONNECTION_NAME = 'Spot:Depth';
 

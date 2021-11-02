@@ -11,7 +11,7 @@ const commonMiddlewares = [
   getUser,
 ];
 
-router.get('/active', commonMiddlewares, instrumentControllers.getActiveInstruments);
+router.get('/active', instrumentControllers.getActiveInstruments);
 router.get('/by-id', commonMiddlewares, instrumentControllers.findManyById);
 router.get('/by-name', commonMiddlewares, instrumentControllers.findManyByName);
 router.get('/by-robots', commonMiddlewares, instrumentControllers.getInstrumentsWithActiveRobots);

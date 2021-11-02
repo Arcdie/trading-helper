@@ -1,13 +1,5 @@
 const moment = require('moment');
 
-const {
-  isMongoId,
-} = require('validator');
-
-const {
-  isUndefined,
-} = require('lodash');
-
 const log = require('../../../libs/logger');
 const redis = require('../../../libs/redis');
 
@@ -18,14 +10,6 @@ const {
 const {
   generateMongoId,
 } = require('../../../libs/support');
-
-const {
-  createInstrumentVolumeBound,
-} = require('./create-instrument-volume-bound');
-
-const {
-  updateInstrumentVolumeBound,
-} = require('./update-instrument-volume-bound');
 
 const {
   LIMITER_RANGE_FOR_LIMIT_ORDERS,

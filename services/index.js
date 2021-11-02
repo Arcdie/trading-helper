@@ -15,7 +15,7 @@ const {
 const InstrumentNew = require('../models/InstrumentNew');
 
 module.exports = async () => {
-  await redis.flushallAsync();
+  // await redis.flushallAsync();
 
   const instrumentsDocs = await InstrumentNew.find({
     is_active: true,
