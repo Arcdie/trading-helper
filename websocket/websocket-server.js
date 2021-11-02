@@ -133,13 +133,34 @@ const newSubscribe = async ({
   userId,
   socketId,
 }) => {
-  if (!data || !data.subscriptionName) {
-    log.warn('No data or subscriptionName');
+  if (!data) {
+    log.warn('No data');
     return false;
   }
 
-  if (!ACTION_NAMES.get(data.subscriptionName)) {
-    log.warn('No or invalid subscriptionName');
+  const subscriptionsNames = [];
+
+  if (data.subscriptionName) {
+    subscriptionsNames.push(data.subscriptionName);
+  } else {
+    subscriptionsNames.push(...data.subscriptionsNames || []);
+  }
+
+  if (!subscriptionsNames.length) {
+    log.warn('No subscriptionName');
+    return false;
+  }
+
+  let areSubscriptionsNamesValid = true;
+
+  subscriptionsNames.forEach(subscriptionName => {
+    if (!ACTION_NAMES.get(subscriptionName)) {
+      areSubscriptionsNamesValid = false;
+    }
+  });
+
+  if (!areSubscriptionsNamesValid) {
+    log.warn('Invalid subscriptionName');
     return false;
   }
 
@@ -156,13 +177,20 @@ const newSubscribe = async ({
     userSubscriptions = JSON.parse(userSubscriptions);
   }
 
-  const doesExistSubscription = userSubscriptions.some(
-    subscription => subscription === data.subscriptionName,
-  );
+  let doesExistNewSubscription = false;
 
-  if (!doesExistSubscription) {
-    userSubscriptions.push(data.subscriptionName);
+  subscriptionsNames.forEach(subscriptionName => {
+    const doesExistSubscription = userSubscriptions.some(
+      subscription => subscription === subscriptionName,
+    );
 
+    if (!doesExistSubscription) {
+      doesExistNewSubscription = true;
+      userSubscriptions.push(subscriptionName);
+    }
+  });
+
+  if (doesExistNewSubscription) {
     await redis.hsetAsync([
       keyUserSubscriptions,
       socketId,
@@ -170,32 +198,34 @@ const newSubscribe = async ({
     ]);
   }
 
-  const targetRoom = rooms.find(room => room.roomName === data.subscriptionName);
+  subscriptionsNames.forEach(subscriptionName => {
+    const targetRoom = rooms.find(room => room.roomName === subscriptionName);
 
-  if (!targetRoom) {
-    log.warn(`No targetRoom; subscriptionName: ${data.subscriptionName}`);
-    return false;
-  }
-
-  targetRoom.join(socketId);
-
-  if (data.subscriptionName === ACTION_NAMES.get('candleData')) {
-    if (!data.instrumentName) {
-      log.warn('No or invalid instrumentName');
+    if (!targetRoom) {
+      log.warn(`No targetRoom; subscriptionName: ${subscriptionName}`);
       return false;
     }
 
-    const targetInstrumentRoom = targetRoom.rooms.find(
-      room => room.roomName === data.instrumentName,
-    );
+    targetRoom.join(socketId);
 
-    if (!targetInstrumentRoom) {
-      log.warn('No targetInstrumentRoom');
-      return false;
+    if (subscriptionName === ACTION_NAMES.get('candleData')) {
+      if (!data.instrumentName) {
+        log.warn('No or invalid instrumentName');
+        return false;
+      }
+
+      const targetInstrumentRoom = targetRoom.rooms.find(
+        room => room.roomName === data.instrumentName,
+      );
+
+      if (!targetInstrumentRoom) {
+        log.warn('No targetInstrumentRoom');
+        return false;
+      }
+
+      targetInstrumentRoom.join(socketId);
     }
-
-    targetInstrumentRoom.join(socketId);
-  }
+  });
 };
 
 module.exports = {

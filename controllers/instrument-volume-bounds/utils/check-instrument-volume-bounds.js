@@ -77,7 +77,7 @@ const checkInstrumentVolumeBounds = async ({
 
   cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
 
-  const halfAverageVolume = Math.ceil(cacheInstrumentDoc.average_volume / 2);
+  const halfAverageVolume = Math.ceil(cacheInstrumentDoc.average_volume_for_last_24_hours / 2);
 
   if (!cacheInstrumentVolumeBoundsKeys) {
     cacheInstrumentVolumeBoundsKeys = [];

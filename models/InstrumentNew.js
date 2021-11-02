@@ -22,7 +22,7 @@ const InstrumentNew = new mongoose.Schema({
     required: true,
   },
 
-  average_volume: {
+  average_volume_for_last_24_hours: {
     type: Number,
     default: 0,
   },

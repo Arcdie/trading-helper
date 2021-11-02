@@ -15,6 +15,10 @@ const {
 } = require('../../../controllers/candles/utils/create-5m-candle');
 
 const {
+  updateAverageVolume,
+} = require('../../../controllers/instruments/utils/update-average-volume');
+
+const {
   updateInstrumentInRedis,
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
@@ -103,6 +107,12 @@ module.exports = async (instrumentsDocs = []) => {
             high,
             low,
             volume,
+          });
+
+          await updateAverageVolume({
+            instrumentId: instrumentDoc._id,
+            instrumentName: instrumentDoc.name,
+            isUpdateForLast24Hours: false,
           });
         }
 

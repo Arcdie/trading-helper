@@ -168,6 +168,7 @@ const intervalUpdateAverageVolume = async (instrumentsDocs = [], interval) => {
     await updateAverageVolume({
       instrumentId: doc._id,
       instrumentName: doc.name,
+      isUpdateForLast24Hours: true,
     });
   }));
 

@@ -30,7 +30,7 @@ const setVolume = async () => {
   }).exec();
 
   await Promise.all(instrumentsDocs.map(async doc => {
-    const halfFromAverageVolume = Math.ceil(doc.average_volume / 2);
+    const halfFromAverageVolume = Math.ceil(doc.average_volume_for_last_24_hours / 2);
 
     let docName = doc.name;
     const isFutures = doc.is_futures;

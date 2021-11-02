@@ -13,8 +13,8 @@ const updateInstrument = async ({
   instrumentId,
 
   price,
-  averageVolume,
   doesIgnoreVolume,
+  averageVolumeForLast24Hours,
   averageVolumeForLast15Minutes,
 }) => {
   if (!instrumentId || !isMongoId(instrumentId.toString())) {
@@ -30,8 +30,8 @@ const updateInstrument = async ({
     updateObj.price = parseFloat(price);
   }
 
-  if (averageVolume) {
-    updateObj.average_volume = averageVolume;
+  if (averageVolumeForLast24Hours) {
+    updateObj.average_volume_for_last_24_hours = averageVolumeForLast24Hours;
   }
 
   if (averageVolumeForLast15Minutes) {
