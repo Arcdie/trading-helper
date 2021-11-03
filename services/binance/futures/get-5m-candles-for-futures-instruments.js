@@ -123,14 +123,17 @@ module.exports = async (instrumentsDocs = []) => {
 
           await calculate1hCandle({
             instrumentId: instrumentDoc._id,
+            startTime,
           });
 
           await calculate4hCandle({
             instrumentId: instrumentDoc._id,
+            startTime,
           });
 
           await calculate1dCandle({
             instrumentId: instrumentDoc._id,
+            startTime,
           });
 
           await calculateAverageVolumeForLast15Minutes({

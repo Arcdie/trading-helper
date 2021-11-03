@@ -12,6 +12,7 @@ const Candle5m = require('../../../models/Candle-5m');
 
 const calculate4hCandle = async ({
   instrumentId,
+  startTime,
 }) => {
   if (!instrumentId || !isMongoId(instrumentId.toString())) {
     return {
@@ -20,8 +21,8 @@ const calculate4hCandle = async ({
     };
   }
 
-  const nowTimeUnix = moment().unix();
-  const startCurrentDayUnix = moment().utc().startOf('day').unix();
+  const nowTimeUnix = moment(startTime).unix();
+  const startCurrentDayUnix = moment(startTime).utc().startOf('day').unix();
 
   const differenceBetweenNowAndStartToday = nowTimeUnix - startCurrentDayUnix;
   const secondsAfterPrevious4HInterval = differenceBetweenNowAndStartToday % 14400;

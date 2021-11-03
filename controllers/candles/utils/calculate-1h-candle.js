@@ -12,6 +12,7 @@ const Candle5m = require('../../../models/Candle-5m');
 
 const calculate1hCandle = async ({
   instrumentId,
+  startTime,
 }) => {
   if (!instrumentId || !isMongoId(instrumentId.toString())) {
     return {
@@ -20,7 +21,7 @@ const calculate1hCandle = async ({
     };
   }
 
-  const startOfHour = moment().utc().startOf('hour');
+  const startOfHour = moment(startTime).utc().startOf('hour');
   const endOfHour = moment(startOfHour).endOf('hour');
 
   const candlesDocs = await Candle5m

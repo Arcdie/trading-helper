@@ -38,7 +38,7 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  if (!interval || !['5m', '1h', '4h', 'day'].includes(interval)) {
+  if (!interval || !['5m', '1h', '4h', '1d'].includes(interval)) {
     return res.json({
       status: false,
       message: 'No or invalid interval',

@@ -24,7 +24,7 @@ const getCandles = async ({
     };
   }
 
-  if (!interval || !['5m', '1h', '4h', 'day'].includes(interval)) {
+  if (!interval || !['5m', '1h', '4h', '1d'].includes(interval)) {
     return {
       status: false,
       message: 'No or invalid interval',
@@ -53,7 +53,7 @@ const getCandles = async ({
     SearchModel = Candle1h;
   } else if (interval === '4h') {
     SearchModel = Candle4h;
-  } else if (interval === 'day') {
+  } else if (interval === '1d') {
     SearchModel = Candle1d;
   }
 

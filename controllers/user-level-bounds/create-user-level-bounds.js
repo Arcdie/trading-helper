@@ -81,7 +81,7 @@ module.exports = async (req, res, next) => {
   const {
     is_draw_levels_for_1h_candles: isDrawLevelsFor1hCandles,
     is_draw_levels_for_4h_candles: isDrawLevelsFor4hCandles,
-    is_draw_levels_for_day_candles: isDrawLevelsForDayCandles,
+    is_draw_levels_for_1d_candles: isDrawLevelsForDayCandles,
 
     number_candles_for_calculate_1d_levels: numberCandlesForCalculateDayLevels,
     number_candles_for_calculate_4h_levels: numberCandlesForCalculate4hLevels,
@@ -106,7 +106,7 @@ module.exports = async (req, res, next) => {
     if (isDrawLevelsForDayCandles) {
       fetchPromises.push(
         getValidCandles({
-          interval: 'day',
+          interval: '1d',
           instrumentId: instrumentDoc._id,
         }),
       );
@@ -152,7 +152,7 @@ module.exports = async (req, res, next) => {
 
         if (!levelsWithThisPrice) {
           newLevels.push({
-            levelTimeframe: 'day',
+            levelTimeframe: '1d',
             levelPrice: level.levelPrice,
             levelStartCandleTime: level.levelStartCandleTime,
           });

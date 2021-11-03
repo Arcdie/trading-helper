@@ -1,5 +1,5 @@
 const DEFAULT_INDENT_IN_PERCENTS = 3; // %
-const TYPE_CANDLES_FOR_FIND_LEVELS = ['1h', '4h', 'day'];
+const TYPE_CANDLES_FOR_FIND_LEVELS = ['1h', '4h', '1d'];
 
 module.exports = {
   DEFAULT_INDENT_IN_PERCENTS,
