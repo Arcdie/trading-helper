@@ -109,42 +109,13 @@ module.exports = async (req, res, next) => {
 
   for (const instrumentDoc of instrumentsDocs) {
     const newLevels = [];
-    const fetchPromises = [];
 
     if (isDrawLevelsForDayCandles) {
-      fetchPromises.push(
-        getValidCandles({
-          interval: '1d',
-          instrumentId: instrumentDoc._id,
-        }),
-      );
-    }
+      const resultGetDayCandles = await getValidCandles({
+        interval: '1d',
+        instrumentId: instrumentDoc._id,
+      });
 
-    if (isDrawLevelsFor4hCandles) {
-      fetchPromises.push(
-        getValidCandles({
-          interval: '4h',
-          instrumentId: instrumentDoc._id,
-        }),
-      );
-    }
-
-    if (isDrawLevelsFor1hCandles) {
-      fetchPromises.push(
-        getValidCandles({
-          interval: '1h',
-          instrumentId: instrumentDoc._id,
-        }),
-      );
-    }
-
-    const [
-      resultGetDayCandles,
-      resultGet4hCandles,
-      resultGet1hCandles,
-    ] = await Promise.all(fetchPromises);
-
-    if (isDrawLevelsForDayCandles) {
       if (!resultGetDayCandles || !resultGetDayCandles.status) {
         log.warn(resultGetDayCandles.message || 'Cant getCandles');
         continue;
@@ -169,6 +140,11 @@ module.exports = async (req, res, next) => {
     }
 
     if (isDrawLevelsFor4hCandles) {
+      const resultGet4hCandles = await getValidCandles({
+        interval: '4h',
+        instrumentId: instrumentDoc._id,
+      });
+
       if (!resultGet4hCandles || !resultGet4hCandles.status) {
         log.warn(resultGet4hCandles.message || 'Cant getCandles');
         continue;
@@ -193,6 +169,11 @@ module.exports = async (req, res, next) => {
     }
 
     if (isDrawLevelsFor1hCandles) {
+      const resultGet1hCandles = await getValidCandles({
+        interval: '1h',
+        instrumentId: instrumentDoc._id,
+      });
+
       if (!resultGet1hCandles || !resultGet1hCandles.status) {
         log.warn(resultGet1hCandles.message || 'Cant getCandles');
         continue;
