@@ -43,8 +43,8 @@ module.exports = async () => {
     log.info(`${processedInstruments} / ${totalInstruments}`);
   }, 10 * 1000);
 
-  const startDate = moment('2021-11-01 00:00:00.000Z').utc();
-  const endDate = moment('2021-11-03 00:00:00.000Z').utc();
+  const startDate = moment('2021-11-03 00:00:00.000Z').utc();
+  const endDate = moment('2021-11-03 12:00:00.000Z').utc();
 
   for (const instrumentDoc of instrumentsDocs) {
     const allCandlesDocs = await Candle5m.find({
@@ -91,8 +91,8 @@ module.exports = async () => {
       time: candle.time,
     }));
 
-    const oneHourCandles = [];
-    // const oneHourCandles = calculateOneHourTimeFrameData(preparedCandles);
+    // const oneHourCandles = [];
+    const oneHourCandles = calculateOneHourTimeFrameData(preparedCandles);
 
     await Promise.all(oneHourCandles.map(async candle => {
       const resultCreateCandle = await create1hCandle({
@@ -111,6 +111,7 @@ module.exports = async () => {
       }
     }));
 
+    // const fourHourCandles = [];
     const fourHourCandles = calculateFourHoursTimeFrameData(preparedCandles);
 
     await Promise.all(fourHourCandles.map(async candle => {
@@ -130,6 +131,7 @@ module.exports = async () => {
       }
     }));
 
+    // const dayCandles = [];
     const dayCandles = calculateDayTimeFrameData(preparedCandles);
 
     await Promise.all(dayCandles.map(async candle => {

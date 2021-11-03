@@ -112,6 +112,7 @@ module.exports = async (instrumentsDocs = []) => {
 
         if (isClosed) {
           await create5mCandle({
+            isFutures: true,
             instrumentId: instrumentDoc._id,
             startTime: new Date(startTime),
             open,

@@ -11,6 +11,7 @@ const Candle5m = require('../../../models/Candle-5m');
 const create5mCandle = async ({
   instrumentId,
   startTime,
+  isFutures,
   open,
   close,
   high,
@@ -92,18 +93,20 @@ const create5mCandle = async ({
 
   await newCandle.save();
 
-  sendData({
-    actionName: 'candle5mData',
-    data: {
-      instrumentId,
-      startTime,
-      open,
-      close,
-      high,
-      low,
-      volume,
-    },
-  });
+  if (isFutures) {
+    sendData({
+      actionName: 'candle5mData',
+      data: {
+        instrumentId,
+        startTime,
+        open,
+        close,
+        high,
+        low,
+        volume,
+      },
+    });
+  }
 
   return {
     status: true,
