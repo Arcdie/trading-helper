@@ -26,7 +26,7 @@ const calculate4hCandle = async ({
   const differenceBetweenNowAndStartToday = nowTimeUnix - startCurrentDayUnix;
   const secondsAfterPrevious4HInterval = differenceBetweenNowAndStartToday % 14400;
 
-  const startOf4hPeriod = moment.unix(nowTimeUnix - secondsAfterPrevious4HInterval - 14400);
+  const startOf4hPeriod = moment.unix(nowTimeUnix - secondsAfterPrevious4HInterval);
   const endOf4hPeriod = moment.unix(startOf4hPeriod.unix() + 14399);
 
   const candlesDocs = await Candle5m
