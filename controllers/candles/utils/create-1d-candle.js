@@ -1,4 +1,8 @@
 const {
+  isEmpty,
+} = require('lodash');
+
+const {
   isMongoId,
 } = require('validator');
 
@@ -62,12 +66,35 @@ const create1dCandle = async ({
     };
   }
 
+  open = parseFloat(open);
+  close = parseFloat(close);
+  high = parseFloat(high);
+  low = parseFloat(low);
+
   const existCandle = await Candle1d.findOne({
     instrument_id: instrumentId,
     time: startTime,
   }).exec();
 
   if (existCandle) {
+    const updateObj = {};
+
+    if (high > existCandle.high) {
+      updateObj.high = high;
+    }
+
+    if (low < existCandle.low) {
+      updateObj.low = low;
+    }
+
+    if (close !== existCandle.close) {
+      updateObj.close = close;
+    }
+
+    if (!isEmpty(updateObj)) {
+      await Candle1d.findByIdAndUpdate(existCandle._id, updateObj).exec();
+    }
+
     return {
       status: true,
       result: existCandle._doc,
@@ -76,14 +103,7 @@ const create1dCandle = async ({
 
   const newCandle = new Candle1d({
     instrument_id: instrumentId,
-
-    data: [
-      parseFloat(open),
-      parseFloat(close),
-      parseFloat(low),
-      parseFloat(high),
-    ],
-
+    data: [open, close, low, high],
     volume: parseFloat(volume),
     time: startTime,
   });

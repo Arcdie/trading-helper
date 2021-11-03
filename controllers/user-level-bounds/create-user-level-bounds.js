@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const {
   isMongoId,
 } = require('validator');
@@ -22,14 +20,6 @@ const {
   createUserLevelBound,
 } = require('./utils/create-user-level-bound');
 
-const {
-  DEFAULT_INDENT_IN_PERCENTS,
-} = require('./constants');
-
-const Candle1h = require('../../models/Candle-1h');
-const Candle4h = require('../../models/Candle-4h');
-const Candle1d = require('../../models/Candle-1d');
-const InstrumentNew = require('../../models/InstrumentNew');
 const UserLevelBound = require('../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
@@ -83,40 +73,77 @@ module.exports = async (req, res, next) => {
   }
 
   const result = [];
-  const newLevels = [];
+
+  if (!user.levels_monitoring_settings) {
+    user.levels_monitoring_settings = {};
+  }
+
+  const {
+    is_draw_levels_for_1h_candles: isDrawLevelsFor1hCandles,
+    is_draw_levels_for_4h_candles: isDrawLevelsFor4hCandles,
+    is_draw_levels_for_day_candles: isDrawLevelsForDayCandles,
+
+    number_candles_for_calculate_day_levels: numberCandlesForCalculateDayLevels,
+    number_candles_for_calculate_4h_levels: numberCandlesForCalculate4hLevels,
+    number_candles_for_calculate_1h_levels: numberCandlesForCalculate1hLevels,
+  } = user.levels_monitoring_settings;
 
   await UserLevelBound.deleteMany({
     user_id: userId,
   });
 
-  for (const instrumentDoc of instrumentsDocs) {
-    if (!user.levels_monitoring_settings) {
-      user.levels_monitoring_settings = {};
-    }
+  if (!isDrawLevelsFor1hCandles && !isDrawLevelsFor4hCandles && !isDrawLevelsForDayCandles) {
+    return {
+      status: true,
+      result: [],
+    };
+  }
 
-    const {
-      is_draw_levels_for_1h_candles: isDrawLevelsFor1hCandles,
-      is_draw_levels_for_4h_candles: isDrawLevelsFor4hCandles,
-      is_draw_levels_for_day_candles: isDrawLevelsForDayCandles,
-    } = user.levels_monitoring_settings;
+  for (const instrumentDoc of instrumentsDocs) {
+    const newLevels = [];
+    const fetchPromises = [];
 
     if (isDrawLevelsForDayCandles) {
-      const {
-        number_candles_for_calculate_day_levels: numberCandlesForCalculateDayLevels,
-      } = user.levels_monitoring_settings;
+      fetchPromises.push(
+        getValidCandles({
+          interval: 'day',
+          instrumentId: instrumentDoc._id,
+        }),
+      );
+    }
 
-      const resultGetCandles = await getValidCandles({
-        interval: 'day',
-        instrumentId: instrumentDoc._id,
-      });
+    if (isDrawLevelsFor4hCandles) {
+      fetchPromises.push(
+        getValidCandles({
+          interval: '4h',
+          instrumentId: instrumentDoc._id,
+        }),
+      );
+    }
 
-      if (!resultGetCandles || !resultGetCandles.status) {
-        log.warn(resultGetCandles.message || 'Cant getCandles');
+    if (isDrawLevelsFor1hCandles) {
+      fetchPromises.push(
+        getValidCandles({
+          interval: '1h',
+          instrumentId: instrumentDoc._id,
+        }),
+      );
+    }
+
+    const [
+      resultGetDayCandles,
+      resultGet4hCandles,
+      resultGet1hCandles,
+    ] = await Promise.all(fetchPromises);
+
+    if (isDrawLevelsForDayCandles) {
+      if (!resultGetDayCandles || !resultGetDayCandles.status) {
+        log.warn(resultGetDayCandles.message || 'Cant getCandles');
         continue;
       }
 
-      const highLevels = findHighLevels(resultGetCandles.result, numberCandlesForCalculateDayLevels);
-      const lowLevels = findLowLevels(resultGetCandles.result, numberCandlesForCalculateDayLevels);
+      const highLevels = findHighLevels(resultGetDayCandles.result, numberCandlesForCalculateDayLevels);
+      const lowLevels = findLowLevels(resultGetDayCandles.result, numberCandlesForCalculateDayLevels);
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
@@ -134,22 +161,13 @@ module.exports = async (req, res, next) => {
     }
 
     if (isDrawLevelsFor4hCandles) {
-      const {
-        number_candles_for_calculate_4h_levels: numberCandlesForCalculate4hLevels,
-      } = user.levels_monitoring_settings;
-
-      const resultGetCandles = await getValidCandles({
-        interval: '4h',
-        instrumentId: instrumentDoc._id,
-      });
-
-      if (!resultGetCandles || !resultGetCandles.status) {
-        log.warn(resultGetCandles.message || 'Cant getCandles');
+      if (!resultGet4hCandles || !resultGet4hCandles.status) {
+        log.warn(resultGet4hCandles.message || 'Cant getCandles');
         continue;
       }
 
-      const highLevels = findHighLevels(resultGetCandles.result, numberCandlesForCalculate4hLevels);
-      const lowLevels = findLowLevels(resultGetCandles.result, numberCandlesForCalculate4hLevels);
+      const highLevels = findHighLevels(resultGet4hCandles.result, numberCandlesForCalculate4hLevels);
+      const lowLevels = findLowLevels(resultGet4hCandles.result, numberCandlesForCalculate4hLevels);
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
@@ -167,22 +185,13 @@ module.exports = async (req, res, next) => {
     }
 
     if (isDrawLevelsFor1hCandles) {
-      const {
-        number_candles_for_calculate_1h_levels: numberCandlesForCalculate1hLevels,
-      } = user.levels_monitoring_settings;
-
-      const resultGetCandles = await getValidCandles({
-        interval: '1h',
-        instrumentId: instrumentDoc._id,
-      });
-
-      if (!resultGetCandles || !resultGetCandles.status) {
-        log.warn(resultGetCandles.message || 'Cant getCandles');
+      if (!resultGet1hCandles || !resultGet1hCandles.status) {
+        log.warn(resultGet1hCandles.message || 'Cant getCandles');
         continue;
       }
 
-      const highLevels = findHighLevels(resultGetCandles.result, numberCandlesForCalculate1hLevels);
-      const lowLevels = findLowLevels(resultGetCandles.result, numberCandlesForCalculate1hLevels);
+      const highLevels = findHighLevels(resultGet1hCandles.result, numberCandlesForCalculate1hLevels);
+      const lowLevels = findLowLevels(resultGet1hCandles.result, numberCandlesForCalculate1hLevels);
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(

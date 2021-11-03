@@ -30,7 +30,9 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const resultGetInstruments = await getActiveInstruments({});
+  const resultGetInstruments = await getActiveInstruments({
+    isOnlyFutures: true,
+  });
 
   if (!resultGetInstruments || !resultGetInstruments.status) {
     return res.json({

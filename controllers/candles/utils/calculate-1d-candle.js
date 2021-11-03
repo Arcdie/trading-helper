@@ -20,7 +20,7 @@ const calculate1dCandle = async ({
     };
   }
 
-  const startOfDay = moment().utc().add(-1, 'hours').startOf('day');
+  const startOfDay = moment().utc().startOf('day');
   const endOfDay = moment(startOfDay).endOf('day');
 
   const candlesDocs = await Candle5m
@@ -28,9 +28,9 @@ const calculate1dCandle = async ({
       instrument_id: instrumentId,
 
       $and: [{
-        time: { $lte: endOfDay },
-      }, {
         time: { $gte: startOfDay },
+      }, {
+        time: { $lte: endOfDay },
       }],
     })
     .sort({ time: 1 })

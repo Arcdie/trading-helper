@@ -74,16 +74,14 @@ const create5mCandle = async ({
     };
   }
 
+  open = parseFloat(open);
+  close = parseFloat(close);
+  high = parseFloat(high);
+  low = parseFloat(low);
+
   const newCandle = new Candle5m({
     instrument_id: instrumentId,
-
-    data: [
-      parseFloat(open),
-      parseFloat(close),
-      parseFloat(low),
-      parseFloat(high),
-    ],
-
+    data: [open, close, low, high],
     volume: parseFloat(volume),
     time: startTime,
   });

@@ -5,7 +5,6 @@ const getActiveInstruments = async ({
 }) => {
   const matchObj = {
     is_active: true,
-    // name: 'IOTAUSDTPERP',
   };
 
   if (isOnlyFutures) {

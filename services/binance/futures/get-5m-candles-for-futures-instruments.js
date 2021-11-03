@@ -15,6 +15,18 @@ const {
 } = require('../../../controllers/candles/utils/create-5m-candle');
 
 const {
+  calculate1hCandle,
+} = require('../../../controllers/candles/utils/calculate-1h-candle');
+
+const {
+  calculate4hCandle,
+} = require('../../../controllers/candles/utils/calculate-4h-candle');
+
+const {
+  calculate1dCandle,
+} = require('../../../controllers/candles/utils/calculate-1d-candle');
+
+const {
   updateInstrumentInRedis,
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
@@ -107,6 +119,18 @@ module.exports = async (instrumentsDocs = []) => {
             high,
             low,
             volume,
+          });
+
+          await calculate1hCandle({
+            instrumentId: instrumentDoc._id,
+          });
+
+          await calculate4hCandle({
+            instrumentId: instrumentDoc._id,
+          });
+
+          await calculate1dCandle({
+            instrumentId: instrumentDoc._id,
           });
 
           await calculateAverageVolumeForLast15Minutes({

@@ -15,6 +15,6 @@ router.get('/create-1m-candles-for-last-hour', candleCronControllers.create1mCan
 
 router.get('/:interval', commonMiddlewares, candleControllers.getCandles);
 
-router.get('/:interval/calculate', candleCronControllers.calculateCandles);
+// router.get('/:interval/calculate', candleCronControllers.calculateCandles);
 
 module.exports = router;

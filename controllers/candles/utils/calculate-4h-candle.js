@@ -34,9 +34,9 @@ const calculate4hCandle = async ({
       instrument_id: instrumentId,
 
       $and: [{
-        time: { $lte: endOf4hPeriod },
-      }, {
         time: { $gte: startOf4hPeriod },
+      }, {
+        time: { $lte: endOf4hPeriod },
       }],
     })
     .sort({ time: 1 })

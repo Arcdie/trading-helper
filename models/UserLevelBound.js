@@ -20,7 +20,6 @@ const UserLevelBound = new mongoose.Schema({
   level_price: {
     type: Number,
     required: true,
-    index: true,
   },
 
   level_timeframe: {
