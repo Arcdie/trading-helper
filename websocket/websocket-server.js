@@ -77,7 +77,7 @@ const createWebsocketRooms = (instrumentsDocs = []) => {
     instrumentsDocs
       .filter(doc => doc.is_futures)
       .forEach(doc => {
-        const newRoom = new WebSocketRoom(doc.name);
+        const newRoom = new WebSocketRoom(doc._id.toString());
         targetRoom.addRoom(newRoom);
       });
   });
@@ -94,10 +94,10 @@ const sendData = obj => {
   }
 
   if (ACION_NAMES_CANDLE_DATA.includes(actionName)) {
-    const { instrumentName } = obj.data;
+    const { instrumentId } = obj.data;
 
     const targetInstrumentRoom = targetRoom.rooms.find(
-      room => room.roomName === instrumentName,
+      room => room.roomName === instrumentId.toString(),
     );
 
     if (!targetInstrumentRoom) {
@@ -206,13 +206,13 @@ const newSubscribe = async ({
     targetRoom.join(socketId);
 
     if (ACION_NAMES_CANDLE_DATA.includes(subscriptionName)) {
-      if (!data.instrumentName) {
-        log.warn('No or invalid instrumentName');
+      if (!data.instrumentId) {
+        log.warn('No or invalid instrumentId');
         return false;
       }
 
       const targetInstrumentRoom = targetRoom.rooms.find(
-        room => room.roomName === data.instrumentName,
+        room => room.roomName === data.instrumentId,
       );
 
       if (!targetInstrumentRoom) {

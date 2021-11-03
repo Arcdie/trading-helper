@@ -1,10 +1,10 @@
 const {
-  isEmpty,
-} = require('lodash');
-
-const {
   isMongoId,
 } = require('validator');
+
+const {
+  sendData,
+} = require('../../../websocket/websocket-server');
 
 const Candle1h = require('../../../models/Candle-1h');
 
@@ -74,25 +74,43 @@ const create1hCandle = async ({
   const existCandle = await Candle1h.findOne({
     instrument_id: instrumentId,
     time: startTime,
-  }).exec();
+  }, { data: 1 }).exec();
 
   if (existCandle) {
-    const updateObj = {};
+    let isUpdate = false;
 
-    if (high > existCandle.high) {
-      updateObj.high = high;
+    if (high > existCandle.data[3]) {
+      isUpdate = true;
+      existCandle.data[3] = high;
     }
 
-    if (low < existCandle.low) {
-      updateObj.low = low;
+    if (low < existCandle.data[2]) {
+      isUpdate = true;
+      existCandle.data[2] = low;
     }
 
-    if (close !== existCandle.close) {
-      updateObj.close = close;
+    if (close !== existCandle.data[1]) {
+      isUpdate = true;
+      existCandle.data[1] = close;
     }
 
-    if (!isEmpty(updateObj)) {
-      await Candle1h.findByIdAndUpdate(existCandle._id, updateObj).exec();
+    if (isUpdate) {
+      await Candle1h.findByIdAndUpdate(existCandle._id, {
+        data: existCandle.data,
+      }).exec();
+
+      sendData({
+        actionName: 'candle1hData',
+        data: {
+          instrumentId,
+          startTime,
+          open,
+          close,
+          high,
+          low,
+          volume,
+        },
+      });
     }
 
     return {
@@ -109,6 +127,19 @@ const create1hCandle = async ({
   });
 
   await newCandle.save();
+
+  sendData({
+    actionName: 'candle1hData',
+    data: {
+      instrumentId,
+      startTime,
+      open,
+      close,
+      high,
+      low,
+      volume,
+    },
+  });
 
   return {
     status: true,

@@ -143,10 +143,9 @@ module.exports = async (instrumentsDocs = []) => {
         }
 
         sendData({
-          actionName: 'candleData',
+          actionName: 'candle5mData',
           data: {
             instrumentId: instrumentDoc._id,
-            instrumentName: instrumentDoc.name,
             startTime,
             open,
             close,

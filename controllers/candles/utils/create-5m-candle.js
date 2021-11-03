@@ -2,6 +2,10 @@ const {
   isMongoId,
 } = require('validator');
 
+const {
+  sendData,
+} = require('../../../websocket/websocket-server');
+
 const Candle5m = require('../../../models/Candle-5m');
 
 const create5mCandle = async ({
@@ -87,6 +91,19 @@ const create5mCandle = async ({
   });
 
   await newCandle.save();
+
+  sendData({
+    actionName: 'candle5mData',
+    data: {
+      instrumentId,
+      startTime,
+      open,
+      close,
+      high,
+      low,
+      volume,
+    },
+  });
 
   return {
     status: true,
