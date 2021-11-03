@@ -9,11 +9,8 @@ const log = require('../libs/logger');
 const redis = require('../libs/redis');
 
 const {
-  getById,
-} = require('../controllers/users/get-by-id');
-
-const {
   ACTION_NAMES,
+  ACION_NAMES_CANDLE_DATA,
 } = require('./constants');
 
 const WebSocketRoom = require('./websocket-room');
@@ -74,7 +71,7 @@ const createWebsocketRooms = (instrumentsDocs = []) => {
     rooms.push(new WebSocketRoom(value));
   });
 
-  [ACTION_NAMES.get('candleData')].forEach(actionName => {
+  ACION_NAMES_CANDLE_DATA.forEach(actionName => {
     const targetRoom = rooms.find(room => room.roomName === actionName);
 
     instrumentsDocs
@@ -96,7 +93,7 @@ const sendData = obj => {
     return true;
   }
 
-  if (actionName === 'candleData') {
+  if (ACION_NAMES_CANDLE_DATA.includes(actionName)) {
     const { instrumentName } = obj.data;
 
     const targetInstrumentRoom = targetRoom.rooms.find(
@@ -208,7 +205,7 @@ const newSubscribe = async ({
 
     targetRoom.join(socketId);
 
-    if (subscriptionName === ACTION_NAMES.get('candleData')) {
+    if (ACION_NAMES_CANDLE_DATA.includes(subscriptionName)) {
       if (!data.instrumentName) {
         log.warn('No or invalid instrumentName');
         return false;

@@ -157,7 +157,7 @@ module.exports = async (req, res, next) => {
   }
 
   if (numberCandlesForCalculateDayLevels) {
-    userDoc.levels_monitoring_settings.number_candles_for_calculate_day_levels = parseInt(numberCandlesForCalculateDayLevels, 10);
+    userDoc.levels_monitoring_settings.number_candles_for_calculate_1d_levels = parseInt(numberCandlesForCalculateDayLevels, 10);
   }
 
   await userDoc.save();

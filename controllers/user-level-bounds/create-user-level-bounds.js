@@ -83,7 +83,7 @@ module.exports = async (req, res, next) => {
     is_draw_levels_for_4h_candles: isDrawLevelsFor4hCandles,
     is_draw_levels_for_day_candles: isDrawLevelsForDayCandles,
 
-    number_candles_for_calculate_day_levels: numberCandlesForCalculateDayLevels,
+    number_candles_for_calculate_1d_levels: numberCandlesForCalculateDayLevels,
     number_candles_for_calculate_4h_levels: numberCandlesForCalculate4hLevels,
     number_candles_for_calculate_1h_levels: numberCandlesForCalculate1hLevels,
   } = user.levels_monitoring_settings;

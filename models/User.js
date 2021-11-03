@@ -45,7 +45,7 @@ const User = new mongoose.Schema({
       default: false,
     },
 
-    is_draw_levels_for_day_candles: {
+    is_draw_levels_for_1d_candles: {
       type: Boolean,
       default: false,
     },
@@ -60,7 +60,7 @@ const User = new mongoose.Schema({
       default: 10,
     },
 
-    number_candles_for_calculate_day_levels: {
+    number_candles_for_calculate_1d_levels: {
       type: Number,
       default: 10,
     },

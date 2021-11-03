@@ -27,9 +27,8 @@ module.exports = async () => {
   console.log('Migration started');
 
   const instrumentsDocs = await InstrumentNew.find({
-    name: 'IOTXUSDTPERP',
-
     is_active: true,
+    is_futures: true,
   }).exec();
 
   if (!instrumentsDocs || !instrumentsDocs.length) {
@@ -44,9 +43,18 @@ module.exports = async () => {
     log.info(`${processedInstruments} / ${totalInstruments}`);
   }, 10 * 1000);
 
+  const startDate = moment('2021-11-01 00:00:00.000Z').utc();
+  const endDate = moment('2021-11-03 00:00:00.000Z').utc();
+
   for (const instrumentDoc of instrumentsDocs) {
     const allCandlesDocs = await Candle5m.find({
       instrument_id: instrumentDoc._id,
+
+      $and: [{
+        time: { $gte: startDate },
+      }, {
+        time: { $lt: endDate },
+      }],
     }).sort({ time: 1 }).exec();
 
     if (!allCandlesDocs || !allCandlesDocs.length) {
@@ -83,7 +91,8 @@ module.exports = async () => {
       time: candle.time,
     }));
 
-    const oneHourCandles = calculateOneHourTimeFrameData(preparedCandles);
+    const oneHourCandles = [];
+    // const oneHourCandles = calculateOneHourTimeFrameData(preparedCandles);
 
     await Promise.all(oneHourCandles.map(async candle => {
       const resultCreateCandle = await create1hCandle({
