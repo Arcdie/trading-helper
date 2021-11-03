@@ -36,6 +36,56 @@ const {
 
 const CONNECTION_NAME = 'Futures:Kline_5m';
 
+class InstrumentQueue {
+  constructor() {
+    this.queue = [];
+    this.isActive = false;
+
+    this.LIMITER = 10;
+  }
+
+  addIteration(obj) {
+    this.queue.push(obj);
+
+    if (!this.isActive) {
+      this.isActive = true;
+      this.nextStep();
+    }
+  }
+
+  async nextStep() {
+    const lQueue = this.queue.length;
+
+    if (lQueue > 0) {
+      const targetSteps = this.queue.splice(0, this.LIMITER);
+
+      await Promise.all(targetSteps.map(async ({
+        instrumentId,
+        startTime,
+      }) => {
+        await calculate1hCandle({
+          instrumentId,
+          startTime,
+        });
+
+        await calculate4hCandle({
+          instrumentId,
+          startTime,
+        });
+
+        await calculate1dCandle({
+          instrumentId,
+          startTime,
+        });
+      }));
+
+      this.nextStep();
+    } else {
+      this.isActive = false;
+    }
+  }
+}
+
 module.exports = async (instrumentsDocs = []) => {
   try {
     if (!instrumentsDocs || !instrumentsDocs.length) {
@@ -50,6 +100,7 @@ module.exports = async (instrumentsDocs = []) => {
       connectStr += `${cutName}@kline_5m/`;
     });
 
+    const instrumentQueue = new InstrumentQueue();
     connectStr = connectStr.substring(0, connectStr.length - 1);
 
     const websocketConnect = () => {
@@ -122,24 +173,14 @@ module.exports = async (instrumentsDocs = []) => {
             volume,
           });
 
-          await calculate1hCandle({
-            instrumentId: instrumentDoc._id,
-            startTime,
-          });
-
-          await calculate4hCandle({
-            instrumentId: instrumentDoc._id,
-            startTime,
-          });
-
-          await calculate1dCandle({
-            instrumentId: instrumentDoc._id,
-            startTime,
-          });
-
           await calculateAverageVolumeForLast15Minutes({
             instrumentId: instrumentDoc._id,
             instrumentName: instrumentDoc.name,
+          });
+
+          instrumentQueue.addIteration({
+            instrumentId: instrumentDoc._id,
+            startTime,
           });
         }
 
