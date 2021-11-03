@@ -14,6 +14,11 @@ const ACTION_NAMES = new Map([
   ['candle1dData', 'candle1dData'],
 ]);
 
+const PRIVATE_ACTION_NAMES = new Map([
+  ['levelsLoaded', 'levelsLoaded'],
+  ['userLevelBoundsCreated', 'userLevelBoundsCreated'],
+]);
+
 const ACION_NAMES_CANDLE_DATA = [
   ACTION_NAMES.get('candle5mData'),
   ACTION_NAMES.get('candle1hData'),
@@ -23,5 +28,6 @@ const ACION_NAMES_CANDLE_DATA = [
 
 module.exports = {
   ACTION_NAMES,
+  PRIVATE_ACTION_NAMES,
   ACION_NAMES_CANDLE_DATA,
 };

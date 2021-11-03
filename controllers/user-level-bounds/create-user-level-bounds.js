@@ -9,6 +9,10 @@ const {
 } = require('../../libs/support');
 
 const {
+  sendPrivateData,
+} = require('../../websocket/websocket-server');
+
+const {
   getCandles,
 } = require('../candles/utils/get-candles');
 
@@ -19,6 +23,10 @@ const {
 const {
   createUserLevelBound,
 } = require('./utils/create-user-level-bound');
+
+const {
+  PRIVATE_ACTION_NAMES,
+} = require('../../websocket/constants');
 
 const UserLevelBound = require('../../models/UserLevelBound');
 
@@ -230,7 +238,18 @@ module.exports = async (req, res, next) => {
         result.push(resultCreateBound.result);
       }));
     }
+
+    sendPrivateData({
+      userId: user._id,
+      actionName: PRIVATE_ACTION_NAMES.get('levelsLoaded'),
+      data: { instrumentId: instrumentDoc._id },
+    });
   }
+
+  sendPrivateData({
+    userId: user._id,
+    actionName: PRIVATE_ACTION_NAMES.get('userLevelBoundsCreated'),
+  });
 
   return res.json({
     status: true,

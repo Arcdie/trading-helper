@@ -125,6 +125,27 @@ const sendData = obj => {
   });
 };
 
+const sendPrivateData = async obj => {
+  const { userId } = obj;
+
+  if (!userId || !isMongoId(userId.toString())) {
+    log.warn('Invalid userId');
+    return false;
+  }
+
+  const socketsIds = await redis.hkeysAsync(`USER:${userId}:SOCKETS`);
+
+  const targetClients = [...wss.clients].filter(
+    client => socketsIds.includes(client.socketId),
+  );
+
+  targetClients.forEach(ws => {
+    if (ws.isAlive) {
+      ws.send(JSON.stringify(obj));
+    }
+  });
+};
+
 const newSubscribe = async ({
   data,
   userId,
@@ -228,6 +249,7 @@ const newSubscribe = async ({
 module.exports = {
   createWebsocketRooms,
   sendData,
+  sendPrivateData,
 };
 
 const intervalCheckDeadConnections = async (interval) => {
