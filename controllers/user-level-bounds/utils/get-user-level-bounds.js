@@ -4,7 +4,6 @@ const {
 
 const {
   isMongoId,
-  isBoolean,
 } = require('validator');
 
 const UserLevelBound = require('../../../models/UserLevelBound');
@@ -24,7 +23,7 @@ const getUserLevelBounds = async ({
     user_id: userId,
   };
 
-  if (!isUndefined(isWorked) && isBoolean(isWorked)) {
+  if (!isUndefined(isWorked)) {
     searchObj.is_worked = isWorked;
   }
 
