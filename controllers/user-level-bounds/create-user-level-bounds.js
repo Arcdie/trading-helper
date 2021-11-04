@@ -139,7 +139,7 @@ module.exports = async (req, res, next) => {
         distanceInBars: numberCandlesForCalculateDayLevels,
       });
 
-      [...highLevels, ...lowLevels].forEach(level => {
+      [...highLevels || [], ...lowLevels || []].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
           newLevel => newLevel.levelPrice === level.levelPrice,
         );
@@ -175,7 +175,7 @@ module.exports = async (req, res, next) => {
         distanceInBars: numberCandlesForCalculate4hLevels,
       });
 
-      [...highLevels, ...lowLevels].forEach(level => {
+      [...highLevels || [], ...lowLevels || []].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
           newLevel => newLevel.levelPrice === level.levelPrice,
         );
@@ -211,7 +211,7 @@ module.exports = async (req, res, next) => {
         distanceInBars: numberCandlesForCalculate1hLevels,
       });
 
-      [...highLevels, ...lowLevels].forEach(level => {
+      [...highLevels || [], ...lowLevels || []].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
           newLevel => newLevel.levelPrice === level.levelPrice,
         );

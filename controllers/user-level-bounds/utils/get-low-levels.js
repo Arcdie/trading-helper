@@ -1,4 +1,4 @@
-const getLowLevels = async ({
+const getLowLevels = ({
   candles, distanceInBars,
 }) => {
   const levels = [];
