@@ -6,23 +6,30 @@ const {
   getUserLevelBounds,
 } = require('./utils/get-user-level-bounds');
 
-const logger = require('../../libs/logger');
-
 module.exports = async (req, res, next) => {
   const {
-    user,
+    query: {
+      userId,
+      isWorked,
+    },
   } = req;
 
-  if (!user) {
+  if (!userId || !isMongoId(userId)) {
     return res.json({
       status: false,
-      message: 'Not authorized',
+      message: 'No or invalid userId',
     });
   }
 
-  const resultGetBounds = await getUserLevelBounds({
-    userId: user._id,
-  });
+  const funcObj = {
+    userId,
+  };
+
+  if (isWorked) {
+    funcObj.isWorked = isWorked === 'true';
+  }
+
+  const resultGetBounds = await getUserLevelBounds(funcObj);
 
   if (!resultGetBounds || !resultGetBounds.status) {
     return res.json({

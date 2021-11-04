@@ -14,6 +14,8 @@ const commonMiddlewares = [
 router.get('/:userid', commonMiddlewares, userControllers.getById);
 router.patch('/:userid', commonMiddlewares, userControllers.updateUser);
 
+router.get('/public', userControllers.getPublicData);
+
 router.post('/', userControllers.createUser);
 router.post('/login', userControllers.login);
 

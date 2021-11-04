@@ -1,11 +1,17 @@
 const {
+  isUndefined,
+} = require('lodash');
+
+const {
   isMongoId,
+  isBoolean,
 } = require('validator');
 
 const UserLevelBound = require('../../../models/UserLevelBound');
 
 const getUserLevelBounds = async ({
   userId,
+  isWorked,
 }) => {
   if (!userId || !isMongoId(userId.toString())) {
     return {
@@ -17,6 +23,10 @@ const getUserLevelBounds = async ({
   const searchObj = {
     user_id: userId,
   };
+
+  if (!isUndefined(isWorked) && isBoolean(isWorked)) {
+    searchObj.is_worked = isWorked;
+  }
 
   const userLevelBounds = await UserLevelBound.find(searchObj).exec();
 
