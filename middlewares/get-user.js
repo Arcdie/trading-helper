@@ -8,7 +8,7 @@ module.exports = async (req, res, next) => {
   } = req;
 
   if (!user) {
-    return res.render('http/401');
+    return res.redirect('/');
   }
 
   const resultGet = await getById({
