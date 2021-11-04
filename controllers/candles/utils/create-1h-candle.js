@@ -70,48 +70,53 @@ const create1hCandle = async ({
   close = parseFloat(close);
   high = parseFloat(high);
   low = parseFloat(low);
+  volume = parseFloat(volume);
 
   const existCandle = await Candle1h.findOne({
     instrument_id: instrumentId,
     time: startTime,
-  }, { data: 1 }).exec();
+  }, {
+    data: 1,
+    volume: 1,
+  }).exec();
 
   if (existCandle) {
-    let isUpdate = false;
+    const updateObj = {};
 
     if (high > existCandle.data[3]) {
-      isUpdate = true;
       existCandle.data[3] = high;
+      updateObj.data = existCandle.data;
     }
 
     if (low < existCandle.data[2]) {
-      isUpdate = true;
       existCandle.data[2] = low;
+      updateObj.data = existCandle.data;
     }
 
     if (close !== existCandle.data[1]) {
-      isUpdate = true;
       existCandle.data[1] = close;
+      updateObj.data = existCandle.data;
     }
 
-    if (isUpdate) {
-      await Candle1h.findByIdAndUpdate(existCandle._id, {
-        data: existCandle.data,
-      }).exec();
+    existCandle.volume += volume;
+    existCandle.volume = parseInt(existCandle.volume, 10);
 
-      sendData({
-        actionName: 'candle1hData',
-        data: {
-          instrumentId,
-          startTime,
-          open,
-          close,
-          high,
-          low,
-          volume,
-        },
-      });
-    }
+    updateObj.volume = existCandle.volume;
+
+    await Candle1h.findByIdAndUpdate(existCandle._id, updateObj).exec();
+
+    sendData({
+      actionName: 'candle1hData',
+      data: {
+        instrumentId,
+        startTime,
+        open,
+        close,
+        high,
+        low,
+        volume,
+      },
+    });
 
     return {
       status: true,
@@ -122,7 +127,8 @@ const create1hCandle = async ({
   const newCandle = new Candle1h({
     instrument_id: instrumentId,
     data: [open, close, low, high],
-    volume: parseFloat(volume),
+
+    volume,
     time: startTime,
   });
 

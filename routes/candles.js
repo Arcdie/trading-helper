@@ -11,6 +11,7 @@ const commonMiddlewares = [
   getUser,
 ];
 
+router.get('/daily-clear', candleCronControllers.clearCandles);
 router.get('/create-1m-candles-for-last-hour', candleCronControllers.create1mCandlesForLastHour);
 
 router.get('/:interval', commonMiddlewares, candleControllers.getCandles);

@@ -9,6 +9,10 @@ const {
 
 const redis = require('../../libs/redis');
 
+const {
+  MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
+} = require('../user-level-bounds/constants');
+
 const User = require('../../models/User');
 
 module.exports = async (req, res, next) => {
@@ -149,15 +153,36 @@ module.exports = async (req, res, next) => {
   }
 
   if (numberCandlesForCalculate1hLevels) {
-    userDoc.levels_monitoring_settings.number_candles_for_calculate_1h_levels = parseInt(numberCandlesForCalculate1hLevels, 10);
+    numberCandlesForCalculate1hLevels = parseInt(numberCandlesForCalculate1hLevels, 10);
+
+    if (Number.isNaN(numberCandlesForCalculate1hLevels)
+    || numberCandlesForCalculate1hLevels < MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS) {
+      numberCandlesForCalculate1hLevels = MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS;
+    }
+
+    userDoc.levels_monitoring_settings.number_candles_for_calculate_1h_levels = numberCandlesForCalculate1hLevels;
   }
 
   if (numberCandlesForCalculate4hLevels) {
-    userDoc.levels_monitoring_settings.number_candles_for_calculate_4h_levels = parseInt(numberCandlesForCalculate4hLevels, 10);
+    numberCandlesForCalculate4hLevels = parseInt(numberCandlesForCalculate4hLevels, 10);
+
+    if (Number.isNaN(numberCandlesForCalculate4hLevels)
+    || numberCandlesForCalculate4hLevels < MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS) {
+      numberCandlesForCalculate4hLevels = MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS;
+    }
+
+    userDoc.levels_monitoring_settings.number_candles_for_calculate_4h_levels = numberCandlesForCalculate4hLevels;
   }
 
   if (numberCandlesForCalculateDayLevels) {
-    userDoc.levels_monitoring_settings.number_candles_for_calculate_1d_levels = parseInt(numberCandlesForCalculateDayLevels, 10);
+    numberCandlesForCalculateDayLevels = parseInt(numberCandlesForCalculateDayLevels, 10);
+
+    if (Number.isNaN(numberCandlesForCalculateDayLevels)
+    || numberCandlesForCalculateDayLevels < MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS) {
+      numberCandlesForCalculateDayLevels = MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS;
+    }
+
+    userDoc.levels_monitoring_settings.number_candles_for_calculate_1d_levels = numberCandlesForCalculateDayLevels;
   }
 
   await userDoc.save();

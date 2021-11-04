@@ -14,7 +14,7 @@ const getActiveInstruments = async ({
   const instrumentsDocs = await InstrumentNew
     .find(matchObj)
     // .sort({ name: 1 })
-    // .limit(10)
+    // .limit(5)
     .exec();
 
   return {

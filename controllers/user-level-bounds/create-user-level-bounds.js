@@ -17,6 +17,14 @@ const {
 } = require('../candles/utils/get-candles');
 
 const {
+  getLowLevels,
+} = require('./utils/get-low-levels');
+
+const {
+  getHighLevels,
+} = require('./utils/get-high-levels');
+
+const {
   getActiveInstruments,
 } = require('../instruments/utils/get-active-instruments');
 
@@ -121,8 +129,15 @@ module.exports = async (req, res, next) => {
         continue;
       }
 
-      const highLevels = findHighLevels(resultGetDayCandles.result, numberCandlesForCalculateDayLevels);
-      const lowLevels = findLowLevels(resultGetDayCandles.result, numberCandlesForCalculateDayLevels);
+      const highLevels = getHighLevels({
+        candles: resultGetDayCandles.result,
+        distanceInBars: numberCandlesForCalculateDayLevels,
+      });
+
+      const lowLevels = getLowLevels({
+        candles: resultGetDayCandles.result,
+        distanceInBars: numberCandlesForCalculateDayLevels,
+      });
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
@@ -150,8 +165,15 @@ module.exports = async (req, res, next) => {
         continue;
       }
 
-      const highLevels = findHighLevels(resultGet4hCandles.result, numberCandlesForCalculate4hLevels);
-      const lowLevels = findLowLevels(resultGet4hCandles.result, numberCandlesForCalculate4hLevels);
+      const highLevels = getHighLevels({
+        candles: resultGet4hCandles.result,
+        distanceInBars: numberCandlesForCalculate4hLevels,
+      });
+
+      const lowLevels = getLowLevels({
+        candles: resultGet4hCandles.result,
+        distanceInBars: numberCandlesForCalculate4hLevels,
+      });
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
@@ -179,8 +201,15 @@ module.exports = async (req, res, next) => {
         continue;
       }
 
-      const highLevels = findHighLevels(resultGet1hCandles.result, numberCandlesForCalculate1hLevels);
-      const lowLevels = findLowLevels(resultGet1hCandles.result, numberCandlesForCalculate1hLevels);
+      const highLevels = getHighLevels({
+        candles: resultGet1hCandles.result,
+        distanceInBars: numberCandlesForCalculate1hLevels,
+      });
+
+      const lowLevels = getLowLevels({
+        candles: resultGet1hCandles.result,
+        distanceInBars: numberCandlesForCalculate1hLevels,
+      });
 
       [...highLevels, ...lowLevels].forEach(level => {
         const levelsWithThisPrice = newLevels.some(
@@ -236,99 +265,6 @@ module.exports = async (req, res, next) => {
     status: true,
     result,
   });
-};
-
-const findHighLevels = (candles, distanceInBars) => {
-  const levels = [];
-  const lCandles = candles.length;
-  const revercedCandles = [...candles].reverse();
-
-  candles.forEach((candle, index) => {
-    if (index < distanceInBars) {
-      return true;
-    }
-
-    let isHighest = true;
-    let isHighCrossed = false;
-
-    for (let i = (lCandles - index); i < lCandles; i += 1) {
-      const tmpCandle = revercedCandles[i];
-
-      if (tmpCandle.high > candle.high) {
-        isHighCrossed = true;
-        break;
-      }
-    }
-
-    if (!isHighCrossed) {
-      for (let i = 0; i < distanceInBars; i += 1) {
-        const tmpCandle = revercedCandles[lCandles - index - i];
-
-        if (!tmpCandle) {
-          break;
-        }
-
-        if (tmpCandle.high > candle.high) {
-          isHighest = false;
-          break;
-        }
-      }
-    }
-
-    if (!isHighCrossed && isHighest) {
-      levels.push({
-        levelPrice: candle.high,
-        levelStartCandleTime: candle.time,
-      });
-    }
-  });
-
-  return levels;
-};
-
-const findLowLevels = (candles, distanceInBars) => {
-  const levels = [];
-  const lCandles = candles.length;
-  const revercedCandles = [...candles].reverse();
-
-  for (let index = 0; index < lCandles - distanceInBars; index += 1) {
-    const candle = revercedCandles[index];
-
-    let isLowest = true;
-    let isLowCrossed = false;
-
-    for (let j = index; j < revercedCandles.length; j += 1) {
-      const tmpCandle = revercedCandles[j];
-      if (tmpCandle.low < candle.low) {
-        isLowCrossed = true;
-        break;
-      }
-    }
-
-    if (!isLowCrossed) {
-      for (let j = 0; j < distanceInBars; j += 1) {
-        const tmpCandle = revercedCandles[index - j];
-
-        if (!tmpCandle) {
-          break;
-        }
-
-        if (tmpCandle.low < candle.low) {
-          isLowest = false;
-          break;
-        }
-      }
-    }
-
-    if (!isLowCrossed && isLowest) {
-      levels.push({
-        levelPrice: candle.low,
-        levelStartCandleTime: candle.time,
-      });
-    }
-  }
-
-  return levels;
 };
 
 const getValidCandles = async ({

@@ -4,6 +4,7 @@ const getUser = require('../middlewares/get-user');
 const getAuthToken = require('../middlewares/get-auth-token');
 
 const userLevelBoundControllers = require('../controllers/user-level-bounds');
+const userLevelBoundCronControllers = require('../controllers/user-level-bounds/cron');
 
 const commonMiddlewares = [
   getAuthToken,
@@ -20,6 +21,9 @@ router.post('/add-levels-from-tradingview-for-one-instrument', commonMiddlewares
 router.post('/remove-all-levels', commonMiddlewares, userLevelBoundControllers.removeAllLevels);
 router.post('/remove-level-for-instrument', commonMiddlewares, userLevelBoundControllers.removeLevelForInstrument);
 router.post('/remove-levels-for-instrument', commonMiddlewares, userLevelBoundControllers.removeLevelsForInstrument);
+
+// cron
+router.get('/calculate-user-level-bounds', userLevelBoundCronControllers.calculateUserLevelBounds);
 
 /* Deprecated
   router.post('/', commonMiddlewares, userLevelBoundControllers.createBound);

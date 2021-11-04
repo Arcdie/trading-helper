@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const {
   DEFAULT_INDENT_IN_PERCENTS,
+  MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
 } = require('../controllers/user-level-bounds/constants');
 
 const User = new mongoose.Schema({
@@ -52,17 +53,17 @@ const User = new mongoose.Schema({
 
     number_candles_for_calculate_1h_levels: {
       type: Number,
-      default: 10,
+      default: MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
     },
 
     number_candles_for_calculate_4h_levels: {
       type: Number,
-      default: 10,
+      default: MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
     },
 
     number_candles_for_calculate_1d_levels: {
       type: Number,
-      default: 10,
+      default: MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
     },
   },
 

@@ -78,11 +78,13 @@ const create1mCandle = async ({
   close = parseFloat(close);
   high = parseFloat(high);
   low = parseFloat(low);
+  volume = parseFloat(volume);
 
   const newCandle = new Candle1m({
     instrument_id: instrumentId,
     data: [open, close, low, high],
-    volume: parseFloat(volume),
+
+    volume,
     time: startTime,
   });
 
