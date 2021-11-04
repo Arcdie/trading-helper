@@ -109,7 +109,7 @@ const create4hCandle = async ({
       actionName: 'candle4hData',
       data: {
         instrumentId,
-        startTime,
+        startTime: new Date(startTime).getTime(),
         open,
         close,
         high,
@@ -138,7 +138,7 @@ const create4hCandle = async ({
     actionName: 'candle4hData',
     data: {
       instrumentId,
-      startTime,
+      startTime: new Date(startTime).getTime(),
       open,
       close,
       high,

@@ -100,7 +100,7 @@ const create5mCandle = async ({
       actionName: 'candle5mData',
       data: {
         instrumentId,
-        startTime,
+        startTime: new Date(startTime).getTime(),
         open,
         close,
         high,

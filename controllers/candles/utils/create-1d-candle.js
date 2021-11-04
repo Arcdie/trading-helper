@@ -109,7 +109,7 @@ const create1dCandle = async ({
       actionName: 'candle1dData',
       data: {
         instrumentId,
-        startTime,
+        startTime: new Date(startTime).getTime(),
         open,
         close,
         high,
@@ -138,7 +138,7 @@ const create1dCandle = async ({
     actionName: 'candle1dData',
     data: {
       instrumentId,
-      startTime,
+      startTime: new Date(startTime).getTime(),
       open,
       close,
       high,
