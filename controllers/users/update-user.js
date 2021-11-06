@@ -39,6 +39,11 @@ module.exports = async (req, res, next) => {
       numberCandlesForCalculate1hLevels,
       numberCandlesForCalculate4hLevels,
       numberCandlesForCalculateDayLevels,
+
+      doSpotSortByLifetime,
+      doFuturesSortByLifetime,
+      doSpotSortByDistanceToPrice,
+      doFuturesSortByDistanceToPrice,
     },
   } = req;
 
@@ -109,6 +114,10 @@ module.exports = async (req, res, next) => {
 
   if (!userDoc.levels_monitoring_settings) {
     userDoc.levels_monitoring_settings = {};
+  }
+
+  if (!userDoc.volume_monitoring_settings) {
+    userDoc.volume_monitoring_settings = {};
   }
 
   if (tradingviewUserId) {
@@ -183,6 +192,23 @@ module.exports = async (req, res, next) => {
     }
 
     userDoc.levels_monitoring_settings.number_candles_for_calculate_1d_levels = numberCandlesForCalculateDayLevels;
+  }
+
+  // volume monitoring
+  if (!isUndefined(doSpotSortByLifetime) && isBoolean(doSpotSortByLifetime)) {
+    userDoc.volume_monitoring_settings.do_spot_sort_by_lifetime = doSpotSortByLifetime;
+  }
+
+  if (!isUndefined(doFuturesSortByLifetime) && isBoolean(doFuturesSortByLifetime)) {
+    userDoc.volume_monitoring_settings.do_futures_sort_by_lifetime = doFuturesSortByLifetime;
+  }
+
+  if (!isUndefined(doSpotSortByDistanceToPrice) && isBoolean(doSpotSortByDistanceToPrice)) {
+    userDoc.volume_monitoring_settings.do_spot_sort_by_distace_to_price = doSpotSortByDistanceToPrice;
+  }
+
+  if (!isUndefined(doFuturesSortByDistanceToPrice) && isBoolean(doFuturesSortByDistanceToPrice)) {
+    userDoc.volume_monitoring_settings.do_futures_sort_by_distace_to_price = doFuturesSortByDistanceToPrice;
   }
 
   await userDoc.save();

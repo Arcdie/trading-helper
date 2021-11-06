@@ -35,6 +35,28 @@ const User = new mongoose.Schema({
     },
   },
 
+  volume_monitoring_settings: {
+    do_spot_sort_by_distace_to_price: {
+      type: Boolean,
+      default: true,
+    },
+
+    do_spot_sort_by_lifetime: {
+      type: Boolean,
+      default: false,
+    },
+
+    do_futures_sort_by_distace_to_price: {
+      type: Boolean,
+      default: true,
+    },
+
+    do_futures_sort_by_lifetime: {
+      type: Boolean,
+      default: false,
+    },
+  },
+
   levels_monitoring_settings: {
     is_draw_levels_for_1h_candles: {
       type: Boolean,
