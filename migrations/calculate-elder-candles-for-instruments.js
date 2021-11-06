@@ -44,7 +44,7 @@ module.exports = async () => {
   }, 10 * 1000);
 
   const startDate = moment('2021-11-03 00:00:00.000Z').utc();
-  const endDate = moment('2021-11-03 12:00:00.000Z').utc();
+  const endDate = moment('2021-11-04 00:00:00.000Z').utc();
 
   for (const instrumentDoc of instrumentsDocs) {
     const allCandlesDocs = await Candle5m.find({

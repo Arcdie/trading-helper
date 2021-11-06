@@ -11,14 +11,14 @@ const {
 } = require('../controllers/files/utils/parse-csv-to-json');
 
 const {
-  create1mCandle,
-} = require('../controllers/candles/utils/create-1m-candle');
+  create5mCandle,
+} = require('../controllers/candles/utils/create-5m-candle');
 
 const log = require('../libs/logger');
 
 const InstrumentNew = require('../models/InstrumentNew');
 
-const LOAD_PERIOD = '1m';
+const LOAD_PERIOD = '5m';
 
 xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
@@ -30,6 +30,7 @@ module.exports = async () => {
   const instrumentsDocs = await InstrumentNew
     .find({
       is_active: true,
+      is_futures: true,
     })
     .sort({ name: 1 })
     .exec();
@@ -66,7 +67,7 @@ module.exports = async () => {
     }
 
     const links = [{
-      link: `data/${typeInstrument}/daily/klines/${instrumentName}/${LOAD_PERIOD}/${instrumentName}-${LOAD_PERIOD}-2021-11-01.zip`,
+      link: `data/${typeInstrument}/daily/klines/${instrumentName}/${LOAD_PERIOD}/${instrumentName}-${LOAD_PERIOD}-2021-11-04.zip`,
     }];
 
     for (const link of links) {
@@ -113,7 +114,7 @@ module.exports = async () => {
           closeTime,
         ] = data;
 
-        const resultCreateCandle = await create1mCandle({
+        const resultCreateCandle = await create5mCandle({
           instrumentId: instrumentDoc._id,
           startTime: new Date(parseInt(openTime, 10)),
           open,
@@ -124,7 +125,7 @@ module.exports = async () => {
         });
 
         if (!resultCreateCandle || !resultCreateCandle.status) {
-          log.warn(resultCreateCandle.message || 'Cant create1mCandle');
+          log.warn(resultCreateCandle.message || 'Cant createCandle');
         }
       }));
     }
