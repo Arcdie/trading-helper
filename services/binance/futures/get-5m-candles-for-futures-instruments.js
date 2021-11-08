@@ -166,8 +166,9 @@ module.exports = async (instrumentsDocs = []) => {
         const instrumentDoc = resultUpdateInstrument.result;
 
         await checkUserLevelBounds({
-          instrumentPrice: parseFloat(close),
+          instrumentId: instrumentDoc._id,
           instrumentName: instrumentDoc.name,
+          instrumentPrice: parseFloat(close),
         });
 
         if (isClosed) {

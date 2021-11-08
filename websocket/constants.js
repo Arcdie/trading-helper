@@ -17,6 +17,7 @@ const ACTION_NAMES = new Map([
 const PRIVATE_ACTION_NAMES = new Map([
   ['levelsLoaded', 'levelsLoaded'],
   ['userLevelBoundsCreated', 'userLevelBoundsCreated'],
+  ['levelWasWorked', 'levelWasWorked'],
 ]);
 
 const ACION_NAMES_CANDLE_DATA = [

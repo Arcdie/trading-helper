@@ -1,11 +1,31 @@
+const {
+  isMongoId,
+} = require('validator');
+
 const redis = require('../../../libs/redis');
+
+const {
+  sendPrivateData,
+} = require('../../../websocket/websocket-server');
+
+const {
+  PRIVATE_ACTION_NAMES,
+} = require('../../../websocket/constants');
 
 const UserLevelBound = require('../../../models/UserLevelBound');
 
 const checkUserLevelBounds = async ({
+  instrumentId,
   instrumentName,
   instrumentPrice,
 }) => {
+  if (!instrumentId || !isMongoId(instrumentId.toString())) {
+    return {
+      status: false,
+      message: 'No or invalid instrumentId',
+    };
+  }
+
   if (!instrumentName) {
     return {
       status: false,
@@ -50,24 +70,37 @@ const checkUserLevelBounds = async ({
     };
   }
 
-  let boundsIds = await redis.hmgetAsync(
+  let cacheInstrumentLevelBounds = await redis.hmgetAsync(
     keyInstrumentLevelBounds, targetKeys,
   );
 
-  if (!boundsIds) {
-    boundsIds = [];
+  if (!cacheInstrumentLevelBounds) {
+    cacheInstrumentLevelBounds = [];
   } else {
-    boundsIds = JSON.parse(boundsIds);
+    cacheInstrumentLevelBounds = JSON.parse(cacheInstrumentLevelBounds);
   }
 
-  if (!boundsIds || !boundsIds.length) {
+  if (!cacheInstrumentLevelBounds || !cacheInstrumentLevelBounds.length) {
     return {
       status: true,
     };
   }
 
+  cacheInstrumentLevelBounds.forEach(bound => {
+    sendPrivateData({
+      userId: bound.user_id,
+      actionName: PRIVATE_ACTION_NAMES.get('levelWasWorked'),
+      data: {
+        instrumentId,
+        boundId: bound.bound_id,
+      },
+    });
+  });
+
   await UserLevelBound.updateMany({
-    _id: { $in: boundsIds },
+    _id: {
+      $in: cacheInstrumentLevelBounds.map(bound => bound.bound_id),
+    },
   }, {
     is_worked: true,
     worked_at: new Date(),

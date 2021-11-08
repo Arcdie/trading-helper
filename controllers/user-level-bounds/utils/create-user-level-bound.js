@@ -131,12 +131,12 @@ const createUserLevelBound = async ({
     }
 
     cacheInstrumentLevelBounds.push({
-      // is_long: isLong,
+      user_id: userId,
       bound_id: newLevel._id.toString(),
     });
   } else {
     cacheInstrumentLevelBounds.push({
-      // is_long: isLong,
+      user_id: userId,
       bound_id: newLevel._id.toString(),
     });
   }
