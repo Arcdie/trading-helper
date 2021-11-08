@@ -1,5 +1,7 @@
+const fs = require('fs');
 const ws = require('ws');
 const url = require('url');
+const https = require('https');
 
 const {
   isMongoId,
@@ -15,8 +17,21 @@ const {
 
 const WebSocketRoom = require('./websocket-room');
 
+const pathToFolder = '/etc/letsencrypt/live/trading-helper.ru';
+
+const wsSettings = {};
+
+if (process.env.NODE_ENV === 'localhost') {
+  wsSettings.port = 3001;
+} else {
+  wsSettings.server = https.createServer({
+    cert: fs.readFileSync(`${pathToFolder}/fullchain.pem`, 'utf8'),
+    key: fs.readFileSync(`${pathToFolder}/privkey.pem`, 'utf8'),
+  }).listen(3001);
+}
+
 const rooms = [];
-const wss = new ws.WebSocketServer({ port: 3001 });
+const wss = new ws.Server(wsSettings);
 
 wss.on('connection', async (ws, req) => {
   const {
