@@ -27,6 +27,10 @@ const {
 } = require('../../../controllers/candles/utils/calculate-1d-candle');
 
 const {
+  checkUserLevelBounds,
+} = require('../../../controllers/user-level-bounds/utils/check-user-level-bounds');
+
+const {
   updateInstrumentInRedis,
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
@@ -160,6 +164,11 @@ module.exports = async (instrumentsDocs = []) => {
         });
 
         const instrumentDoc = resultUpdateInstrument.result;
+
+        await checkUserLevelBounds({
+          instrumentPrice: parseFloat(close),
+          instrumentName: instrumentDoc.name,
+        });
 
         if (isClosed) {
           await create5mCandle({

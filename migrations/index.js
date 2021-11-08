@@ -3,6 +3,7 @@
 // const findAndRemoveCandleDuplicates = require('./find-and-remove-candle-duplicates');
 // const addVolumeToCandles = require('./add-volume-to-candles');
 
+
 const removeCandlesForPeriod = require('./remove-candles-for-period');
 const loadAndSaveKlinesHistory = require('./load-and-save-klines-history');
 const loadAndSaveFuturesKlinesHistory = require('./load-and-save-futures-klines-history');
@@ -19,4 +20,6 @@ module.exports = () => {
   // loadAndSaveKlinesHistory();
   // loadAndSaveFuturesKlinesHistory();
   // calculateElderCandlesForInstruments();
+
+  // addExchangeInfoAndTickSize();
 };

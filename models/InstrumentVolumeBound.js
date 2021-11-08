@@ -8,12 +8,16 @@ const InstrumentVolumeBound = new mongoose.Schema({
   },
 
   price: {
-    index: true,
     type: Number,
     required: true,
   },
 
   quantity: {
+    type: Number,
+    required: true,
+  },
+
+  average_volume_for_last_24_hours: {
     type: Number,
     required: true,
   },

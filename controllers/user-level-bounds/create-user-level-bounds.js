@@ -233,6 +233,7 @@ module.exports = async (req, res, next) => {
           // indentInPercents,
 
           instrumentId: instrumentDoc._id,
+          instrumentName: instrumentDoc.name,
           instrumentPrice: instrumentDoc.price,
 
           levelPrice: newLevel.levelPrice,

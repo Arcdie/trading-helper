@@ -33,11 +33,13 @@ const UserLevelBound = new mongoose.Schema({
     required: true,
   },
 
+  /*
   indent_in_percents: {
     type: Number,
     required: true,
     default: DEFAULT_INDENT_IN_PERCENTS,
   },
+  */
 
   is_long: {
     type: Boolean,
@@ -47,13 +49,14 @@ const UserLevelBound = new mongoose.Schema({
   is_worked: {
     type: Boolean,
     default: false,
-    index: true,
   },
 
   is_sended_in_telegram: {
     type: Boolean,
     default: false,
   },
+
+  worked_at: Date,
 
   created_at: {
     type: Date,

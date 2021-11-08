@@ -4,24 +4,19 @@ const {
   isMongoId,
 } = require('validator');
 
-const {
-  sendMessage,
-} = require('../../../services/telegram-bot');
+const redis = require('../../../libs/redis');
 
 const {
-  DEFAULT_INDENT_IN_PERCENTS,
   TYPE_CANDLES_FOR_FIND_LEVELS,
 } = require('../constants');
 
-const User = require('../../../models/User');
-const Instrument = require('../../../models/Instrument');
 const UserLevelBound = require('../../../models/UserLevelBound');
 
 const createUserLevelBound = async ({
   userId,
-  // indentInPercents,
 
   instrumentId,
+  instrumentName,
   instrumentPrice,
 
   levelPrice,
@@ -63,38 +58,19 @@ const createUserLevelBound = async ({
     };
   }
 
+  if (!instrumentName) {
+    return {
+      status: false,
+      message: 'No instrumentName',
+    };
+  }
+
   if (!instrumentPrice || isNaN(parseFloat(instrumentPrice))) {
     return {
       status: false,
       message: 'No or invalid instrumentPrice',
     };
   }
-
-  /*
-  if (!indentInPercents) {
-    const userDoc = await User.findById(userId, {
-      settings: 1,
-    }).exec();
-
-    if (!userDoc) {
-      return {
-        status: false,
-        text: 'No User',
-      };
-    }
-
-    if (!userDoc.settings) {
-      userDoc.settings = {};
-    }
-
-    indentInPercents = userDoc.settings.indent_in_percents || DEFAULT_INDENT_IN_PERCENTS;
-  } else if (isNaN(parseFloat(indentInPercents))) {
-    return {
-      status: false,
-      message: 'Invalid indentInPercents',
-    };
-  }
-  */
 
   const isLong = levelPrice > instrumentPrice;
 
@@ -125,11 +101,51 @@ const createUserLevelBound = async ({
     level_price: levelPrice,
     level_timeframe: levelTimeframe,
     level_start_candle_time: levelStartCandleTime,
-
-    indent_in_percents: DEFAULT_INDENT_IN_PERCENTS,
   });
 
   await newLevel.save();
+
+  const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:LEVEL_BOUNDS`;
+  let cacheInstrumentLevelBoundsKeys = await redis.hkeysAsync(keyInstrumentLevelBounds);
+
+  if (!cacheInstrumentLevelBoundsKeys) {
+    cacheInstrumentLevelBoundsKeys = [];
+  }
+
+  const prefix = isLong ? 'long' : 'short';
+  const instrumentLevelBoundKey = `${levelPrice}_${prefix}`;
+
+  const existLevel = cacheInstrumentLevelBoundsKeys.find(
+    key => key === instrumentLevelBoundKey,
+  );
+
+  let cacheInstrumentLevelBounds = [];
+
+  if (existLevel) {
+    cacheInstrumentLevelBounds = await redis.hmgetAsync(
+      keyInstrumentLevelBounds, instrumentLevelBoundKey,
+    );
+
+    if (!cacheInstrumentLevelBounds) {
+      cacheInstrumentLevelBounds = [];
+    }
+
+    cacheInstrumentLevelBounds.push({
+      // is_long: isLong,
+      bound_id: newLevel._id.toString(),
+    });
+  } else {
+    cacheInstrumentLevelBounds.push({
+      // is_long: isLong,
+      bound_id: newLevel._id.toString(),
+    });
+  }
+
+  await redis.hmsetAsync(
+    keyInstrumentLevelBounds,
+    instrumentLevelBoundKey,
+    JSON.stringify(cacheInstrumentLevelBounds),
+  );
 
   return {
     status: true,

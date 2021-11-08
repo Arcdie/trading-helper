@@ -159,6 +159,7 @@ module.exports = async (req, res, next) => {
             indentInPercents: (user.settings && user.settings.indent_in_percents) || false,
 
             instrumentId: instrumentDoc._id,
+            instrumentName: instrumentDoc.name,
             instrumentPrice: instrumentDoc.price,
 
             timeframe,
