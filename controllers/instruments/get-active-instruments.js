@@ -6,16 +6,14 @@ module.exports = async (req, res, next) => {
   const {
     query: {
       isOnlyFutures,
+      doesExistRobot,
     },
   } = req;
 
-  const funcObj = {};
-
-  if (isOnlyFutures && isOnlyFutures === 'true') {
-    funcObj.isOnlyFutures = true;
-  } else {
-    funcObj.isOnlyFutures = false;
-  }
+  const funcObj = {
+    isOnlyFutures: (isOnlyFutures && isOnlyFutures === 'true'),
+    doesExistRobot: (doesExistRobot && doesExistRobot === 'true'),
+  };
 
   const resultGetInstruments = await getActiveInstruments(funcObj);
 

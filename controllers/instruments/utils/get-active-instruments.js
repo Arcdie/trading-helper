@@ -2,6 +2,7 @@ const InstrumentNew = require('../../../models/InstrumentNew');
 
 const getActiveInstruments = async ({
   isOnlyFutures,
+  doesExistRobot,
 }) => {
   const matchObj = {
     is_active: true,
@@ -9,6 +10,10 @@ const getActiveInstruments = async ({
 
   if (isOnlyFutures) {
     matchObj.is_futures = true;
+  }
+
+  if (doesExistRobot) {
+    matchObj.does_exist_robot = true;
   }
 
   const instrumentsDocs = await InstrumentNew
