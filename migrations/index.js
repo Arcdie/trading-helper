@@ -13,11 +13,13 @@ module.exports = () => {
   // loadDailyKlines();
 
   // removeCandlesForPeriod();
-  // loadAndSaveKlinesHistory();
   // loadAndSaveFuturesKlinesHistory();
   // calculateElderCandlesForInstruments();
 
   // addExchangeInfoAndTickSize();
+
+  // kline
+  // loadAndSaveKlinesHistory();
 
   // aggTrades
   // loadAggTradesHistory();

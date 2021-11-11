@@ -24,8 +24,6 @@ router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMo
 
 router.get('/robots-statistics', extendedMiddlewares, webControllers.getRobotsStatisticsPage);
 
-router.get('/instrument-tick-bounds', extendedMiddlewares, webControllers.getInstrumentTickBoundsPage);
-
 router.get('/experiment', extendedMiddlewares, webControllers.getExperimentPage);
 
 router.get('/auth/login', commonMiddlewares, webControllers.getLoginPage);

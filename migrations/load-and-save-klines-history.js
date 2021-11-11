@@ -7,8 +7,16 @@ const moment = require('moment');
 const AdmZip = require('adm-zip');
 
 const {
+  sleep,
+} = require('../libs/support');
+
+const {
   parseCSVToJSON,
 } = require('../controllers/files/utils/parse-csv-to-json');
+
+const {
+  create1mCandle,
+} = require('../controllers/candles/utils/create-1m-candle');
 
 const {
   create5mCandle,
@@ -18,7 +26,7 @@ const log = require('../libs/logger');
 
 const InstrumentNew = require('../models/InstrumentNew');
 
-const LOAD_PERIOD = '5m';
+const LOAD_PERIOD = '1m';
 
 xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
@@ -47,6 +55,27 @@ module.exports = async () => {
     log.info(`${processedInstruments} / ${totalInstruments}`);
   }, 10 * 1000);
 
+  const targetDates = [];
+
+  const startToday = moment().utc().startOf('day');
+  const monthAgo = moment(startToday).utc().add(-1, 'months').startOf('day');
+
+  const tmpDate = moment(monthAgo);
+
+  while (1) {
+    targetDates.push({
+      day: moment(tmpDate).format('DD'),
+      month: moment(tmpDate).format('MM'),
+      year: moment(tmpDate).format('YYYY'),
+    });
+
+    tmpDate.add(1, 'days');
+
+    if (tmpDate.unix() === startToday.unix()) {
+      break;
+    }
+  }
+
   for (const instrumentDoc of instrumentsDocs) {
     console.log(`Started ${instrumentDoc.name}`);
 
@@ -66,21 +95,29 @@ module.exports = async () => {
       fs.mkdirSync(pathToFolder);
     }
 
-    const links = [{
-      link: `data/${typeInstrument}/daily/klines/${instrumentName}/${LOAD_PERIOD}/${instrumentName}-${LOAD_PERIOD}-2021-11-04.zip`,
-    }];
+    const links = targetDates.map(date => `data/${typeInstrument}/daily/klines/${instrumentName}/${LOAD_PERIOD}/${instrumentName}-${LOAD_PERIOD}-${date.year}-${date.month}-${date.day}.zip`);
+
+    // const links = [{
+    //   link: `data/${typeInstrument}/daily/klines/${instrumentName}/${LOAD_PERIOD}/${instrumentName}-${LOAD_PERIOD}-2021-11-04.zip`,
+    // }];
 
     for (const link of links) {
-      console.log(`${instrumentDoc.name}: started load file ${link.link}`);
+      console.log(`${instrumentDoc.name}: started load file ${link}`);
 
-      const resultGetFile = await axios({
-        method: 'get',
-        url: `https://data.binance.vision/${link.link}`,
-        responseType: 'arraybuffer',
-      });
+      try {
+        const resultGetFile = await axios({
+          method: 'get',
+          url: `https://data.binance.vision/${link}`,
+          responseType: 'arraybuffer',
+        });
 
-      const zip = new AdmZip(resultGetFile.data);
-      zip.extractAllTo(pathToFolder, true);
+        const zip = new AdmZip(resultGetFile.data);
+        zip.extractAllTo(pathToFolder, true);
+      } catch (error) {
+        console.log(`${link}: `, error);
+      }
+
+      await sleep(5000);
     }
 
     const filesNames = [];
@@ -114,7 +151,7 @@ module.exports = async () => {
           closeTime,
         ] = data;
 
-        const resultCreateCandle = await create5mCandle({
+        const resultCreateCandle = await create1mCandle({
           instrumentId: instrumentDoc._id,
           startTime: new Date(parseInt(openTime, 10)),
           open,

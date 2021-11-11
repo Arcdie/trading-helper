@@ -11,7 +11,6 @@ router.use('/users', require('./users'));
 router.use('/trades', require('./trades'));
 router.use('/candles', require('./candles'));
 router.use('/instruments', require('./instruments'));
-router.use('/instrument-ticks', require('./instrument-ticks'));
 
 router.use('/user-level-bounds', require('./user-level-bounds'));
 router.use('/instrument-robot-bounds', require('./instrument-robot-bounds'));
