@@ -38,9 +38,20 @@ const generateMongoId = () => {
   return new mongodb.ObjectID();
 };
 
+const getPrecision = (price) => {
+  const dividedPrice = price.toString().split('.');
+
+  if (!dividedPrice[1]) {
+    return 0;
+  }
+
+  return dividedPrice[1].length;
+};
+
 module.exports = {
   sleep,
   getUnix,
   getQueue,
+  getPrecision,
   generateMongoId,
 };

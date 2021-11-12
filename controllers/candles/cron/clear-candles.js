@@ -14,9 +14,11 @@ module.exports = async (req, res, next) => {
   const remove1mCandlesDate = moment.unix(nowDateUnix - LIFETIME_1M_CANDLES);
   const remove5mCandlesDate = moment.unix(nowDateUnix - LIFETIME_5M_CANDLES);
 
+  /*
   await Candle1m.deleteMany({
     time: { $lt: remove1mCandlesDate },
   }).exec();
+  */
 
   await Candle5m.deleteMany({
     time: { $lt: remove5mCandlesDate },
