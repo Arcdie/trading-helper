@@ -10,6 +10,7 @@ const commonMiddlewares = [
   getUser,
 ];
 
+router.get('/', commonMiddlewares, instrumentRobotBoundControllers.getInstrumentRobotBounds);
 router.post('/', commonMiddlewares, instrumentRobotBoundControllers.createInstrumentRobotBound);
 
 module.exports = router;

@@ -3,9 +3,6 @@ module.exports = async (req, res, next) => {
     user,
   } = req;
 
-  if (!user) {
-    return res.redirect('/');
-  }
-
-  res.render('web/experiment-page');
+  return res.redirect('/');
+  // res.render('web/experiment-page');
 };
