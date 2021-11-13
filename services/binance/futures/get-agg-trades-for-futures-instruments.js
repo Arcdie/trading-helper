@@ -7,14 +7,14 @@ const {
 } = require('../../telegram-bot');
 
 const {
-  sendData,
-} = require('../../../websocket/websocket-server');
+  createTrade,
+} = require('../../../controllers/trades/utils/create-trade');
 
 const {
-  increaseVolumeForInstrumentInRedis,
-} = require('../../../controllers/instrument-volume-bounds/utils/increase-volume-for-instrument-in-redis');
+  getInstrumentRobotBounds,
+} = require('../../../controllers/instrument-robot-bounds/utils/get-instrument-robot-bounds');
 
-const CONNECTION_NAME = 'Futures:AggTrade';
+const CONNECTION_NAME = 'Futures:aggTrade';
 
 module.exports = async (instrumentsDocs = []) => {
   try {
@@ -25,10 +25,25 @@ module.exports = async (instrumentsDocs = []) => {
     let sendPongInterval;
     let connectStr = 'wss://fstream.binance.com/stream?streams=';
 
-    instrumentsDocs.forEach(doc => {
+    for (const doc of instrumentsDocs) {
+      const resultGetInstrumentRobotBounds = await getInstrumentRobotBounds({
+        instrumentId: doc._id,
+      });
+
+      if (!resultGetInstrumentRobotBounds || !resultGetInstrumentRobotBounds.status) {
+        log.warn(resultGetInstrumentRobotBounds.message || 'Cant getInstrumentRobotBounds');
+        continue;
+      }
+
+      if (!resultGetInstrumentRobotBounds.result || !resultGetInstrumentRobotBounds.result.length) {
+        continue;
+      }
+
+      doc.instrument_robot_bounds = resultGetInstrumentRobotBounds.result;
+
       const cutName = doc.name.toLowerCase().replace('perp', '');
       connectStr += `${cutName}@aggTrade/`;
-    });
+    }
 
     connectStr = connectStr.substring(0, connectStr.length - 1);
 
@@ -72,13 +87,32 @@ module.exports = async (instrumentsDocs = []) => {
             q: quantity,
             p: price,
             m: direction,
+            T: tradeTime,
           },
         } = parsedData;
 
-        await increaseVolumeForInstrumentInRedis({
-          instrumentName: `${instrumentName}PERP`,
-          quantity: parseFloat(quantity),
-        });
+        const isLong = (direction === false);
+        const validQuantity = parseFloat(quantity);
+        const validInstrumentName = `${instrumentName}PERP`;
+        const targetInstrument = instrumentsDocs.find(doc => doc.name === validInstrumentName);
+
+        const doesExistBound = targetInstrument.instrument_robot_bounds.some(
+          bound => bound.quantity === validQuantity && bound.is_long === isLong,
+        );
+
+        if (doesExistBound) {
+          const resultCreateTrade = await createTrade({
+            instrumentId: targetInstrument._id,
+            price: parseFloat(price),
+            quantity: validQuantity,
+            isLong,
+            time: new Date(tradeTime),
+          });
+
+          if (!resultCreateTrade || !resultCreateTrade.status) {
+            log.warn(resultCreateTrade.message || 'Cant createTrade');
+          }
+        }
       });
     };
 

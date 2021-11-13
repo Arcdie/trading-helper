@@ -9,6 +9,10 @@ const {
 } = require('../libs/support');
 
 const {
+  createTrade,
+} = require('../controllers/trades/utils/create-trade');
+
+const {
   parseCSVToJSON,
 } = require('../controllers/files/utils/parse-csv-to-json');
 
@@ -128,24 +132,17 @@ module.exports = async () => {
         });
 
         await Promise.all(targetData.map(async data => {
-          const doesExist = await Trade.exists({
-            instrument_id: instrumentDoc._id,
+          const resultCreateTrade = await createTrade({
+            instrumentId: instrumentDoc._id,
             price: data.price,
             quantity: data.quantity,
-            is_long: data.is_long,
+            isLong: data.is_long,
             time: data.time,
           });
 
-          if (!doesExist) {
-            const newTrade = new Trade({
-              instrument_id: instrumentDoc._id,
-              price: data.price,
-              quantity: data.quantity,
-              is_long: data.is_long,
-              time: data.time,
-            });
-
-            await newTrade.save();
+          if (!resultCreateTrade || !resultCreateTrade.status) {
+            log.warn(resultCreateTrade.message || 'Cant createTrade');
+            return null;
           }
         }));
 
