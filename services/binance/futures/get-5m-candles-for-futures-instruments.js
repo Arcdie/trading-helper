@@ -35,6 +35,10 @@ const {
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
 const {
+  checkUserTradeBounds,
+} = require('../../../controllers/user-trade-bounds/utils/check-user-trade-bounds');
+
+const {
   calculateAverageVolumeForLast15Minutes,
 } = require('../../../controllers/instruments/utils/calculate-average-volume-for-last-15-minutes');
 
@@ -164,6 +168,12 @@ module.exports = async (instrumentsDocs = []) => {
         });
 
         const instrumentDoc = resultUpdateInstrument.result;
+
+        await checkUserTradeBounds({
+          instrumentId: instrumentDoc._id,
+          instrumentName: instrumentDoc.name,
+          instrumentPrice: parseFloat(close),
+        });
 
         await checkUserLevelBounds({
           instrumentId: instrumentDoc._id,

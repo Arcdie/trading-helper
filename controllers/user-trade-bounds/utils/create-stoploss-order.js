@@ -9,6 +9,10 @@ const {
 } = require('../../binance/utils/futures/new-order');
 
 const {
+  cancelOrder,
+} = require('../../binance/utils/futures/cancel-order');
+
+const {
   getPrecision,
 } = require('../../../libs/support');
 
@@ -17,12 +21,20 @@ const UserBinanceBound = require('../../../models/UserBinanceBound');
 
 const createStopLossOrder = async ({
   instrumentName,
+  instrumentPrice,
   userTradeBoundId,
 }) => {
   if (!instrumentName) {
     return {
       status: false,
       message: 'No instrumentName',
+    };
+  }
+
+  if (!instrumentPrice) {
+    return {
+      status: false,
+      message: 'No instrumentPrice',
     };
   }
 
@@ -64,20 +76,87 @@ const createStopLossOrder = async ({
   const price = userTradeBound.is_long ? userTradeBound.buy_price : userTradeBound.sell_price;
   const precision = getPrecision(price);
 
-  const profitStepSize = parseFloat((price * (userTradeBound.stoploss_percent / 100)).toFixed(precision));
+  if (!userTradeBound.binance_stoploss_trade_id) {
+    const profitStepSize = parseFloat((price * (userTradeBound.stoploss_percent / 100)).toFixed(precision));
 
-  userTradeBound.profit_step_size = profitStepSize;
+    userTradeBound.profit_step_size = profitStepSize;
 
-  if (userTradeBound.is_long) {
-    userTradeBound.stoploss_price = price - profitStepSize;
-    userTradeBound.takeprofit_price = price + (profitStepSize * 2);
+    if (userTradeBound.is_long) {
+      userTradeBound.stoploss_price = price - profitStepSize;
+      userTradeBound.takeprofit_price = price + profitStepSize;
+    } else {
+      userTradeBound.stoploss_price = price + profitStepSize;
+      userTradeBound.takeprofit_price = price - profitStepSize;
+    }
+
+    userTradeBound.stoploss_price = parseFloat(userTradeBound.stoploss_price.toFixed(precision));
+    userTradeBound.takeprofit_price = parseFloat(userTradeBound.takeprofit_price.toFixed(precision));
   } else {
-    userTradeBound.stoploss_price = price + profitStepSize;
-    userTradeBound.takeprofit_price = price - (profitStepSize * 2);
-  }
+    let incrValue = 0;
+    let newStopLoss;
+    let newTakeProfit;
 
-  userTradeBound.stoploss_price = parseFloat(userTradeBound.stoploss_price.toFixed(precision));
-  userTradeBound.takeprofit_price = parseFloat(userTradeBound.takeprofit_price.toFixed(precision));
+    if (userTradeBound.is_long) {
+      while (1) {
+        newTakeProfit = price + (userTradeBound.profit_step_size * incrValue);
+        if (newTakeProfit > instrumentPrice) break;
+        incrValue += 1;
+      }
+
+      newStopLoss = (newTakeProfit - (userTradeBound.profit_step_size * 2));
+    } else {
+      while (1) {
+        newTakeProfit = price - (userTradeBound.profit_step_size * incrValue);
+        if (newTakeProfit < instrumentPrice) break;
+        incrValue += 1;
+      }
+
+      newStopLoss = (newTakeProfit + (userTradeBound.profit_step_size * 2));
+    }
+
+    newTakeProfit = parseFloat(newTakeProfit.toFixed(precision));
+
+    if (newTakeProfit === userTradeBound.takeprofit_price) {
+      return {
+        status: true,
+      };
+    }
+
+    userTradeBound.takeprofit_price = newTakeProfit;
+    userTradeBound.stoploss_price = parseFloat(newStopLoss.toFixed(precision));
+
+    const timestamp = new Date().getTime();
+    let signatureStr = `timestamp=${timestamp}`;
+
+    const obj = {
+      symbol: instrumentName.replace('PERP', ''),
+      orderId: userTradeBound.binance_stoploss_trade_id,
+    };
+
+    Object.keys(obj).forEach(key => {
+      signatureStr += `&${key}=${obj[key]}`;
+    });
+
+    const signature = crypto
+      .createHmac('sha256', userBinanceBound.secret)
+      .update(signatureStr)
+      .digest('hex');
+
+    signatureStr += `&signature=${signature}`;
+
+    const resultRequestCancelOrder = await cancelOrder({
+      signature,
+      signatureStr,
+      apikey: userBinanceBound.apikey,
+    });
+
+    if (!resultRequestCancelOrder || !resultRequestCancelOrder.status) {
+      return {
+        status: false,
+        message: resultRequestCancelOrder.message || 'Cant cancelOrder (stoploss order)',
+      };
+    }
+  }
 
   const timestamp = new Date().getTime();
   let signatureStr = `timestamp=${timestamp}`;

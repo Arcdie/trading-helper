@@ -5,8 +5,8 @@ const {
 const UserTradeBound = require('../../../models/UserTradeBound');
 
 const activateUserTradeBound = async ({
-  price,
   instrumentName,
+  instrumentPrice,
   binanceTradeId,
 }) => {
   if (!instrumentName) {
@@ -16,10 +16,10 @@ const activateUserTradeBound = async ({
     };
   }
 
-  if (!price) {
+  if (!instrumentPrice) {
     return {
       status: false,
-      message: 'No price',
+      message: 'No instrumentPrice',
     };
   }
 
@@ -51,24 +51,26 @@ const activateUserTradeBound = async ({
   }
 
   userTradeBound.is_active = true;
+  userTradeBound.trade_started_at = new Date();
 
   if (userTradeBound.is_long) {
-    userTradeBound.buy_price = parseFloat(price);
+    userTradeBound.buy_price = parseFloat(instrumentPrice);
   } else {
-    userTradeBound.sell_price = parseFloat(price);
+    userTradeBound.sell_price = parseFloat(instrumentPrice);
   }
 
   await userTradeBound.save();
 
   const resultCreateStopLossOrder = await createStopLossOrder({
     instrumentName,
+    instrumentPrice,
     userTradeBoundId: userTradeBound._id,
   });
 
   if (!resultCreateStopLossOrder || !resultCreateStopLossOrder.status) {
     return {
       status: false,
-      message: resultCreateStopLossOrder.message || 'Cant createStopLossOrder',
+      message: resultCreateStopLossOrder.message || 'Cant createStopLossOrder (active bound)',
     };
   }
 

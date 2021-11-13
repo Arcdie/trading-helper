@@ -10,6 +10,7 @@ module.exports = async (req, res, next) => {
       side,
       quantity,
       instrumentName,
+      stopLossPercent,
     },
 
     user,
@@ -26,6 +27,13 @@ module.exports = async (req, res, next) => {
     return res.json({
       status: false,
       message: 'No instrumentName',
+    });
+  }
+
+  if (!stopLossPercent) {
+    return res.json({
+      status: false,
+      message: 'No stopLossPercent',
     });
   }
 
@@ -65,6 +73,7 @@ module.exports = async (req, res, next) => {
     userId: user._id,
     instrumentId: instrumentDoc._id,
     instrumentName: instrumentDoc.name,
+    stopLossPercent: parseFloat(stopLossPercent),
 
     side,
     type: 'MARKET',

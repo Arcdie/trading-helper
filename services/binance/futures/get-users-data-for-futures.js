@@ -16,6 +16,10 @@ const {
 } = require('../../../controllers/user-trade-bounds/utils/activate-user-trade-bound');
 
 const {
+  deactivateUserTradeBound,
+} = require('../../../controllers/user-trade-bounds/utils/deactivate-user-trade-bound');
+
+const {
   getActiveUserBinanceBounds,
 } = require('../../../controllers/user-binance-bounds/utils/get-active-user-binance-bounds');
 
@@ -84,20 +88,32 @@ module.exports = async () => {
               const {
                 s: instrumentName,
                 o: orderType,
+                ot: originalOrderType,
                 ap: price,
                 X: status,
                 i: orderId,
               } = parsedData.o;
 
               if (status === 'FILLED' && ['LIMIT', 'MARKET'].includes(orderType)) {
-                const resultActivate = await activateUserTradeBound({
-                  binanceTradeId: orderId,
-                  price: parseFloat(price),
-                  instrumentName: `${instrumentName}PERP`,
-                });
+                if (originalOrderType === 'MARKET') {
+                  const resultActivate = await activateUserTradeBound({
+                    binanceTradeId: orderId,
+                    instrumentPrice: parseFloat(price),
+                    instrumentName: `${instrumentName}PERP`,
+                  });
 
-                if (!resultActivate || !resultActivate.status) {
-                  log.warn(resultActivate.message || 'Cant activateUserTradeBound');
+                  if (!resultActivate || !resultActivate.status) {
+                    log.warn(resultActivate.message || 'Cant activateUserTradeBound');
+                  }
+                } else if (originalOrderType === 'STOP_MARKET') {
+                  const resultDeactivate = await deactivateUserTradeBound({
+                    instrumentPrice: parseFloat(price),
+                    binanceStopLossTradeId: orderId,
+                  });
+
+                  if (!resultDeactivate || !resultDeactivate.status) {
+                    log.warn(resultDeactivate.message || 'Cant deactivateUserTradeBound');
+                  }
                 }
               }
 
@@ -153,8 +169,6 @@ const keepaliveListenKey = async (bound) => {
     updateObj.listen_key = resultCreateListenKey.listenKey;
     bound.listen_key = updateObj.listen_key;
   }
-
-  console.log('updateObj', updateObj);
 
   await UserBinanceBound.findByIdAndUpdate(bound._id, updateObj).exec();
 };

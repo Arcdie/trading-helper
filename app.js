@@ -7,8 +7,6 @@ const migrations = require('./migrations');
 const experiments = require('./experiments');
 const initServices = require('./services');
 
-// const getUsersDataForFutures = require('./services/binance/futures/get-users-data-for-futures');
-
 app.listen(config.app.port, config.app.host, (err) => {
   if (err) throw new Error(err);
 
@@ -17,5 +15,4 @@ app.listen(config.app.port, config.app.host, (err) => {
   migrations();
   experiments();
   initServices();
-  // getUsersDataForFutures();
 });

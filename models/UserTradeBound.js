@@ -47,6 +47,9 @@ const UserTradeBound = new mongoose.Schema({
     required: true,
   },
 
+  trade_started_at: Date,
+  trade_ended_at: Date,
+
   created_at: {
     type: Date,
     required: true,
