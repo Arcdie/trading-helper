@@ -4,12 +4,16 @@ const log = require('../../../libs/logger');
 const redis = require('../../../libs/redis');
 
 const {
-  sendData,
-} = require('../../../websocket/websocket-server');
+  updateInstrumentVolumeBound,
+} = require('./update-instrument-volume-bound');
 
 const {
-  generateMongoId,
-} = require('../../../libs/support');
+  createInstrumentVolumeBound,
+} = require('./create-instrument-volume-bound');
+
+const {
+  sendData,
+} = require('../../../websocket/websocket-server');
 
 const {
   LIMITER_RANGE_FOR_LIMIT_ORDERS,
@@ -55,13 +59,15 @@ const checkInstrumentVolumeBounds = async ({
   ] = await Promise.all(fetchDataPromises);
 
   if (!cacheInstrumentDoc) {
-    log.warn(`No cacheInstrumentDoc doc; instrumentName: ${instrumentName}`);
-    return null;
+    return {
+      status: false,
+      message: `No cacheInstrumentDoc doc; instrumentName: ${instrumentName}`,
+    };
   }
 
   cacheInstrumentDoc = JSON.parse(cacheInstrumentDoc);
 
-  const halfAverageVolume = Math.ceil(cacheInstrumentDoc.average_volume_for_last_24_hours / 2);
+  const halfOfAverageVolumeForLast24Hours = Math.ceil(cacheInstrumentDoc.average_volume_for_last_24_hours / 2);
 
   if (!cacheInstrumentVolumeBoundsKeys) {
     cacheInstrumentVolumeBoundsKeys = [];
@@ -126,30 +132,31 @@ const checkInstrumentVolumeBounds = async ({
       const boundInRedis = JSON.parse(cacheInstrumentVolumeBounds[index]);
 
       if (boundInRedis) {
-        if (quantity < halfAverageVolume) {
+        if (quantity < boundInRedis.min_quantity_for_cancel) {
           boundsToRemove.push({
             price,
             quantity,
-            isAsk,
-            boundId: boundInRedis.bound_id,
+            is_ask: isAsk,
+            bound_id: boundInRedis.bound_id,
+            min_quantity_for_cancel: boundInRedis.min_quantity_for_cancel,
           });
         } else if (quantity !== boundInRedis.quantity) {
           boundsToUpdate.push({
             price,
             quantity,
-            isAsk,
-            boundId: boundInRedis.bound_id,
-            createdAt: boundInRedis.created_at,
+            is_ask: isAsk,
+            bound_id: boundInRedis.bound_id,
+            created_at: boundInRedis.created_at,
           });
         }
       }
     });
 
     if (boundsToRemove.length) {
-      /*
       await Promise.all(boundsToRemove.map(async bound => {
         const resultUpdate = await updateInstrumentVolumeBound({
-          boundId: bound.boundId,
+          boundId: bound.bound_id,
+          endQuantity: bound.quantity,
           isActive: false,
         });
 
@@ -162,62 +169,34 @@ const checkInstrumentVolumeBounds = async ({
         sendData({
           actionName: 'deactivateInstrumentVolumeBound',
           data: {
-            _id: bound.boundId,
-            is_ask: bound.isAsk,
+            _id: bound.bound_id,
             price: bound.price,
+            is_ask: bound.is_ask,
             quantity: bound.quantity,
             instrument_id: cacheInstrumentDoc._id,
           },
         });
       }));
-      */
-
-      boundsToRemove.forEach(bound => {
-        sendData({
-          actionName: 'deactivateInstrumentVolumeBound',
-          data: {
-            _id: bound.boundId,
-            price: bound.price,
-            is_ask: bound.isAsk,
-            quantity: bound.quantity,
-            instrument_id: cacheInstrumentDoc._id,
-          },
-        });
-      });
 
       await redis.hdelAsync(keyInstrumentVolumeBounds, boundsToRemove.map(e => e.price));
     }
 
     if (boundsToUpdate.length) {
       await Promise.all(boundsToUpdate.map(async bound => {
-        /*
-        const resultUpdate = await updateInstrumentVolumeBound({
-          boundId: bound.boundId,
-          quantity: bound.quantity,
-          averageVolumeForLast15Minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
-        });
-
-        if (!resultUpdate || !resultUpdate.status) {
-          const message = resultUpdate.message || 'Cant updateInstrumentVolumeBound (quantity)';
-          log.warn(message);
-          return null;
-        }
-        */
-
         await redis.hmsetAsync(keyInstrumentVolumeBounds, bound.price, JSON.stringify({
-          is_ask: bound.isAsk,
-          bound_id: bound.boundId,
+          is_ask: bound.is_ask,
+          bound_id: bound.bound_id,
           quantity: bound.quantity,
-          created_at: bound.createdAt,
-          // average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+          created_at: bound.created_at,
+          min_quantity_for_cancel: bound.min_quantity_for_cancel,
         }));
 
         sendData({
           actionName: 'updateInstrumentVolumeBound',
           data: {
-            _id: bound.boundId,
+            _id: bound.bound_id,
             price: bound.price,
-            is_ask: bound.isAsk,
+            is_ask: bound.is_ask,
             quantity: bound.quantity,
             instrument_id: cacheInstrumentDoc._id,
           },
@@ -232,13 +211,13 @@ const checkInstrumentVolumeBounds = async ({
   [...asks, ...bids]
     .filter(([price]) => !cacheInstrumentVolumeBoundsKeys.some(key => parseFloat(key) === price))
     .forEach(([price, quantity, isAsk]) => {
-      if (quantity > halfAverageVolume) {
+      if (quantity >= halfOfAverageVolumeForLast24Hours) {
         const differenceBetweenPriceAndOrder = Math.abs(cacheInstrumentDoc.price - price);
         const percentPerPrice = 100 / (cacheInstrumentDoc.price / differenceBetweenPriceAndOrder);
 
         if (percentPerPrice <= LIMITER_RANGE_FOR_LIMIT_ORDERS) {
           boundsToAdd.push({
-            isAsk,
+            is_ask: isAsk,
             price,
             quantity,
           });
@@ -247,16 +226,15 @@ const checkInstrumentVolumeBounds = async ({
     });
 
   if (boundsToAdd.length) {
-    const createdAt = moment().unix();
-
     await Promise.all(boundsToAdd.map(async bound => {
-      /*
       const resultCreate = await createInstrumentVolumeBound({
         instrumentId: cacheInstrumentDoc._id,
-        price: bound.price,
-        quantity: bound.quantity,
+        isFutures: cacheInstrumentDoc.is_futures,
+
+        price: parseFloat(bound.price),
+        startQuantity: parseFloat(bound.quantity),
+        averageVolumeForLast24Hours: cacheInstrumentDoc.average_volume_for_last_24_hours,
         averageVolumeForLast15Minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
-        isAsk: bound.isAsk,
       });
 
       if (!resultCreate || !resultCreate.status) {
@@ -266,30 +244,24 @@ const checkInstrumentVolumeBounds = async ({
       }
 
       const newBound = resultCreate.result;
-      */
-
-      const boundId = generateMongoId();
+      const createdAtUnix = moment(newBound.created_at).unix();
 
       await redis.hmsetAsync(keyInstrumentVolumeBounds, bound.price, JSON.stringify({
-        // bound_id: newBound._id,
-        bound_id: boundId,
-        is_ask: bound.isAsk,
-        quantity: bound.quantity,
-        created_at: createdAt,
-        // average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
+        bound_id: newBound._id,
+        is_ask: newBound.is_ask,
+        quantity: newBound.start_quantity,
+        created_at: createdAtUnix,
       }));
 
       sendData({
-        // data: newBound,
         actionName: 'newInstrumentVolumeBound',
         data: {
-          _id: boundId,
+          _id: newBound._id,
           price: bound.price,
-          is_ask: bound.isAsk,
-          quantity: bound.quantity,
-          created_at: createdAt,
+          is_ask: bound.is_ask,
+          quantity: bound.start_quantity,
+          created_at: createdAtUnix,
           instrument_id: cacheInstrumentDoc._id,
-          // average_volume_for_last_15_minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
         },
       });
     }));

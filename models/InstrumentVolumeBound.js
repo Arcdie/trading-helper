@@ -12,7 +12,14 @@ const InstrumentVolumeBound = new mongoose.Schema({
     required: true,
   },
 
-  quantity: {
+  start_quantity: {
+    type: Number,
+    required: true,
+  },
+
+  end_quantity: Number,
+
+  min_quantity_for_cancel: {
     type: Number,
     required: true,
   },
@@ -36,6 +43,14 @@ const InstrumentVolumeBound = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+
+  is_futures: {
+    type: Boolean,
+    required: true,
+  },
+
+  volume_started_at: Date,
+  volume_ended_at: Date,
 
   created_at: {
     type: Date,

@@ -6,15 +6,20 @@ const {
   isUndefined,
 } = require('lodash');
 
-const redis = require('../../../libs/redis');
+const {
+  DIVIDER_FOR_SPOT_VOLUME,
+  DIVIDER_FOR_FUTURES_VOLUME,
+} = require('../constants');
 
 const InstrumentVolumeBound = require('../../../models/InstrumentVolumeBound');
 
 const createInstrumentVolumeBound = async ({
   instrumentId,
+  isFutures,
 
   price,
-  quantity,
+  startQuantity,
+  averageVolumeForLast24Hours,
   averageVolumeForLast15Minutes,
 
   isAsk,
@@ -33,10 +38,10 @@ const createInstrumentVolumeBound = async ({
     };
   }
 
-  if (!quantity) {
+  if (!startQuantity) {
     return {
       status: false,
-      message: 'No or invalid quantity',
+      message: 'No or invalid startQuantity',
     };
   }
 
@@ -47,10 +52,24 @@ const createInstrumentVolumeBound = async ({
     };
   }
 
+  if (!averageVolumeForLast24Hours) {
+    return {
+      status: false,
+      message: 'No or invalid averageVolumeForLast24Hours',
+    };
+  }
+
   if (isUndefined(isAsk)) {
     return {
       status: false,
       message: 'No or invalid isAsk',
+    };
+  }
+
+  if (isUndefined(isFutures)) {
+    return {
+      status: false,
+      message: 'No or invalid isFutures',
     };
   }
 
@@ -70,10 +89,19 @@ const createInstrumentVolumeBound = async ({
   const newBound = new InstrumentVolumeBound({
     instrument_id: instrumentId,
     price,
-    quantity,
+    start_quantity: startQuantity,
     average_volume_for_last_15_minutes: averageVolumeForLast15Minutes,
+    average_volume_for_last_24_hours: averageVolumeForLast24Hours,
     is_ask: isAsk,
+    is_futures: isFutures,
+    volume_started_at: new Date(),
   });
+
+  if (!isFutures) {
+    newBound.min_quantity_for_cancel = parseInt(averageVolumeForLast24Hours / DIVIDER_FOR_SPOT_VOLUME, 10);
+  } else {
+    newBound.min_quantity_for_cancel = parseInt(averageVolumeForLast24Hours / DIVIDER_FOR_FUTURES_VOLUME, 10);
+  }
 
   await newBound.save();
 

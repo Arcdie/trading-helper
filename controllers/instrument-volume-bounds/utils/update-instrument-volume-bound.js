@@ -12,9 +12,8 @@ const InstrumentVolumeBound = require('../../../models/InstrumentVolumeBound');
 const updateInstrumentVolumeBound = async ({
   boundId,
 
-  quantity,
   isActive,
-  averageVolumeForLast15Minutes,
+  endQuantity,
 }) => {
   if (!boundId || !isMongoId(boundId.toString())) {
     return {
@@ -29,12 +28,9 @@ const updateInstrumentVolumeBound = async ({
     updateObj.is_active = isActive;
   }
 
-  if (quantity) {
-    updateObj.quantity = quantity;
-  }
-
-  if (averageVolumeForLast15Minutes) {
-    updateObj.average_volume_for_last_15_minutes = averageVolumeForLast15Minutes;
+  if (endQuantity) {
+    updateObj.end_quantity = endQuantity;
+    updateObj.volume_ended_at = new Date();
   }
 
   if (!isEmpty(updateObj)) {
