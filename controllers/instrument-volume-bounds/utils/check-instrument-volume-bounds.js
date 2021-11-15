@@ -147,6 +147,7 @@ const checkInstrumentVolumeBounds = async ({
             is_ask: isAsk,
             bound_id: boundInRedis.bound_id,
             created_at: boundInRedis.created_at,
+            min_quantity_for_cancel: boundInRedis.min_quantity_for_cancel,
           });
         }
       }
@@ -230,9 +231,10 @@ const checkInstrumentVolumeBounds = async ({
       const resultCreate = await createInstrumentVolumeBound({
         instrumentId: cacheInstrumentDoc._id,
         isFutures: cacheInstrumentDoc.is_futures,
+        isAsk: bound.is_ask,
 
         price: parseFloat(bound.price),
-        startQuantity: parseFloat(bound.quantity),
+        startQuantity: parseInt(bound.quantity, 10),
         averageVolumeForLast24Hours: cacheInstrumentDoc.average_volume_for_last_24_hours,
         averageVolumeForLast15Minutes: cacheInstrumentDoc.average_volume_for_last_15_minutes,
       });
@@ -250,6 +252,7 @@ const checkInstrumentVolumeBounds = async ({
         bound_id: newBound._id,
         is_ask: newBound.is_ask,
         quantity: newBound.start_quantity,
+        min_quantity_for_cancel: newBound.min_quantity_for_cancel,
         created_at: createdAtUnix,
       }));
 
@@ -257,9 +260,9 @@ const checkInstrumentVolumeBounds = async ({
         actionName: 'newInstrumentVolumeBound',
         data: {
           _id: newBound._id,
-          price: bound.price,
-          is_ask: bound.is_ask,
-          quantity: bound.start_quantity,
+          price: newBound.price,
+          is_ask: newBound.is_ask,
+          quantity: newBound.start_quantity,
           created_at: createdAtUnix,
           instrument_id: cacheInstrumentDoc._id,
         },

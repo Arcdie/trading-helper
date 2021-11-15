@@ -1,9 +1,4 @@
-const {
-  isMongoId,
-} = require('validator');
-
 const redis = require('../../libs/redis');
-const logger = require('../../libs/logger');
 
 const InstrumentNew = require('../../models/InstrumentNew');
 const InstrumentVolumeBound = require('../../models/InstrumentVolumeBound');

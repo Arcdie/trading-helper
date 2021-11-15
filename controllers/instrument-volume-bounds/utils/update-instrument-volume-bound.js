@@ -28,7 +28,7 @@ const updateInstrumentVolumeBound = async ({
     updateObj.is_active = isActive;
   }
 
-  if (endQuantity) {
+  if (!isUndefined(endQuantity)) {
     updateObj.end_quantity = endQuantity;
     updateObj.volume_ended_at = new Date();
   }

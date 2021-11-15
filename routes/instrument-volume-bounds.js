@@ -11,6 +11,7 @@ const commonMiddlewares = [
 ];
 
 router.get('/', commonMiddlewares, instrumentVolumeBoundControllers.getInstrumentVolumeBounds);
+router.get('/active', commonMiddlewares, instrumentVolumeBoundControllers.getActiveInstrumentVolumeBounds);
 
 // tmp
 router.get('/remove', commonMiddlewares, instrumentVolumeBoundControllers.removeEverything);

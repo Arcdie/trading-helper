@@ -1,18 +1,11 @@
-const {
-  isMongoId,
-} = require('validator');
-
-const redis = require('../../libs/redis');
-const logger = require('../../libs/logger');
-
-const {
-  getActiveInstruments,
-} = require('../instruments/utils/get-active-instruments');
-
-// const InstrumentVolumeBound = require('../../models/InstrumentVolumeBound');
+const InstrumentVolumeBound = require('../../models/InstrumentVolumeBound');
 
 module.exports = async (req, res, next) => {
   const {
+    query: {
+      isOnlyActive,
+    },
+
     user,
   } = req;
 
@@ -23,41 +16,19 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const resultGetInstruments = await getActiveInstruments({});
+  const matchObj = {};
 
-  if (!resultGetInstruments || !resultGetInstruments.status) {
-    return res.json({
-      status: false,
-      message: resultGetInstruments.message || 'Cant getActiveInstruments',
-    });
+  if (isOnlyActive) {
+    matchObj.is_active = isOnlyActive === 'true';
   }
 
-  const instrumentVolumeBounds = [];
-
-  const instrumentsDocsWithoutIgnoredVolume = resultGetInstruments.result.filter(
-    doc => !doc.does_ignore_volume,
-  );
-
-  await Promise.all(instrumentsDocsWithoutIgnoredVolume.map(async doc => {
-    const key = `INSTRUMENT:${doc.name}:VOLUME_BOUNDS`;
-
-    const data = await redis.hgetallAsync(key);
-
-    if (data) {
-      Object.keys(data).forEach(key => {
-        const parsedObj = JSON.parse(data[key]);
-
-        parsedObj.price = key;
-        parsedObj.instrument_id = doc._id;
-        parsedObj._id = parsedObj.bound_id;
-
-        instrumentVolumeBounds.push(parsedObj);
-      });
-    }
-  }));
+  const instrumentVolumeBounds = await InstrumentVolumeBound
+    .find(matchObj)
+    .sort({ time: 1 })
+    .exec();
 
   return res.json({
     status: true,
-    result: instrumentVolumeBounds,
+    result: instrumentVolumeBounds.map(doc => doc._doc),
   });
 };

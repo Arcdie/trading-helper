@@ -26,7 +26,7 @@ module.exports = async (instrumentsDocs = []) => {
   await get5mCandlesForSpotInstruments(spotDocs);
   await getLimitOrdersForSpotInstruments(spotDocsWithoutIgnoredVolume);
 
-  await getUsersDataForFutures();
+  // await getUsersDataForFutures();
   await get5mCandlesForFuturesInstruments(futuresDocs);
   await getAggTradesForFuturesInstruments(futuresDocsWithActiveRobots);
   await getLimitOrdersForFuturesInstruments(futuresDocsWithoutIgnoredVolume);
