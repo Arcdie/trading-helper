@@ -16,8 +16,6 @@ module.exports = () => {
   // loadAndSaveFuturesKlinesHistory();
   // calculateElderCandlesForInstruments();
 
-  // addExchangeInfoAndTickSize();
-
   // kline
   // loadAndSaveKlinesHistory();
 

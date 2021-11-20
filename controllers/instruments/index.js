@@ -6,6 +6,7 @@ const getActiveInstruments = require('./get-active-instruments');
 const createInstrument = require('./create-instrument');
 const updateInstrument = require('./update-instrument');
 
+const renewInstrumentsInRedis = require('./renew-instruments-in-redis');
 const uploadNewInstrumentsFromBinance = require('./upload-new-instuments-from-binance');
 
 module.exports = {
@@ -17,5 +18,6 @@ module.exports = {
   createInstrument,
   updateInstrument,
 
+  renewInstrumentsInRedis,
   uploadNewInstrumentsFromBinance,
 };

@@ -15,8 +15,11 @@ router.get('/active', instrumentControllers.getActiveInstruments);
 router.get('/by-id', commonMiddlewares, instrumentControllers.findManyById);
 router.get('/by-name', commonMiddlewares, instrumentControllers.findManyByName);
 
+router.get('/renew', commonMiddlewares, instrumentControllers.renewInstrumentsInRedis);
+
 router.post('/', commonMiddlewares, instrumentControllers.createInstrument);
 
+router.get('/cron/update-binance-data', instrumentCronControllers.updateBinanceData);
 router.get('/calculate-average-volume-for-last-day', instrumentCronControllers.calculateAverageVolumeForLastDay);
 router.get('/upload-new-instruments-from-binance', commonMiddlewares, instrumentControllers.uploadNewInstrumentsFromBinance);
 

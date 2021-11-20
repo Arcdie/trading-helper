@@ -17,6 +17,16 @@ const InstrumentNew = new mongoose.Schema({
     required: true,
   },
 
+  tick_size: {
+    type: Number,
+    required: true,
+  },
+
+  step_size: {
+    type: Number,
+    required: true,
+  },
+
   is_futures: {
     type: Boolean,
     required: true,
