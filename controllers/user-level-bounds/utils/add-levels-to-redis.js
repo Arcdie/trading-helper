@@ -35,7 +35,7 @@ const addLevelsToRedis = async ({
   const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:LEVEL_BOUNDS`;
   let cacheInstrumentLevelBoundsKeys = await redis.hkeysAsync(keyInstrumentLevelBounds);
 
-  if (!cacheInstrumentLevelBoundsKeys) {
+  if (!cacheInstrumentLevelBoundsKeys || !cacheInstrumentLevelBoundsKeys.length) {
     cacheInstrumentLevelBoundsKeys = [];
   }
 
@@ -60,20 +60,10 @@ const addLevelsToRedis = async ({
         keyInstrumentLevelBounds, instrumentLevelBoundKey,
       );
 
-      if (!cacheInstrumentLevelBounds) {
+      if (!cacheInstrumentLevelBounds || !cacheInstrumentLevelBounds.length) {
         cacheInstrumentLevelBounds = [];
       } else {
-        try {
-          cacheInstrumentLevelBounds = JSON.parse(cacheInstrumentLevelBounds);
-
-          cacheInstrumentLevelBounds.push({
-            user_id: userId,
-            bound_id: boundId,
-          });
-        } catch (err) {
-          log.warn(err.message);
-          return null;
-        }
+        cacheInstrumentLevelBounds = JSON.parse(cacheInstrumentLevelBounds);
       }
     } else {
       cacheInstrumentLevelBounds.push({

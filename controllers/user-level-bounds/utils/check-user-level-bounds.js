@@ -70,15 +70,9 @@ const checkUserLevelBounds = async ({
     };
   }
 
-  let cacheInstrumentLevelBounds = await redis.hmgetAsync(
+  const cacheInstrumentLevelBounds = await redis.hmgetAsync(
     keyInstrumentLevelBounds, targetKeys,
   );
-
-  if (!cacheInstrumentLevelBounds) {
-    cacheInstrumentLevelBounds = [];
-  } else {
-    cacheInstrumentLevelBounds = JSON.parse(cacheInstrumentLevelBounds);
-  }
 
   if (!cacheInstrumentLevelBounds || !cacheInstrumentLevelBounds.length) {
     return {
@@ -86,20 +80,28 @@ const checkUserLevelBounds = async ({
     };
   }
 
-  cacheInstrumentLevelBounds.forEach(bound => {
-    sendPrivateData({
-      userId: bound.user_id,
-      actionName: PRIVATE_ACTION_NAMES.get('levelWasWorked'),
-      data: {
-        instrumentId,
-        boundId: bound.bound_id,
-      },
+  const boundsIds = [];
+
+  cacheInstrumentLevelBounds.forEach(bounds => {
+    bounds = JSON.parse(bounds);
+
+    bounds.forEach(bound => {
+      boundsIds.push(bound.bound_id);
+
+      sendPrivateData({
+        userId: bound.user_id,
+        actionName: PRIVATE_ACTION_NAMES.get('levelWasWorked'),
+        data: {
+          instrumentId,
+          boundId: bound.bound_id,
+        },
+      });
     });
   });
 
   await UserLevelBound.updateMany({
     _id: {
-      $in: cacheInstrumentLevelBounds.map(bound => bound.bound_id),
+      $in: boundsIds,
     },
   }, {
     is_worked: true,
