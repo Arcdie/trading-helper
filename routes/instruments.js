@@ -19,9 +19,11 @@ router.get('/renew', commonMiddlewares, instrumentControllers.renewInstrumentsIn
 
 router.post('/', commonMiddlewares, instrumentControllers.createInstrument);
 
-router.get('/cron/update-binance-data', instrumentCronControllers.updateBinanceData);
-router.get('/calculate-average-volume-for-last-day', instrumentCronControllers.calculateAverageVolumeForLastDay);
 router.get('/upload-new-instruments-from-binance', commonMiddlewares, instrumentControllers.uploadNewInstrumentsFromBinance);
+
+// cron
+router.get('/cron/update-binance-data', instrumentCronControllers.updateBinanceData);
+router.get('/cron/calculate-average-volume-for-last-day', instrumentCronControllers.calculateAverageVolumeForLastDay);
 
 router.get('/:id', commonMiddlewares, instrumentControllers.findOneById);
 router.patch('/:id', commonMiddlewares, instrumentControllers.updateInstrument);

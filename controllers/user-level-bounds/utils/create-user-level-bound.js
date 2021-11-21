@@ -4,7 +4,9 @@ const {
   isMongoId,
 } = require('validator');
 
-const redis = require('../../../libs/redis');
+const {
+  addLevelsToRedis,
+} = require('./add-levels-to-redis');
 
 const {
   TYPE_CANDLES_FOR_FIND_LEVELS,
@@ -105,47 +107,16 @@ const createUserLevelBound = async ({
 
   await newLevel.save();
 
-  const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:LEVEL_BOUNDS`;
-  let cacheInstrumentLevelBoundsKeys = await redis.hkeysAsync(keyInstrumentLevelBounds);
+  await addLevelsToRedis({
+    userId,
+    instrumentName,
 
-  if (!cacheInstrumentLevelBoundsKeys) {
-    cacheInstrumentLevelBoundsKeys = [];
-  }
-
-  const prefix = isLong ? 'long' : 'short';
-  const instrumentLevelBoundKey = `${levelPrice}_${prefix}`;
-
-  const existLevel = cacheInstrumentLevelBoundsKeys.find(
-    key => key === instrumentLevelBoundKey,
-  );
-
-  let cacheInstrumentLevelBounds = [];
-
-  if (existLevel) {
-    cacheInstrumentLevelBounds = await redis.hmgetAsync(
-      keyInstrumentLevelBounds, instrumentLevelBoundKey,
-    );
-
-    if (!cacheInstrumentLevelBounds) {
-      cacheInstrumentLevelBounds = [];
-    }
-
-    cacheInstrumentLevelBounds.push({
-      user_id: userId,
-      bound_id: newLevel._id.toString(),
-    });
-  } else {
-    cacheInstrumentLevelBounds.push({
-      user_id: userId,
-      bound_id: newLevel._id.toString(),
-    });
-  }
-
-  await redis.hmsetAsync(
-    keyInstrumentLevelBounds,
-    instrumentLevelBoundKey,
-    JSON.stringify(cacheInstrumentLevelBounds),
-  );
+    levels: [{
+      boundId: newLevel._id,
+      isLong: newLevel.is_long,
+      levelPrice: newLevel.level_price,
+    }],
+  });
 
   return {
     status: true,

@@ -5,7 +5,6 @@ const log = require('../libs/logger');
 const {
   telegramConf: {
     secret,
-    chatId,
   },
 } = require('../config');
 
@@ -62,7 +61,6 @@ if (process.env.NODE_ENV !== 'localhost') {
 
 const sendMessage = (chatId, message) => {
   helperenok.sendMessage(chatId, message);
-  // log.info(`sendMessage; chatId: ${chatId}, message: ${message}`);
 };
 
 module.exports = {

@@ -4,7 +4,7 @@ const {
 
 const UserLevelBound = require('../../../models/UserLevelBound');
 
-const removeAllLevels = async ({
+const removeAllLevelsForUser = async ({
   userId,
 }) => {
   if (!userId || !isMongoId(userId.toString())) {
@@ -24,5 +24,5 @@ const removeAllLevels = async ({
 };
 
 module.exports = {
-  removeAllLevels,
+  removeAllLevelsForUser,
 };

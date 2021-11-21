@@ -9,7 +9,6 @@ const Candle5m = require('../../../models/Candle-5m');
 const Candle1h = require('../../../models/Candle-1h');
 const Candle4h = require('../../../models/Candle-4h');
 const Candle1d = require('../../../models/Candle-1d');
-const InstrumentNew = require('../../../models/InstrumentNew');
 
 const getCandles = async ({
   instrumentId,
@@ -58,25 +57,6 @@ const getCandles = async ({
     SearchModel = Candle4h;
   } else if (interval === '1d') {
     SearchModel = Candle1d;
-  }
-
-  const instrumentDoc = await InstrumentNew.findById(instrumentId, {
-    name: 1,
-    is_active: 1,
-  }).exec();
-
-  if (!instrumentDoc) {
-    return {
-      status: false,
-      message: 'No Instrument',
-    };
-  }
-
-  if (!instrumentDoc.is_active) {
-    return {
-      status: false,
-      message: 'Instrument is not active',
-    };
   }
 
   const matchObj = {

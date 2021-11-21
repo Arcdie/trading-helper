@@ -9,6 +9,10 @@ const {
 } = require('../websocket/websocket-server');
 
 const {
+  clearSocketsInRedis,
+} = require('../controllers/users/utils/clear-sockets-in-redis');
+
+const {
   updateInstrument,
 } = require('../controllers/instruments/utils/update-instrument');
 
@@ -16,6 +20,10 @@ const InstrumentNew = require('../models/InstrumentNew');
 
 module.exports = async () => {
   // await redis.flushallAsync();
+
+  if (process.env.NODE_ENV !== 'localhost') {
+    await clearSocketsInRedis();
+  }
 
   const instrumentsDocs = await InstrumentNew.find({
     is_active: true,

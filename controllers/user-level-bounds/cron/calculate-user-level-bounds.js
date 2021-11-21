@@ -13,8 +13,16 @@ const {
 } = require('../utils/get-low-levels');
 
 const {
+  clearLevelsInRedis,
+} = require('../utils/clear-levels-in-redis');
+
+const {
   getHighLevels,
 } = require('../utils/get-high-levels');
+
+const {
+  addLevelsToRedis,
+} = require('../utils/add-levels-to-redis');
 
 const {
   getActiveInstruments,
@@ -28,6 +36,8 @@ const User = require('../../../models/User');
 const UserLevelBound = require('../../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
+  await clearLevelsInRedis();
+
   const usersDocs = await User.find({}, {
     levels_monitoring_settings: 1,
   }).exec();
@@ -57,53 +67,85 @@ module.exports = async (req, res, next) => {
     };
   }
 
-  for (const user of usersDocs) {
-    if (!user.levels_monitoring_settings) {
-      user.levels_monitoring_settings = {};
+  for await (const instrumentDoc of instrumentsDocs) {
+    const fetchPromises = [
+      getValidCandles({
+        interval: '1d',
+        instrumentId: instrumentDoc._id,
+      }),
+
+      getValidCandles({
+        interval: '4h',
+        instrumentId: instrumentDoc._id,
+      }),
+
+      getValidCandles({
+        interval: '1h',
+        instrumentId: instrumentDoc._id,
+      }),
+    ];
+
+    const [
+      resultGetDayCandles,
+      resultGet4hCandles,
+      resultGet1hCandles,
+    ] = await Promise.all(fetchPromises);
+
+    if (!resultGetDayCandles || !resultGetDayCandles.status) {
+      log.warn(resultGetDayCandles.message || 'Cant getCandles (1d)');
     }
 
-    const {
-      is_draw_levels_for_1h_candles: isDrawLevelsFor1hCandles,
-      is_draw_levels_for_4h_candles: isDrawLevelsFor4hCandles,
-      is_draw_levels_for_1d_candles: isDrawLevelsForDayCandles,
-
-      number_candles_for_calculate_1d_levels: numberCandlesForCalculateDayLevels,
-      number_candles_for_calculate_4h_levels: numberCandlesForCalculate4hLevels,
-      number_candles_for_calculate_1h_levels: numberCandlesForCalculate1hLevels,
-    } = user.levels_monitoring_settings;
-
-    if (!isDrawLevelsFor1hCandles && !isDrawLevelsFor4hCandles && !isDrawLevelsForDayCandles) {
-      continue;
+    if (!resultGet4hCandles || !resultGet4hCandles.status) {
+      log.warn(resultGet4hCandles.message || 'Cant getCandles (4h)');
     }
 
-    for (const instrumentDoc of instrumentsDocs) {
+    if (!resultGet1hCandles || !resultGet1hCandles.status) {
+      log.warn(resultGet1hCandles.message || 'Cant getCandles (1h)');
+    }
+
+    const candles1d = resultGetDayCandles.result || [];
+    const candles4h = resultGetDayCandles.result || [];
+    const candles1h = resultGetDayCandles.result || [];
+
+    for await (const userDoc of usersDocs) {
+      if (!userDoc.levels_monitoring_settings) {
+        userDoc.levels_monitoring_settings = {};
+      }
+
+      const {
+        is_draw_levels_for_1h_candles: isDrawLevelsFor1hCandles,
+        is_draw_levels_for_4h_candles: isDrawLevelsFor4hCandles,
+        is_draw_levels_for_1d_candles: isDrawLevelsForDayCandles,
+
+        number_candles_for_calculate_1d_levels: numberCandlesForCalculateDayLevels,
+        number_candles_for_calculate_4h_levels: numberCandlesForCalculate4hLevels,
+        number_candles_for_calculate_1h_levels: numberCandlesForCalculate1hLevels,
+      } = userDoc.levels_monitoring_settings;
+
+      if (!isDrawLevelsFor1hCandles && !isDrawLevelsFor4hCandles && !isDrawLevelsForDayCandles) {
+        continue;
+      }
+
       const newLevels = [];
 
       const userLevelBounds = await UserLevelBound.find({
-        user_id: user._id,
+        user_id: userDoc._id,
         instrument_id: instrumentDoc._id,
 
         is_worked: false,
-      }, { level_price: 1 }).exec();
+      }, {
+        is_long: 1,
+        level_price: 1,
+      }).exec();
 
       if (isDrawLevelsForDayCandles) {
-        const resultGetDayCandles = await getValidCandles({
-          interval: '1d',
-          instrumentId: instrumentDoc._id,
-        });
-
-        if (!resultGetDayCandles || !resultGetDayCandles.status) {
-          log.warn(resultGetDayCandles.message || 'Cant getCandles');
-          continue;
-        }
-
         const highLevels = getHighLevels({
-          candles: resultGetDayCandles.result,
+          candles: candles1d,
           distanceInBars: numberCandlesForCalculateDayLevels,
         });
 
         const lowLevels = getLowLevels({
-          candles: resultGetDayCandles.result,
+          candles: candles1d,
           distanceInBars: numberCandlesForCalculateDayLevels,
         });
 
@@ -127,23 +169,13 @@ module.exports = async (req, res, next) => {
       }
 
       if (isDrawLevelsFor4hCandles) {
-        const resultGet4hCandles = await getValidCandles({
-          interval: '4h',
-          instrumentId: instrumentDoc._id,
-        });
-
-        if (!resultGet4hCandles || !resultGet4hCandles.status) {
-          log.warn(resultGet4hCandles.message || 'Cant getCandles');
-          continue;
-        }
-
         const highLevels = getHighLevels({
-          candles: resultGet4hCandles.result,
+          candles: candles4h,
           distanceInBars: numberCandlesForCalculate4hLevels,
         });
 
         const lowLevels = getLowLevels({
-          candles: resultGet4hCandles.result,
+          candles: candles4h,
           distanceInBars: numberCandlesForCalculate4hLevels,
         });
 
@@ -167,23 +199,13 @@ module.exports = async (req, res, next) => {
       }
 
       if (isDrawLevelsFor1hCandles) {
-        const resultGet1hCandles = await getValidCandles({
-          interval: '1h',
-          instrumentId: instrumentDoc._id,
-        });
-
-        if (!resultGet1hCandles || !resultGet1hCandles.status) {
-          log.warn(resultGet1hCandles.message || 'Cant getCandles');
-          continue;
-        }
-
         const highLevels = getHighLevels({
-          candles: resultGet1hCandles.result,
+          candles: candles1h,
           distanceInBars: numberCandlesForCalculate1hLevels,
         });
 
         const lowLevels = getLowLevels({
-          candles: resultGet1hCandles.result,
+          candles: candles1h,
           distanceInBars: numberCandlesForCalculate1hLevels,
         });
 
@@ -207,10 +229,10 @@ module.exports = async (req, res, next) => {
       }
 
       if (newLevels.length) {
+        // for await (const newLevel of newLevels) {}
         await Promise.all(newLevels.map(async newLevel => {
           const resultCreateBound = await createUserLevelBound({
-            userId: user._id,
-            // indentInPercents,
+            userId: userDoc._id,
 
             instrumentId: instrumentDoc._id,
             instrumentName: instrumentDoc.name,
@@ -224,12 +246,27 @@ module.exports = async (req, res, next) => {
           if (!resultCreateBound || !resultCreateBound.status) {
             log.warn(resultCreateBound.message || 'Cant createUserLevelBound');
             return null;
+            // continue;
           }
         }));
       }
+
+      await addLevelsToRedis({
+        userId: userDoc._id,
+        instrumentName: instrumentDoc.name,
+
+        levels: userLevelBounds.map(bound => ({
+          boundId: bound._id,
+          isLong: bound.is_long,
+          levelPrice: bound.level_price,
+        })),
+      });
     }
+
+    console.log('ended', instrumentDoc.name);
   }
 
+  console.log('end');
   return res.json({ status: true });
 };
 
