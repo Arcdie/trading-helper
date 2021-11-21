@@ -70,7 +70,7 @@ const create4hCandle = async ({
   close = parseFloat(close);
   high = parseFloat(high);
   low = parseFloat(low);
-  volume = parseFloat(volume);
+  volume = parseInt(volume, 10);
 
   const existCandle = await Candle4h.findOne({
     instrument_id: instrumentId,
@@ -98,10 +98,10 @@ const create4hCandle = async ({
       updateObj.data = existCandle.data;
     }
 
-    existCandle.volume += volume;
-    existCandle.volume = parseInt(existCandle.volume, 10);
-
-    updateObj.volume = existCandle.volume;
+    if (existCandle.volume !== volume) {
+      existCandle.volume = volume;
+      updateObj.volume = existCandle.volume;
+    }
 
     await Candle4h.findByIdAndUpdate(existCandle._id, updateObj).exec();
 
