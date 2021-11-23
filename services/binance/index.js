@@ -23,11 +23,11 @@ module.exports = async (instrumentsDocs = []) => {
     .filter(doc => !doc.does_ignore_volume);
 
   /* set websocket connections */
-  await get5mCandlesForSpotInstruments(spotDocs);
+  // await get5mCandlesForSpotInstruments(spotDocs);
   await getLimitOrdersForSpotInstruments(spotDocsWithoutIgnoredVolume);
 
   await get1mCandlesForFuturesInstruments(futuresDocs);
-  await get5mCandlesForFuturesInstruments(futuresDocs);
+  // await get5mCandlesForFuturesInstruments(futuresDocs);
   // await getAggTradesForFuturesInstruments(futuresDocsWithActiveRobots);
   await getLimitOrdersForFuturesInstruments(futuresDocsWithoutIgnoredVolume);
   /* end */

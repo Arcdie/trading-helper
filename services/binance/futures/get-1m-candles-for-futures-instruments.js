@@ -45,10 +45,14 @@ class InstrumentQueue {
     if (lQueue > 0) {
       const targetSteps = this.queue.splice(0, this.LIMITER);
 
+      console.log('start');
+
       await create1mCandles({
         isFutures: true,
         newCandles: targetSteps,
       });
+
+      console.log('end');
 
       this.processedInstruments.push(
         ...targetSteps.map(newCandle => ({
@@ -61,6 +65,7 @@ class InstrumentQueue {
     } else {
       this.isActive = false;
 
+      /*
       if (this.processedInstruments.length) {
         await Promise.all(this.processedInstruments.map(async instrumentObj => {
           // todo: need optimize
@@ -69,6 +74,7 @@ class InstrumentQueue {
 
         this.processedInstruments = [];
       }
+      */
     }
   }
 }
@@ -89,6 +95,10 @@ module.exports = async (instrumentsDocs = []) => {
 
     const instrumentQueue = new InstrumentQueue();
     connectStr = connectStr.substring(0, connectStr.length - 1);
+
+    setInterval(() => {
+      console.log('1m, futures, q.length', instrumentQueue.queue.length);
+    }, 5 * 1000);
 
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);

@@ -47,6 +47,10 @@ const create1mCandles = async ({
   });
 
   await Candle1m.insertMany(arrToInsert);
+
+  return {
+    status: true,
+  };
 };
 
 module.exports = {
