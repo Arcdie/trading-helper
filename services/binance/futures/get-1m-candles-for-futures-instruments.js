@@ -11,8 +11,8 @@ const {
 } = require('../../../websocket/websocket-server');
 
 const {
-  create1mCandles,
-} = require('../../../controllers/candles/utils/create-1m-candles');
+  create1mCandle,
+} = require('../../../controllers/candles/utils/create-1m-candle');
 
 const {
   calculateTrendFor1mTimeframe,
@@ -45,27 +45,22 @@ class InstrumentQueue {
     if (lQueue > 0) {
       const targetSteps = this.queue.splice(0, this.LIMITER);
 
-      console.log('start');
+      await Promise.all(targetSteps.map(async newCandle => {
+        await create1mCandle({
+          isFutures: true,
+          ...newCandle,
+        });
 
-      await create1mCandles({
-        isFutures: true,
-        newCandles: targetSteps,
-      });
-
-      console.log('end');
-
-      this.processedInstruments.push(
-        ...targetSteps.map(newCandle => ({
+        this.processedInstruments.push({
           instrumentId: newCandle.instrumentId,
           instrumentName: newCandle.instrumentName,
-        })),
-      );
+        });
+      }));
 
       this.nextStep();
     } else {
       this.isActive = false;
 
-      /*
       if (this.processedInstruments.length) {
         await Promise.all(this.processedInstruments.map(async instrumentObj => {
           // todo: need optimize
@@ -74,7 +69,6 @@ class InstrumentQueue {
 
         this.processedInstruments = [];
       }
-      */
     }
   }
 }

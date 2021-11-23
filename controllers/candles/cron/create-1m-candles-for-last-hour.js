@@ -11,8 +11,8 @@ const {
 } = require('../../../services/telegram-bot');
 
 const {
-  create1mCandles,
-} = require('../utils/create-1m-candles');
+  create1mCandle,
+} = require('../utils/create-1m-candle');
 
 const {
   getSpotCandles,
@@ -97,18 +97,15 @@ module.exports = async (req, res, next) => {
 
       const validDate = moment.unix(startTimeBinance / 1000);
 
-      const resultCreateCandle = await create1mCandles({
+      const resultCreateCandle = await create1mCandle({
         isFutures: instrumentDoc.is_futures,
-
-        newCandles: [{
-          instrumentId: instrumentDoc._id,
-          startTime: validDate,
-          open: parseFloat(open),
-          close: parseFloat(close),
-          high: parseFloat(high),
-          low: parseFloat(low),
-          volume: parseInt(volume, 10),
-        }],
+        instrumentId: instrumentDoc._id,
+        startTime: validDate,
+        open: parseFloat(open),
+        close: parseFloat(close),
+        high: parseFloat(high),
+        low: parseFloat(low),
+        volume: parseInt(volume, 10),
       });
 
       if (!resultCreateCandle || !resultCreateCandle.status) {

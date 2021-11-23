@@ -15,8 +15,8 @@ const {
 } = require('../controllers/files/utils/parse-csv-to-json');
 
 const {
-  create1mCandles,
-} = require('../controllers/candles/utils/create-1m-candles');
+  create1mCandle,
+} = require('../controllers/candles/utils/create-1m-candle');
 
 const {
   create5mCandles,
@@ -151,18 +151,15 @@ module.exports = async () => {
           closeTime,
         ] = data;
 
-        const resultCreateCandle = await create1mCandles({
+        const resultCreateCandle = await create1mCandle({
           isFutures: instrumentDoc.is_futures,
-
-          newCandles: [{
-            instrumentId: instrumentDoc._id,
-            startTime: new Date(parseInt(openTime, 10)),
-            open,
-            close,
-            high,
-            low,
-            volume,
-          }],
+          instrumentId: instrumentDoc._id,
+          startTime: new Date(parseInt(openTime, 10)),
+          open,
+          close,
+          high,
+          low,
+          volume,
         });
 
         if (!resultCreateCandle || !resultCreateCandle.status) {
