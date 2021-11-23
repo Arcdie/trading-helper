@@ -28,7 +28,7 @@ module.exports = async (instrumentsDocs = []) => {
 
   await get1mCandlesForFuturesInstruments(futuresDocs);
   await get5mCandlesForFuturesInstruments(futuresDocs);
-  await getAggTradesForFuturesInstruments(futuresDocsWithActiveRobots);
+  // await getAggTradesForFuturesInstruments(futuresDocsWithActiveRobots);
   await getLimitOrdersForFuturesInstruments(futuresDocsWithoutIgnoredVolume);
   /* end */
 };

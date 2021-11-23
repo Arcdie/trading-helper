@@ -14,10 +14,9 @@ const commonMiddlewares = [
 // cron
 router.get('/cron/daily-clear', candleCronControllers.clearCandles);
 router.get('/cron/check-candles', candleCronControllers.checkCandles);
+router.get('/cron/calculate-candles', candleCronControllers.calculateCandles);
 router.get('/cron/create-1m-candles-for-last-hour', candleCronControllers.create1mCandlesForLastHour);
 
 router.get('/:interval', commonMiddlewares, candleControllers.getCandles);
-
-// router.get('/:interval/calculate', candleCronControllers.calculateCandles);
 
 module.exports = router;

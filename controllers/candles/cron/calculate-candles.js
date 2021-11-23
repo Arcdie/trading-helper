@@ -18,7 +18,7 @@ const {
 
 module.exports = async (req, res, next) => {
   const {
-    params: {
+    query: {
       interval,
     },
   } = req;

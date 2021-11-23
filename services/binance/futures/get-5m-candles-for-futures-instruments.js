@@ -15,18 +15,6 @@ const {
 } = require('../../../controllers/candles/utils/create-5m-candle');
 
 const {
-  calculate1hCandle,
-} = require('../../../controllers/candles/utils/calculate-1h-candle');
-
-const {
-  calculate4hCandle,
-} = require('../../../controllers/candles/utils/calculate-4h-candle');
-
-const {
-  calculate1dCandle,
-} = require('../../../controllers/candles/utils/calculate-1d-candle');
-
-const {
   checkUserLevelBounds,
 } = require('../../../controllers/user-level-bounds/utils/check-user-level-bounds');
 
@@ -39,56 +27,6 @@ const {
 } = require('../../../controllers/instruments/utils/calculate-average-volume-for-last-15-minutes');
 
 const CONNECTION_NAME = 'Futures:Kline_5m';
-
-class InstrumentQueue {
-  constructor() {
-    this.queue = [];
-    this.isActive = false;
-
-    this.LIMITER = 10;
-  }
-
-  addIteration(obj) {
-    this.queue.push(obj);
-
-    if (!this.isActive) {
-      this.isActive = true;
-      this.nextStep();
-    }
-  }
-
-  async nextStep() {
-    const lQueue = this.queue.length;
-
-    if (lQueue > 0) {
-      const targetSteps = this.queue.splice(0, this.LIMITER);
-
-      await Promise.all(targetSteps.map(async ({
-        instrumentId,
-        startTime,
-      }) => {
-        await calculate1hCandle({
-          instrumentId,
-          startTime,
-        });
-
-        await calculate4hCandle({
-          instrumentId,
-          startTime,
-        });
-
-        await calculate1dCandle({
-          instrumentId,
-          startTime,
-        });
-      }));
-
-      this.nextStep();
-    } else {
-      this.isActive = false;
-    }
-  }
-}
 
 module.exports = async (instrumentsDocs = []) => {
   try {
@@ -104,7 +42,6 @@ module.exports = async (instrumentsDocs = []) => {
       connectStr += `${cutName}@kline_5m/`;
     });
 
-    const instrumentQueue = new InstrumentQueue();
     connectStr = connectStr.substring(0, connectStr.length - 1);
 
     const websocketConnect = () => {
@@ -186,11 +123,6 @@ module.exports = async (instrumentsDocs = []) => {
           await calculateAverageVolumeForLast15Minutes({
             instrumentId: instrumentDoc._id,
             instrumentName: instrumentDoc.name,
-          });
-
-          instrumentQueue.addIteration({
-            instrumentId: instrumentDoc._id,
-            startTime,
           });
         }
 

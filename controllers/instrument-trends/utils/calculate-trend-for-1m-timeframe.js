@@ -91,8 +91,6 @@ const calculateTrendFor1mTimeframe = async ({
   const lastElemMicroTrendData = microTrendData[microTrendData.length - 1];
   const lastElemMacroTrendData = macroTrendData[macroTrendData.length - 1];
 
-  console.log('lastElemMacroTrendData', lastElemMacroTrendData);
-
   if (lastElemMicroTrendData) {
     const direction = lastElemMicroTrendData.isLong ? 'long' : 'short';
 
