@@ -11,8 +11,8 @@ const {
 } = require('../../../services/telegram-bot');
 
 const {
-  create1mCandle,
-} = require('../utils/create-1m-candle');
+  create1mCandles,
+} = require('../utils/create-1m-candles');
 
 const {
   getSpotCandles,
@@ -84,7 +84,7 @@ module.exports = async (req, res, next) => {
       break;
     }
 
-    await Promise.all(resultGetCandles.result.map(async candleData => {
+    const newCandles = resultGetCandles.result.map(candleData => {
       const [
         startTimeBinance,
         open,
@@ -97,8 +97,7 @@ module.exports = async (req, res, next) => {
 
       const validDate = moment.unix(startTimeBinance / 1000);
 
-      const resultCreateCandle = await create1mCandle({
-        isFutures: instrumentDoc.is_futures,
+      return {
         instrumentId: instrumentDoc._id,
         startTime: validDate,
         open: parseFloat(open),
@@ -106,15 +105,20 @@ module.exports = async (req, res, next) => {
         high: parseFloat(high),
         low: parseFloat(low),
         volume: parseInt(volume, 10),
-      });
+      };
+    });
 
-      if (!resultCreateCandle || !resultCreateCandle.status) {
-        return {
-          status: false,
-          message: resultCreateCandle.message || 'Cant create1mCandle',
-        };
-      }
-    }));
+    const resultCreateCandles = await create1mCandles({
+      isFutures: instrumentDoc.is_futures,
+      newCandles,
+    });
+
+    if (!resultCreateCandles || !resultCreateCandles.status) {
+      return {
+        status: false,
+        message: resultCreateCandles.message || 'Cant create1mCandles',
+      };
+    }
 
     await sleep(1000);
   }

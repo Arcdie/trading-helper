@@ -15,8 +15,8 @@ const {
 } = require('../controllers/files/utils/parse-csv-to-json');
 
 const {
-  create1mCandle,
-} = require('../controllers/candles/utils/create-1m-candle');
+  create1mCandles,
+} = require('../controllers/candles/utils/create-1m-candles');
 
 const {
   create5mCandles,
@@ -140,7 +140,7 @@ module.exports = async () => {
         continue;
       }
 
-      await Promise.all(resultGetFile.result.map(async data => {
+      const newCandles = resultGetFile.result.map(candleData => {
         const [
           openTime,
           open,
@@ -149,10 +149,9 @@ module.exports = async () => {
           close,
           volume,
           closeTime,
-        ] = data;
+        ] = candleData;
 
-        const resultCreateCandle = await create1mCandle({
-          isFutures: instrumentDoc.is_futures,
+        return {
           instrumentId: instrumentDoc._id,
           startTime: new Date(parseInt(openTime, 10)),
           open,
@@ -160,12 +159,17 @@ module.exports = async () => {
           high,
           low,
           volume,
-        });
+        };
+      });
 
-        if (!resultCreateCandle || !resultCreateCandle.status) {
-          log.warn(resultCreateCandle.message || 'Cant createCandle');
-        }
-      }));
+      const resultCreateCandles = await create1mCandles({
+        isFutures: instrumentDoc.is_futures,
+        newCandles,
+      });
+
+      if (!resultCreateCandles || !resultCreateCandles.status) {
+        log.warn(resultCreateCandles.message || 'Cant create1mCandles');
+      }
     }
 
     processedInstruments += 1;

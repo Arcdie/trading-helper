@@ -11,8 +11,8 @@ const {
 } = require('../../../websocket/websocket-server');
 
 const {
-  create1mCandle,
-} = require('../../../controllers/candles/utils/create-1m-candle');
+  create1mCandles,
+} = require('../../../controllers/candles/utils/create-1m-candles');
 
 const {
   calculateTrendFor1mTimeframe,
@@ -27,7 +27,7 @@ class InstrumentQueue {
 
     this.isActive = false;
 
-    this.LIMITER = 10;
+    this.LIMITER = 20;
   }
 
   addIteration(obj) {
@@ -45,19 +45,21 @@ class InstrumentQueue {
     if (lQueue > 0) {
       const targetSteps = this.queue.splice(0, this.LIMITER);
 
-      await Promise.all(targetSteps.map(async newCandle => {
-        await create1mCandle({
-          isFutures: true,
-          ...newCandle,
-        });
+      await create1mCandles({
+        isFutures: true,
+        newCandles: targetSteps,
+      });
 
-        this.processedInstruments.push({
+      this.processedInstruments.push(
+        ...targetSteps.map(newCandle => ({
           instrumentId: newCandle.instrumentId,
           instrumentName: newCandle.instrumentName,
-        });
-      }));
+        })),
+      );
 
-      this.nextStep();
+      setTimeout(() => {
+        this.nextStep();
+      }, 2000);
     } else {
       this.isActive = false;
 
@@ -90,9 +92,15 @@ module.exports = async (instrumentsDocs = []) => {
     const instrumentQueue = new InstrumentQueue();
     connectStr = connectStr.substring(0, connectStr.length - 1);
 
+    // tmp
+    let isSendedInTelegram = false;
+
     setInterval(() => {
-      console.log('1m, futures, q.length', instrumentQueue.queue.length);
-    }, 5 * 1000);
+      if (instrumentQueue.queue.length > 300 && !isSendedInTelegram) {
+        sendMessage(260325716, `${CONNECTION_NAME} queue > 300`);
+        isSendedInTelegram = true;
+      }
+    }, 1 * 60 * 1000);
 
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);
