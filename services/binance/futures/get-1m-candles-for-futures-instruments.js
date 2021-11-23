@@ -11,14 +11,67 @@ const {
 } = require('../../../websocket/websocket-server');
 
 const {
-  create1mCandle,
-} = require('../../../controllers/candles/utils/create-1m-candle');
+  create1mCandles,
+} = require('../../../controllers/candles/utils/create-1m-candles');
 
 const {
   calculateTrendFor1mTimeframe,
 } = require('../../../controllers/instrument-trends/utils/calculate-trend-for-1m-timeframe');
 
 const CONNECTION_NAME = 'Futures:Kline_1m';
+
+class InstrumentQueue {
+  constructor() {
+    this.queue = [];
+    this.processedInstruments = [];
+
+    this.isActive = false;
+
+    this.LIMITER = 10;
+  }
+
+  addIteration(obj) {
+    this.queue.push(obj);
+
+    if (!this.isActive) {
+      this.isActive = true;
+      this.nextStep();
+    }
+  }
+
+  async nextStep() {
+    const lQueue = this.queue.length;
+
+    if (lQueue > 0) {
+      const targetSteps = this.queue.splice(0, this.LIMITER);
+
+      await create1mCandles({
+        isFutures: true,
+        newCandles: targetSteps,
+      });
+
+      this.processedInstruments.push(
+        ...targetSteps.map(newCandle => ({
+          instrumentId: newCandle.instrumentId,
+          instrumentName: newCandle.instrumentName,
+        })),
+      );
+
+      this.nextStep();
+    } else {
+      this.isActive = false;
+
+      if (this.processedInstruments.length) {
+        await Promise.all(this.processedInstruments.map(async instrumentObj => {
+          // todo: need optimize
+          await calculateTrendFor1mTimeframe(instrumentObj);
+        }));
+
+        this.processedInstruments = [];
+      }
+    }
+  }
+}
 
 module.exports = async (instrumentsDocs = []) => {
   try {
@@ -34,7 +87,12 @@ module.exports = async (instrumentsDocs = []) => {
       connectStr += `${cutName}@kline_1m/`;
     });
 
+    const instrumentQueue = new InstrumentQueue();
     connectStr = connectStr.substring(0, connectStr.length - 1);
+
+    setInterval(() => {
+      console.log(`1m, queue: ${instrumentQueue.queue.length}`);
+    }, 5 * 1000);
 
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);
@@ -88,12 +146,12 @@ module.exports = async (instrumentsDocs = []) => {
         } = parsedData;
 
         const validInstrumentName = `${instrumentName}PERP`;
-        const targetDoc = instrumentsDocs.find(doc => doc.name === validInstrumentName);
+        const instrumentDoc = instrumentsDocs.find(doc => doc.name === validInstrumentName);
 
         if (isClosed) {
-          await create1mCandle({
-            isFutures: true,
-            instrumentId: targetDoc._id,
+          instrumentQueue.addIteration({
+            instrumentId: instrumentDoc._id,
+            instrumentName: instrumentDoc.name,
             startTime: new Date(startTime),
             open,
             close,
@@ -101,18 +159,13 @@ module.exports = async (instrumentsDocs = []) => {
             low,
             volume,
           });
-
-          await calculateTrendFor1mTimeframe({
-            instrumentId: targetDoc._id,
-            instrumentName: targetDoc.name,
-          });
         }
 
         /*
         sendData({
           actionName: 'candle1mData',
           data: {
-            instrumentId: targetDoc._id,
+            instrumentId: instrumentDoc._id,
             startTime,
             open,
             close,
@@ -126,7 +179,7 @@ module.exports = async (instrumentsDocs = []) => {
           actionName: 'newFuturesInstrumentPrice',
           data: {
             newPrice: close,
-            instrumentName: targetDoc.name,
+            instrumentName: instrumentDoc.name,
           },
         });
         */
