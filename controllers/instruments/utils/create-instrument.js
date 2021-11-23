@@ -1,4 +1,5 @@
 const InstrumentNew = require('../../../models/InstrumentNew');
+const InstrumentTrend = require('../../../models/InstrumentTrend');
 
 const createInstrument = async ({
   name,
@@ -41,6 +42,12 @@ const createInstrument = async ({
   });
 
   await newInstrument.save();
+
+  const newInstrumentTrend = new InstrumentTrend({
+    instrument_id: newInstrument._id,
+  });
+
+  await newInstrumentTrend.save();
 
   return {
     status: true,

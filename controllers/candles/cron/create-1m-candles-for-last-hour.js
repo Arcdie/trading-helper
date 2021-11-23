@@ -27,7 +27,9 @@ const {
 } = require('../../instruments/utils/get-active-instruments');
 
 module.exports = async (req, res, next) => {
-  const resultGetInstruments = await getActiveInstruments({});
+  const resultGetInstruments = await getActiveInstruments({
+    isOnlySpot: true,
+  });
 
   if (!resultGetInstruments || !resultGetInstruments.status) {
     return res.json({
@@ -35,6 +37,12 @@ module.exports = async (req, res, next) => {
       message: resultGetInstruments.message || 'Cant getActiveInstruments',
     });
   }
+
+  if (!resultGetInstruments.result || !resultGetInstruments.result.length) {
+    return res.json({ status: true });
+  }
+
+  const instrumentsDocs = resultGetInstruments.result;
 
   const startTimeUnix = moment()
     .utc()
@@ -44,7 +52,7 @@ module.exports = async (req, res, next) => {
 
   const endTimeUnix = startTimeUnix + 3599;
 
-  for (const instrumentDoc of resultGetInstruments.result) {
+  for await (const instrumentDoc of instrumentsDocs) {
     let execFunc;
     let instrumentName = instrumentDoc.name;
 

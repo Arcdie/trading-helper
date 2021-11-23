@@ -9,7 +9,10 @@ const calculateElderCandlesForInstruments = require('./calculate-elder-candles-f
 const saveAggTrades = require('./save-aggTrades');
 const loadAggTradesHistory = require('./load-aggTrades-history');
 
+const createInstrumentsTrends = require('./create-instrument-trends');
+
 module.exports = () => {
+  // createInstrumentsTrends();
   // loadDailyKlines();
 
   // removeCandlesForPeriod();
