@@ -63,7 +63,7 @@ const create5mCandles = async ({
     });
   });
 
-  await Candle5m.insertMany(arrToInsert).exec();
+  await Candle5m.insertMany(arrToInsert);
 
   if (isFutures) {
     newCandles.forEach(newCandle => {

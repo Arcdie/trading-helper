@@ -11,8 +11,8 @@ const {
 } = require('../../../websocket/websocket-server');
 
 const {
-  create5mCandle,
-} = require('../../../controllers/candles/utils/create-5m-candle');
+  create5mCandles,
+} = require('../../../controllers/candles/utils/create-5m-candles');
 
 const {
   updateInstrumentInRedis,
@@ -23,6 +23,59 @@ const {
 } = require('../../../controllers/instruments/utils/calculate-average-volume-for-last-15-minutes');
 
 const CONNECTION_NAME = 'Spot:Kline_5m';
+
+class InstrumentQueue {
+  constructor() {
+    this.queue = [];
+    this.processedInstruments = [];
+
+    this.isActive = false;
+
+    this.LIMITER = 10;
+  }
+
+  addIteration(obj) {
+    this.queue.push(obj);
+
+    if (!this.isActive) {
+      this.isActive = true;
+      this.nextStep();
+    }
+  }
+
+  async nextStep() {
+    const lQueue = this.queue.length;
+
+    if (lQueue > 0) {
+      const targetSteps = this.queue.splice(0, this.LIMITER);
+
+      await create5mCandles({
+        isFutures: false,
+        newCandles: targetSteps,
+      });
+
+      this.processedInstruments.push(
+        ...targetSteps.map(newCandle => ({
+          instrumentId: newCandle.instrumentId,
+          instrumentName: newCandle.instrumentName,
+        })),
+      );
+
+      this.nextStep();
+    } else {
+      this.isActive = false;
+
+      if (this.processedInstruments.length) {
+        await Promise.all(this.processedInstruments.map(async instrumentObj => {
+          // todo: need optimize
+          await calculateAverageVolumeForLast15Minutes(instrumentObj);
+        }));
+
+        this.processedInstruments = [];
+      }
+    }
+  }
+}
 
 module.exports = async (instrumentsDocs = []) => {
   try {
@@ -38,6 +91,7 @@ module.exports = async (instrumentsDocs = []) => {
       connectStr += `${cutName}@kline_5m/`;
     });
 
+    const instrumentQueue = new InstrumentQueue();
     connectStr = connectStr.substring(0, connectStr.length - 1);
 
     const websocketConnect = () => {
@@ -99,20 +153,15 @@ module.exports = async (instrumentsDocs = []) => {
         const instrumentDoc = resultUpdateInstrument.result;
 
         if (isClosed) {
-          await create5mCandle({
-            isFutures: false,
+          instrumentQueue.addIteration({
             instrumentId: instrumentDoc._id,
+            instrumentName: instrumentDoc.name,
             startTime: new Date(startTime),
             open,
             close,
             high,
             low,
             volume,
-          });
-
-          await calculateAverageVolumeForLast15Minutes({
-            instrumentId: instrumentDoc._id,
-            instrumentName: instrumentDoc.name,
           });
         }
 

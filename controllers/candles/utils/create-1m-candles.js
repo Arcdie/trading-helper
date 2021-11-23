@@ -46,7 +46,7 @@ const create1mCandles = async ({
     });
   });
 
-  await Candle1m.insertMany(arrToInsert).exec();
+  await Candle1m.insertMany(arrToInsert);
 };
 
 module.exports = {

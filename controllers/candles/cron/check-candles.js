@@ -11,8 +11,8 @@ const {
 } = require('../../../libs/support');
 
 const {
-  create5mCandle,
-} = require('../utils/create-5m-candle');
+  create5mCandles,
+} = require('../utils/create-5m-candles');
 
 const {
   create1hCandle,
@@ -200,14 +200,18 @@ module.exports = async (req, res, next) => {
             closeTime,
           ] = data;
 
-          const resultCreateCandle = await create5mCandle({
-            instrumentId: instrumentDoc._id,
-            startTime: new Date(parseInt(openTime, 10)),
-            open,
-            close,
-            high,
-            low,
-            volume,
+          const resultCreateCandle = await create5mCandles({
+            isFutures: instrumentDoc.is_futures,
+
+            newCandles: [{
+              instrumentId: instrumentDoc._id,
+              startTime: new Date(parseInt(openTime, 10)),
+              open,
+              close,
+              high,
+              low,
+              volume,
+            }],
           });
 
           if (!resultCreateCandle || !resultCreateCandle.status) {

@@ -15,12 +15,12 @@ const {
 } = require('../controllers/files/utils/parse-csv-to-json');
 
 const {
-  create1mCandle,
-} = require('../controllers/candles/utils/create-1m-candle');
+  create1mCandles,
+} = require('../controllers/candles/utils/create-1m-candles');
 
 const {
-  create5mCandle,
-} = require('../controllers/candles/utils/create-5m-candle');
+  create5mCandles,
+} = require('../controllers/candles/utils/create-5m-candles');
 
 const log = require('../libs/logger');
 
@@ -151,14 +151,18 @@ module.exports = async () => {
           closeTime,
         ] = data;
 
-        const resultCreateCandle = await create1mCandle({
-          instrumentId: instrumentDoc._id,
-          startTime: new Date(parseInt(openTime, 10)),
-          open,
-          close,
-          high,
-          low,
-          volume,
+        const resultCreateCandle = await create1mCandles({
+          isFutures: instrumentDoc.is_futures,
+
+          newCandles: [{
+            instrumentId: instrumentDoc._id,
+            startTime: new Date(parseInt(openTime, 10)),
+            open,
+            close,
+            high,
+            low,
+            volume,
+          }],
         });
 
         if (!resultCreateCandle || !resultCreateCandle.status) {

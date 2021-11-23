@@ -11,8 +11,8 @@ const {
 } = require('../controllers/files/utils/parse-csv-to-json');
 
 const {
-  create5mCandle,
-} = require('../controllers/candles/utils/create-5m-candle');
+  create5mCandles,
+} = require('../controllers/candles/utils/create-5m-candles');
 
 const {
   create1hCandle,
