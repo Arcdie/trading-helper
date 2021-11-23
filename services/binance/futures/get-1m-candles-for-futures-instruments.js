@@ -58,7 +58,7 @@ class InstrumentQueue {
       );
 
       setTimeout(() => {
-        this.nextStep();
+        return this.nextStep();
       }, 2000);
     } else {
       this.isActive = false;
@@ -94,6 +94,10 @@ module.exports = async (instrumentsDocs = []) => {
 
     // tmp
     let isSendedInTelegram = false;
+
+    setInterval(() => {
+      console.log('1m queue', instrumentQueue.queue.length);
+    }, 10 * 1000);
 
     setInterval(() => {
       if (instrumentQueue.queue.length > 300 && !isSendedInTelegram) {

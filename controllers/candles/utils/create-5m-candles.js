@@ -13,18 +13,9 @@ const {
 const Candle5m = require('../../../models/Candle-5m');
 
 const create5mCandles = async ({
-  instrumentId,
   isFutures,
-
   newCandles,
 }) => {
-  if (!instrumentId || !isMongoId(instrumentId.toString())) {
-    return {
-      status: false,
-      message: 'No or invalid instrumentId',
-    };
-  }
-
   if (isUndefined(isFutures)) {
     return {
       status: false,
@@ -49,7 +40,7 @@ const create5mCandles = async ({
     newCandle.volume = parseInt(newCandle.volume, 10);
 
     arrToInsert.push({
-      instrument_id: instrumentId,
+      instrument_id: newCandle.instrumentId,
 
       data: [
         newCandle.open,
@@ -70,7 +61,7 @@ const create5mCandles = async ({
       sendData({
         actionName: 'candle5mData',
         data: {
-          instrumentId,
+          instrumentId: newCandle.instrumentId,
           startTime: new Date(newCandle.startTime).getTime(),
           open: newCandle.open,
           close: newCandle.close,

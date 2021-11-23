@@ -1,8 +1,4 @@
 const {
-  isMongoId,
-} = require('validator');
-
-const {
   isUndefined,
 } = require('lodash');
 
@@ -13,18 +9,9 @@ const {
 const Candle1m = require('../../../models/Candle-1m');
 
 const create1mCandles = async ({
-  instrumentId,
   isFutures,
-
   newCandles,
 }) => {
-  if (!instrumentId || !isMongoId(instrumentId.toString())) {
-    return {
-      status: false,
-      message: 'No or invalid instrumentId',
-    };
-  }
-
   if (isUndefined(isFutures)) {
     return {
       status: false,
@@ -49,7 +36,7 @@ const create1mCandles = async ({
     newCandle.volume = parseInt(newCandle.volume, 10);
 
     arrToInsert.push({
-      instrument_id: instrumentId,
+      instrument_id: newCandle.instrumentId,
 
       data: [
         newCandle.open,

@@ -65,7 +65,9 @@ class InstrumentQueue {
         })),
       );
 
-      this.nextStep();
+      setTimeout(() => {
+        return this.nextStep();
+      }, 2000);
     } else {
       this.isActive = false;
 
