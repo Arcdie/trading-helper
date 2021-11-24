@@ -1,5 +1,6 @@
 const {
   isEmpty,
+  cloneDeep,
 } = require('lodash');
 
 const {
@@ -104,13 +105,13 @@ const calculateTrendFor5mTimeframe = async ({
     }));
 
   const microTrendData = calculateSuperTrend({
-    data: preparedDataForCalculation.map(data => ({ ...data })),
+    data: cloneDeep(preparedDataForCalculation),
     factor: FACTOR_FOR_MICRO_TREND,
     atrPeriod: ATR_PERIOD_FOR_MICRO_TREND,
   });
 
   const macroTrendData = calculateSuperTrend({
-    data: preparedDataForCalculation.map(data => ({ ...data })),
+    data: cloneDeep(preparedDataForCalculation),
     factor: FACTOR_FOR_MACRO_TREND,
     atrPeriod: ATR_PERIOD_FOR_MACRO_TREND,
   });
