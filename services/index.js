@@ -13,6 +13,10 @@ const {
 } = require('../controllers/users/utils/clear-sockets-in-redis');
 
 const {
+  clearCandlesInRedis,
+} = require('../controllers/candles/utils/clear-candles-in-redis');
+
+const {
   updateInstrument,
 } = require('../controllers/instruments/utils/update-instrument');
 
@@ -23,6 +27,7 @@ module.exports = async () => {
 
   if (process.env.NODE_ENV !== 'localhost') {
     await clearSocketsInRedis();
+    await clearCandlesInRedis();
   }
 
   const instrumentsDocs = await InstrumentNew.find({

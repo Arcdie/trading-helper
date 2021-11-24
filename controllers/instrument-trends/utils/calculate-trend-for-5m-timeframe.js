@@ -88,15 +88,12 @@ const calculateTrendFor5mTimeframe = async ({
   }
 
   const candlesDocs = resultGetCandles.result;
-  const numberRequiredCandles = ATR_PERIOD_FOR_MACRO_TREND * 2;
 
-  if (!candlesDocs || candlesDocs.length < numberRequiredCandles) {
+  if (!candlesDocs || !candlesDocs.length) {
     return { status: true };
   }
 
-  const targetCandlesDocs = candlesDocs.slice(0, numberRequiredCandles + 1);
-
-  const preparedDataForCalculation = targetCandlesDocs
+  const preparedDataForCalculation = candlesDocs
     .reverse()
     .map(doc => ({
       close: doc.data[1],
