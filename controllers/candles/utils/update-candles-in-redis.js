@@ -6,6 +6,10 @@ const log = require('../../../libs/logger');
 const redis = require('../../../libs/redis');
 
 const {
+  getUnix,
+} = require('../../../libs/support');
+
+const {
   getCandlesFromRedis,
 } = require('./get-candles-from-redis');
 
@@ -78,6 +82,17 @@ const updateCandlesInRedis = async ({
   }
 
   const candlesDocs = resultGetCandles.result;
+
+  const newCandleUnix = getUnix(newCandle.time);
+
+  const doesExistDublicate = candlesDocs.some(candle => {
+    const candleUnix = getUnix(candle.time);
+    return newCandleUnix === candleUnix;
+  });
+
+  if (doesExistDublicate) {
+    return { status: true };
+  }
 
   candlesDocs.unshift({
     data: newCandle.data,

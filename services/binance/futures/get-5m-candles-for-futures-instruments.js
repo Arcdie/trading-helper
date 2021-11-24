@@ -88,10 +88,14 @@ class InstrumentQueue {
           return null;
         }
 
-        await calculateTrendFor5mTimeframe({
+        const resultCalculate = await calculateTrendFor5mTimeframe({
           instrumentId: newCandle.instrument_id,
           instrumentName: targetStep.instrumentName,
         });
+
+        if (!resultCalculate || !resultCalculate.status) {
+          log.warn(resultCalculate.message || 'Cant calculateTrendFor1mTimeframe');
+        }
       }));
 
       setTimeout(() => {

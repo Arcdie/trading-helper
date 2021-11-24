@@ -65,7 +65,7 @@ const updateInstrumentTrend = async ({
 
   // macro
   if (macroTrendFor1mTimeframe) {
-    updateObj.macro_trend_for_1m_timeframe = microTrendFor1mTimeframe;
+    updateObj.macro_trend_for_1m_timeframe = macroTrendFor1mTimeframe;
   }
 
   if (macroTrendFor5mTimeframe) {
