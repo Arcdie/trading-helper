@@ -104,13 +104,13 @@ const calculateTrendFor5mTimeframe = async ({
     }));
 
   const microTrendData = calculateSuperTrend({
-    data: preparedDataForCalculation,
+    data: preparedDataForCalculation.map(data => ({ ...data })),
     factor: FACTOR_FOR_MICRO_TREND,
     atrPeriod: ATR_PERIOD_FOR_MICRO_TREND,
   });
 
   const macroTrendData = calculateSuperTrend({
-    data: preparedDataForCalculation,
+    data: preparedDataForCalculation.map(data => ({ ...data })),
     factor: FACTOR_FOR_MACRO_TREND,
     atrPeriod: ATR_PERIOD_FOR_MACRO_TREND,
   });
