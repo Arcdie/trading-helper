@@ -33,7 +33,7 @@ class InstrumentQueue {
     this.queue = [];
     this.isActive = false;
 
-    this.LIMITER = 20;
+    this.LIMITER = 50;
   }
 
   addIteration(obj) {
@@ -62,14 +62,16 @@ class InstrumentQueue {
       }
 
       await Promise.all(resultCreate.result.map(async newCandle => {
+        const instrumentId = newCandle.instrument_id.toString();
+
         const targetStep = targetSteps.find(
-          step => step.instrumentId === newCandle.instrument_id,
+          step => step.instrumentId.toString() === instrumentId,
         );
 
         const resultUpdate = await updateCandlesInRedis({
           instrumentId: newCandle.instrument_id,
           instrumentName: targetStep.instrumentName,
-          interval: INTERVALS.get('5m'),
+          interval: INTERVALS.get('1m'),
           newCandle,
         });
 

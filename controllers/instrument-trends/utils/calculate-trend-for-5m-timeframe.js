@@ -93,13 +93,15 @@ const calculateTrendFor5mTimeframe = async ({
     return { status: true };
   }
 
-  const targetCandlesDocs = candlesDocs.slice(-numberRequiredCandles);
+  const targetCandlesDocs = candlesDocs.slice(0, numberRequiredCandles + 1);
 
-  const preparedDataForCalculation = targetCandlesDocs.map(doc => ({
-    close: doc.data[1],
-    low: doc.data[2],
-    high: doc.data[3],
-  }));
+  const preparedDataForCalculation = targetCandlesDocs
+    .reverse()
+    .map(doc => ({
+      close: doc.data[1],
+      low: doc.data[2],
+      high: doc.data[3],
+    }));
 
   const microTrendData = calculateSuperTrend({
     data: preparedDataForCalculation,

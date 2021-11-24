@@ -54,7 +54,7 @@ module.exports = async (req, res, next) => {
       continue;
     }
 
-    const targetCandlesDocs = candlesDocs.slice(-numberRequiredCandles);
+    const targetCandlesDocs = candlesDocs.slice(0, numberRequiredCandles + 1);
 
     let sumVolume = 0;
     targetCandlesDocs.forEach(doc => {

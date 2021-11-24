@@ -79,7 +79,7 @@ const updateCandlesInRedis = async ({
 
   const candlesDocs = resultGetCandles.result;
 
-  candlesDocs.push({
+  candlesDocs.unshift({
     data: newCandle.data,
     volume: newCandle.volume,
     time: newCandle.time,
@@ -89,7 +89,7 @@ const updateCandlesInRedis = async ({
 
   if (lCandles > LIMIT_CANDLES) {
     for (let i = 0; i < lCandles - LIMIT_CANDLES; i += 1) {
-      candlesDocs.shift();
+      candlesDocs.pop();
     }
   }
 
