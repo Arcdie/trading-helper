@@ -1,8 +1,4 @@
 const {
-  isMongoId,
-} = require('validator');
-
-const {
   isUndefined,
 } = require('lodash');
 
@@ -54,7 +50,7 @@ const create5mCandles = async ({
     });
   });
 
-  await Candle5m.insertMany(arrToInsert);
+  const result = await Candle5m.insertMany(arrToInsert);
 
   if (isFutures) {
     newCandles.forEach(newCandle => {
@@ -74,7 +70,9 @@ const create5mCandles = async ({
   }
 
   return {
+    result,
     status: true,
+    isCreated: true,
   };
 };
 

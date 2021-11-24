@@ -29,12 +29,23 @@ module.exports = async () => {
     is_active: true,
   }).exec();
 
+  /*
+  await redis.setAsync([
+    'ACTIVE_INSTRUMENTS',
+    JSON.stringify(instrumentsDocs.map(doc => ({
+      is_futures: doc.is_futures,
+      instrument_id: doc._id.toString(),
+    }))),
+  ]);
+  */
+
   await Promise.all(instrumentsDocs.map(async doc => {
     const key = `INSTRUMENT:${doc.name}`;
     const cacheDoc = await redis.getAsync(key);
 
     if (!cacheDoc) {
       await redis.setAsync([key, JSON.stringify(doc._doc)]);
+      await redis.setAsync([`INSTRUMENT:${doc._id.toString()}:NAME`, doc.name]);
     }
 
     return null;

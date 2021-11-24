@@ -120,6 +120,7 @@ const create1dCandle = async ({
 
     return {
       status: true,
+      isCreated: false,
       result: existCandle._doc,
     };
   }
@@ -149,6 +150,7 @@ const create1dCandle = async ({
 
   return {
     status: true,
+    isCreated: true,
     result: newCandle._doc,
   };
 };

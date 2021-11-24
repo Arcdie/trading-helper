@@ -9,6 +9,10 @@ const {
 const log = require('../../../libs/logger');
 
 const {
+  getInstrumentTrend,
+} = require('./get-instrument-trend');
+
+const {
   calculateSuperTrend,
 } = require('./calculate-supertrend');
 
@@ -17,14 +21,19 @@ const {
 } = require('./update-instrument-trend');
 
 const {
+  getCandlesFromRedis,
+} = require('../../candles/utils/get-candles-from-redis');
+
+const {
   FACTOR_FOR_MICRO_TREND,
   FACTOR_FOR_MACRO_TREND,
   ATR_PERIOD_FOR_MICRO_TREND,
   ATR_PERIOD_FOR_MACRO_TREND,
 } = require('../constants');
 
-const Candle5m = require('../../../models/Candle-5m');
-const InstrumentTrend = require('../../../models/InstrumentTrend');
+const {
+  INTERVALS,
+} = require('../../candles/constants');
 
 const calculateTrendFor5mTimeframe = async ({
   instrumentId,
@@ -44,31 +53,49 @@ const calculateTrendFor5mTimeframe = async ({
     };
   }
 
-  const instrumentTrendDoc = await InstrumentTrend.findOne({
-    instrument_id: instrumentId,
-  }, {
-    micro_trend_for_5m_timeframe: 1,
-    macro_trend_for_5m_timeframe: 1,
-  }).exec();
+  const resultGetTrend = await getInstrumentTrend({
+    instrumentId,
+    instrumentName,
+  });
 
-  if (!instrumentTrendDoc) {
+  if (!resultGetTrend || !resultGetTrend.status) {
+    const message = resultGetTrend.message || 'Cant getInstrumentTrend';
+    log.warn(message);
+
     return {
       status: false,
-      message: 'No InstrumentTrend',
+      message,
     };
   }
 
-  const candlesDocs = await Candle5m
-    .find({ instrument_id: instrumentId }, { data: 1 })
-    .sort({ time: -1 })
-    .limit(ATR_PERIOD_FOR_MACRO_TREND * 2)
-    .exec();
+  const instrumentTrendDoc = resultGetTrend.result;
 
-  if (!candlesDocs || !candlesDocs.length) {
+  const resultGetCandles = await getCandlesFromRedis({
+    instrumentId,
+    instrumentName,
+    interval: INTERVALS.get('5m'),
+  });
+
+  if (!resultGetCandles || !resultGetCandles.status) {
+    const message = resultGetCandles.message || 'Cant getCandlesFromRedis';
+    log.warn(message);
+
+    return {
+      status: false,
+      message,
+    };
+  }
+
+  const candlesDocs = resultGetCandles.result;
+  const numberRequiredCandles = ATR_PERIOD_FOR_MACRO_TREND * 2;
+
+  if (!candlesDocs || candlesDocs.length < numberRequiredCandles) {
     return { status: true };
   }
 
-  const preparedDataForCalculation = candlesDocs.map(doc => ({
+  const targetCandlesDocs = candlesDocs.slice(-numberRequiredCandles);
+
+  const preparedDataForCalculation = targetCandlesDocs.map(doc => ({
     close: doc.data[1],
     low: doc.data[2],
     high: doc.data[3],

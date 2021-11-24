@@ -8,6 +8,19 @@ const {
   getCandles,
 } = require('./utils/get-candles');
 
+const {
+  getCandlesFromRedis,
+} = require('./utils/get-candles-from-redis');
+
+const {
+  getInstrumentName,
+} = require('../instruments/utils/get-instrument-name');
+
+const {
+  INTERVALS,
+  LIMIT_CANDLES,
+} = require('./constants');
+
 module.exports = async (req, res, next) => {
   const {
     params: {
@@ -18,7 +31,6 @@ module.exports = async (req, res, next) => {
       instrumentId,
       startTime,
       endTime,
-      limit,
     },
 
     user,
@@ -38,7 +50,7 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  if (!interval || !['1m', '5m', '1h', '4h', '1d'].includes(interval)) {
+  if (!interval || !INTERVALS.get(interval)) {
     return res.json({
       status: false,
       message: 'No or invalid interval',
@@ -59,13 +71,45 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const resultGetCandles = await getCandles({
-    instrumentId,
-    startTime,
-    interval,
-    endTime,
+  let {
+    isFirstCall,
     limit,
-  });
+  } = req.query;
+
+  if (limit && limit > LIMIT_CANDLES) {
+    limit = LIMIT_CANDLES;
+  }
+
+  isFirstCall = (isFirstCall && isFirstCall === 'true');
+
+  let resultGetCandles;
+
+  if (!isFirstCall) {
+    resultGetCandles = await getCandles({
+      instrumentId,
+      startTime,
+      interval,
+      endTime,
+      limit,
+    });
+  } else {
+    const resultGetName = await getInstrumentName({
+      instrumentId,
+    });
+
+    if (!resultGetName || !resultGetName.status) {
+      return {
+        status: false,
+        message: resultGetName.message || 'Cant getInstrumentName',
+      };
+    }
+
+    resultGetCandles = await getCandlesFromRedis({
+      interval,
+      instrumentId,
+      instrumentName: resultGetName.result,
+    });
+  }
 
   if (!resultGetCandles || !resultGetCandles.status) {
     return res.json({

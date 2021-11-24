@@ -50,10 +50,12 @@ const create1mCandles = async ({
     });
   });
 
-  await Candle1m.insertMany(arrToInsert);
+  const result = await Candle1m.insertMany(arrToInsert);
 
   return {
+    result,
     status: true,
+    isCreated: true,
   };
 };
 

@@ -15,16 +15,22 @@ const {
 } = require('../../../controllers/candles/utils/create-1m-candles');
 
 const {
+  updateCandlesInRedis,
+} = require('../../../controllers/candles/utils/update-candles-in-redis');
+
+const {
   calculateTrendFor1mTimeframe,
 } = require('../../../controllers/instrument-trends/utils/calculate-trend-for-1m-timeframe');
+
+const {
+  INTERVALS,
+} = require('../../../controllers/candles/constants');
 
 const CONNECTION_NAME = 'Futures:Kline_1m';
 
 class InstrumentQueue {
   constructor() {
     this.queue = [];
-    this.processedInstruments = [];
-
     this.isActive = false;
 
     this.LIMITER = 20;
@@ -45,32 +51,44 @@ class InstrumentQueue {
     if (lQueue > 0) {
       const targetSteps = this.queue.splice(0, this.LIMITER);
 
-      await create1mCandles({
+      const resultCreate = await create1mCandles({
         isFutures: true,
         newCandles: targetSteps,
       });
 
-      this.processedInstruments.push(
-        ...targetSteps.map(newCandle => ({
-          instrumentId: newCandle.instrumentId,
-          instrumentName: newCandle.instrumentName,
-        })),
-      );
+      if (!resultCreate || !resultCreate.status) {
+        log.warn(resultCreate.message || 'Cant create1mCandles (futures)');
+        return this.nextStep();
+      }
+
+      await Promise.all(resultCreate.result.map(async newCandle => {
+        const targetStep = targetSteps.find(
+          step => step.instrumentId === newCandle.instrument_id,
+        );
+
+        const resultUpdate = await updateCandlesInRedis({
+          instrumentId: newCandle.instrument_id,
+          instrumentName: targetStep.instrumentName,
+          interval: INTERVALS.get('5m'),
+          newCandle,
+        });
+
+        if (!resultUpdate || !resultUpdate.status) {
+          log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
+          return null;
+        }
+
+        await calculateTrendFor1mTimeframe({
+          instrumentId: newCandle.instrument_id,
+          instrumentName: targetStep.instrumentName,
+        });
+      }));
 
       setTimeout(() => {
         return this.nextStep();
       }, 2000);
     } else {
       this.isActive = false;
-
-      if (this.processedInstruments.length) {
-        await Promise.all(this.processedInstruments.map(async instrumentObj => {
-          // todo: need optimize
-          await calculateTrendFor1mTimeframe(instrumentObj);
-        }));
-
-        this.processedInstruments = [];
-      }
     }
   }
 }

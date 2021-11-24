@@ -16,6 +16,10 @@ const {
   getActiveInstruments,
 } = require('../../instruments/utils/get-active-instruments');
 
+const {
+  INTERVALS,
+} = require('../constants');
+
 module.exports = async (req, res, next) => {
   const {
     query: {
@@ -23,7 +27,7 @@ module.exports = async (req, res, next) => {
     },
   } = req;
 
-  if (!interval || !['1h', '4h', '1d'].includes(interval)) {
+  if (!interval || !INTERVALS.get(interval)) {
     return res.json({
       status: false,
       message: 'No or invalid interval',
@@ -43,11 +47,11 @@ module.exports = async (req, res, next) => {
 
   let execFunc;
 
-  if (interval === '1h') {
+  if (interval === INTERVALS.get('1h')) {
     execFunc = calculate1hCandle;
-  } else if (interval === '4h') {
+  } else if (interval === INTERVALS.get('4h')) {
     execFunc = calculate4hCandle;
-  } else if (interval === '1d') {
+  } else if (interval === INTERVALS.get('1d')) {
     execFunc = calculate1dCandle;
   }
 

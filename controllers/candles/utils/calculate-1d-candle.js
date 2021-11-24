@@ -4,9 +4,19 @@ const {
   isMongoId,
 } = require('validator');
 
+const log = require('../../../libs/logger');
+
 const {
   create1dCandle,
 } = require('./create-1d-candle');
+
+const {
+  updateCandlesInRedis,
+} = require('./update-candles-in-redis');
+
+const {
+  INTERVALS,
+} = require('../constants');
 
 const Candle5m = require('../../../models/Candle-5m');
 
@@ -71,6 +81,18 @@ const calculate1dCandle = async ({
       status: false,
       message: resultCreateCandle.message || 'Cant create1dCandle',
     };
+  }
+
+  if (resultCreateCandle.isCreated) {
+    const resultUpdate = await updateCandlesInRedis({
+      instrumentId,
+      interval: INTERVALS.get('1d'),
+      newCandle: resultCreateCandle.result,
+    });
+
+    if (!resultUpdate || !resultUpdate.status) {
+      log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
+    }
   }
 
   return {

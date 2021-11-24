@@ -2,9 +2,9 @@ const {
   isMongoId,
 } = require('validator');
 
-const logger = require('../../libs/logger');
-
-const InstrumentNew = require('../../models/InstrumentNew');
+const {
+  findOne,
+} = require('./utils/find-one');
 
 module.exports = async (req, res, next) => {
   const {
@@ -29,24 +29,19 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const instrumentDoc = await InstrumentNew.findById(instrumentId).exec();
+  const resultGetOne = await findOne({
+    instrumentId,
+  });
 
-  if (!instrumentDoc) {
+  if (!resultGetOne || !resultGetOne.status) {
     return res.json({
       status: false,
-      message: 'No Instrument',
-    });
-  }
-
-  if (!instrumentDoc.is_active) {
-    return res.json({
-      status: false,
-      message: 'Instrument is not active',
+      message: resultGetOne.message || 'Cant findOne',
     });
   }
 
   return res.json({
     status: true,
-    result: instrumentDoc._doc,
+    result: resultGetOne.result,
   });
 };

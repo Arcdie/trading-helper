@@ -15,6 +15,10 @@ const {
 } = require('../../../controllers/candles/utils/create-5m-candles');
 
 const {
+  updateCandlesInRedis,
+} = require('../../../controllers/candles/utils/update-candles-in-redis');
+
+const {
   checkUserLevelBounds,
 } = require('../../../controllers/user-level-bounds/utils/check-user-level-bounds');
 
@@ -23,16 +27,18 @@ const {
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
 const {
-  calculateAverageVolumeForLast15Minutes,
-} = require('../../../controllers/instruments/utils/calculate-average-volume-for-last-15-minutes');
+  calculateTrendFor5mTimeframe,
+} = require('../../../controllers/instrument-trends/utils/calculate-trend-for-5m-timeframe');
+
+const {
+  INTERVALS,
+} = require('../../../controllers/candles/constants');
 
 const CONNECTION_NAME = 'Futures:Kline_5m';
 
 class InstrumentQueue {
   constructor() {
     this.queue = [];
-    this.processedInstruments = [];
-
     this.isActive = false;
 
     this.LIMITER = 20;
@@ -53,32 +59,44 @@ class InstrumentQueue {
     if (lQueue > 0) {
       const targetSteps = this.queue.splice(0, this.LIMITER);
 
-      await create5mCandles({
+      const resultCreate = await create5mCandles({
         isFutures: true,
         newCandles: targetSteps,
       });
 
-      this.processedInstruments.push(
-        ...targetSteps.map(newCandle => ({
-          instrumentId: newCandle.instrumentId,
-          instrumentName: newCandle.instrumentName,
-        })),
-      );
+      if (!resultCreate || !resultCreate.status) {
+        log.warn(resultCreate.message || 'Cant create5mCandles (futures)');
+        return this.nextStep();
+      }
+
+      await Promise.all(resultCreate.result.map(async newCandle => {
+        const targetStep = targetSteps.find(
+          step => step.instrumentId === newCandle.instrument_id,
+        );
+
+        const resultUpdate = await updateCandlesInRedis({
+          instrumentId: newCandle.instrument_id,
+          instrumentName: targetStep.instrumentName,
+          interval: INTERVALS.get('5m'),
+          newCandle,
+        });
+
+        if (!resultUpdate || !resultUpdate.status) {
+          log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
+          return null;
+        }
+
+        await calculateTrendFor5mTimeframe({
+          instrumentId: newCandle.instrument_id,
+          instrumentName: targetStep.instrumentName,
+        });
+      }));
 
       setTimeout(() => {
         return this.nextStep();
       }, 2000);
     } else {
       this.isActive = false;
-
-      if (this.processedInstruments.length) {
-        await Promise.all(this.processedInstruments.map(async instrumentObj => {
-          // todo: need optimize
-          await calculateAverageVolumeForLast15Minutes(instrumentObj);
-        }));
-
-        this.processedInstruments = [];
-      }
     }
   }
 }

@@ -4,6 +4,11 @@ const {
   isMongoId,
 } = require('validator');
 
+const {
+  INTERVALS,
+  LIMIT_CANDLES,
+} = require('../constants');
+
 const Candle1m = require('../../../models/Candle-1m');
 const Candle5m = require('../../../models/Candle-5m');
 const Candle1h = require('../../../models/Candle-1h');
@@ -24,7 +29,7 @@ const getCandles = async ({
     };
   }
 
-  if (!interval || !['1m', '5m', '1h', '4h', '1d'].includes(interval)) {
+  if (!interval || !INTERVALS.get(interval)) {
     return {
       status: false,
       message: 'No or invalid interval',
@@ -43,6 +48,10 @@ const getCandles = async ({
       status: false,
       message: 'Invalid endTime',
     };
+  }
+
+  if (limit && limit > LIMIT_CANDLES) {
+    limit = LIMIT_CANDLES;
   }
 
   let SearchModel;
