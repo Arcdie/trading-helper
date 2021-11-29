@@ -107,15 +107,6 @@ module.exports = async (instrumentsDocs = []) => {
     const instrumentQueue = new InstrumentQueue();
     connectStr = connectStr.substring(0, connectStr.length - 1);
 
-    let isSendedInTelegram = false;
-
-    setInterval(() => {
-      if (instrumentQueue.queue.length > 300 && !isSendedInTelegram) {
-        sendMessage(260325716, `${CONNECTION_NAME} queue > 300`);
-        isSendedInTelegram = true;
-      }
-    }, 1 * 60 * 1000);
-
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);
 

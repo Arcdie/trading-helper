@@ -34,74 +34,66 @@ const {
   getActiveInstruments,
 } = require('../../instruments/utils/get-active-instruments');
 
-// const Candle1m = require('../../../models/Candle-1m');
 const Candle5m = require('../../../models/Candle-5m');
 const Candle1h = require('../../../models/Candle-1h');
 const Candle4h = require('../../../models/Candle-4h');
 const Candle1d = require('../../../models/Candle-1d');
 
 module.exports = async (req, res, next) => {
-  const resultGetInstruments = await getActiveInstruments({});
+  try {
+    const resultGetInstruments = await getActiveInstruments({});
 
-  if (!resultGetInstruments || !resultGetInstruments.status) {
-    log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
+    if (!resultGetInstruments || !resultGetInstruments.status) {
+      log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
 
-    return res.json({
-      status: false,
-    });
-  }
+      return res.json({
+        status: false,
+      });
+    }
 
-  if (!resultGetInstruments.result || !resultGetInstruments.result.length) {
-    return res.json({
-      status: true,
-    });
-  }
+    if (!resultGetInstruments.result || !resultGetInstruments.result.length) {
+      return res.json({
+        status: true,
+      });
+    }
 
-  const startDate = moment().utc().startOf('day').add(-3, 'days');
-  const startDateUnix = moment(startDate).unix();
-  const instrumentsDocs = resultGetInstruments.result;
+    const startDate = moment().utc().startOf('day').add(-2, 'days');
+    const startDateUnix = moment(startDate).unix();
 
-  for await (const instrumentDoc of instrumentsDocs) {
-    log.info(`Instrument ${instrumentDoc.name}`);
+    const instrumentsDocs = resultGetInstruments.result;
 
-    /*
-    const candles1mDocs = await Candle1m.find({
-      instrument_id: instrumentDoc._id,
+    for await (const instrumentDoc of instrumentsDocs) {
+      log.info(`Instrument ${instrumentDoc.name}`);
 
-      time: { $lt: startDate },
-    }, { time: 1 }).sort({ time: 1 }).exec();
+      const candles5mDocs = await Candle5m.find({
+        instrument_id: instrumentDoc._id,
 
-    let nextTimeUnix = getUnix(candles1mDocs[0].time);
+        time: { $lt: startDate },
+      }, { time: 1 }).sort({ time: 1 }).exec();
 
-    while (nextTimeUnix !== startDateUnix) {
-      const candleDoc = candles1mDocs[0];
-      const candleTimeUnix = getUnix(candleDoc.time);
+      let datesToDownload = [];
+      const candlesTimeToCreate = [];
+      let nextTimeUnix = getUnix(candles5mDocs[0].time);
 
-      if (nextTimeUnix !== candleTimeUnix) {
-        console.log(`1m: ${moment.unix(nextTimeUnix).utc().format()}`);
-      } else {
-        candles1mDocs.shift();
+      while (nextTimeUnix !== startDateUnix) {
+        const candleDoc = candles5mDocs[0];
+        const candleTimeUnix = getUnix(candleDoc.time);
+
+        if (nextTimeUnix !== candleTimeUnix) {
+          candlesTimeToCreate.push(nextTimeUnix);
+        } else {
+          candles5mDocs.shift();
+        }
+
+        nextTimeUnix += 300;
       }
 
-      nextTimeUnix += 60;
-    }
-    */
+      if (!candlesTimeToCreate.length) {
+        continue;
+      }
 
-    const candles5mDocs = await Candle5m.find({
-      instrument_id: instrumentDoc._id,
-
-      time: { $lt: startDate },
-    }, { time: 1 }).sort({ time: 1 }).exec();
-
-    let datesToDownload = [];
-    let nextTimeUnix = getUnix(candles5mDocs[0].time);
-
-    while (nextTimeUnix !== startDateUnix) {
-      const candleDoc = candles5mDocs[0];
-      const candleTimeUnix = getUnix(candleDoc.time);
-
-      if (nextTimeUnix !== candleTimeUnix) {
-        const startOfDay = moment.unix(candleTimeUnix).utc().startOf('day');
+      candlesTimeToCreate.forEach(timeUnix => {
+        const startOfDay = moment.unix(timeUnix).utc().startOf('day');
         const startOfDayUnix = moment(startOfDay).unix();
 
         const doesExistDateToDownload = datesToDownload.some(
@@ -117,14 +109,8 @@ module.exports = async (req, res, next) => {
             year: startOfDay.format('YYYY'),
           });
         }
-      } else {
-        candles5mDocs.shift();
-      }
+      });
 
-      nextTimeUnix += 300;
-    }
-
-    if (datesToDownload.length) {
       log.info('Started loading files');
 
       let typeInstrument = 'spot';
@@ -189,21 +175,24 @@ module.exports = async (req, res, next) => {
           continue;
         }
 
-        await Promise.all(resultGetFile.result.map(async data => {
-          const [
-            openTime,
-            open,
-            high,
-            low,
-            close,
-            volume,
-            closeTime,
-          ] = data;
+        const newCandles = [];
 
-          const resultCreateCandle = await create5mCandles({
-            isFutures: instrumentDoc.is_futures,
+        resultGetFile.result.forEach(data => {
+          const dataTimeUnix = parseInt(data[0] / 1000, 10);
+          const doesExistTimeInCandlesToCreate = candlesTimeToCreate.includes(dataTimeUnix);
 
-            newCandles: [{
+          if (doesExistTimeInCandlesToCreate) {
+            const [
+              openTime,
+              open,
+              high,
+              low,
+              close,
+              volume,
+              closeTime,
+            ] = data;
+
+            newCandles.push({
               instrumentId: instrumentDoc._id,
               startTime: new Date(parseInt(openTime, 10)),
               open,
@@ -211,13 +200,20 @@ module.exports = async (req, res, next) => {
               high,
               low,
               volume,
-            }],
+            });
+          }
+        });
+
+        if (newCandles.length) {
+          const resultCreateCandles = await create5mCandles({
+            isFutures: instrumentDoc.is_futures,
+            newCandles,
           });
 
-          if (!resultCreateCandle || !resultCreateCandle.status) {
-            log.warn(resultCreateCandle.message || 'Cant create5mCandle');
+          if (!resultCreateCandles || !resultCreateCandles.status) {
+            log.warn(resultCreateCandles.message || 'Cant create5mCandles');
           }
-        }));
+        }
       }
 
       removeFolder(pathToFolder);
@@ -319,11 +315,19 @@ module.exports = async (req, res, next) => {
         }));
       }
     }
-  }
 
-  return res.json({
-    status: true,
-  });
+    log.info('Process check-5m-candles was finished');
+
+    return res.json({
+      status: true,
+    });
+  } catch (err) {
+    log.warn(err.message);
+
+    return res.json({
+      status: false,
+    });
+  }
 };
 
 const removeFolder = path => {
