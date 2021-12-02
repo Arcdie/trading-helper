@@ -1,3 +1,4 @@
+const get1mCandlesForSpotInstruments = require('./spot/get-1m-candles-for-spot-instruments');
 const get5mCandlesForSpotInstruments = require('./spot/get-5m-candles-for-spot-instruments');
 const getLimitOrdersForSpotInstruments = require('./spot/get-limit-orders-for-spot-instruments');
 
@@ -23,6 +24,7 @@ module.exports = async (instrumentsDocs = []) => {
     .filter(doc => !doc.does_ignore_volume);
 
   /* set websocket connections */
+  await get1mCandlesForSpotInstruments(spotDocs);
   await get5mCandlesForSpotInstruments(spotDocs);
   await getLimitOrdersForSpotInstruments(spotDocsWithoutIgnoredVolume);
 

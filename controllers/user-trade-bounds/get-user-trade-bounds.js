@@ -83,6 +83,7 @@ module.exports = async (req, res, next) => {
       buy_price: 1,
       sell_price: 1,
       type_exit: 1,
+      quantity: 1,
       stoploss_percent: 1,
       takeprofit_percent: 1,
 

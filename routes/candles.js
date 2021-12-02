@@ -16,7 +16,7 @@ router.get('/cron/daily-clear', candleCronControllers.clearCandles);
 router.get('/cron/check-candles/1m', candleCronControllers.check1mCandles);
 router.get('/cron/check-candles/5m', candleCronControllers.check5mCandles);
 router.get('/cron/calculate-candles', candleCronControllers.calculateCandles);
-router.get('/cron/create-1m-candles-for-last-hour', candleCronControllers.create1mCandlesForLastHour);
+// router.get('/cron/create-1m-candles-for-last-hour', candleCronControllers.create1mCandlesForLastHour);
 
 router.get('/:interval', commonMiddlewares, candleControllers.getCandles);
 
