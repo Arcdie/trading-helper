@@ -19,6 +19,7 @@ router.get('/renew', commonMiddlewares, instrumentControllers.renewInstrumentsIn
 
 router.post('/', commonMiddlewares, instrumentControllers.createInstrument);
 
+router.post('/update-does-ignore-volume', commonMiddlewares, instrumentControllers.updateDoesIgnoreVolume);
 router.get('/upload-new-instruments-from-binance', commonMiddlewares, instrumentControllers.uploadNewInstrumentsFromBinance);
 
 // cron

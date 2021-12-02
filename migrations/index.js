@@ -9,9 +9,11 @@ const calculateElderCandlesForInstruments = require('./calculate-elder-candles-f
 const saveAggTrades = require('./save-aggTrades');
 const loadAggTradesHistory = require('./load-aggTrades-history');
 
+const changeDoesIgnoreVolume = require('./change-does-ignore-volume');
 const createInstrumentsTrends = require('./create-instrument-trends');
 
 module.exports = () => {
+  // changeDoesIgnoreVolume();
   // createInstrumentsTrends();
   // loadDailyKlines();
 

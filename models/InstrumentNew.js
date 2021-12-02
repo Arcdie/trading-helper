@@ -49,7 +49,7 @@ const InstrumentNew = new mongoose.Schema({
 
   does_ignore_volume: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 
   created_at: {
