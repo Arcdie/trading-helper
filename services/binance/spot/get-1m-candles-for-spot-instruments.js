@@ -65,7 +65,7 @@ module.exports = async (instrumentsDocs = []) => {
 
     instrumentsDocs.forEach(doc => {
       const cutName = doc.name.toLowerCase();
-      connectStr += `${cutName}@kline_5m/`;
+      connectStr += `${cutName}@kline_1m/`;
     });
 
     const instrumentQueue = new InstrumentQueue();
