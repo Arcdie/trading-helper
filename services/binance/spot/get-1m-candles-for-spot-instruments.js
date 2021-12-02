@@ -71,6 +71,10 @@ module.exports = async (instrumentsDocs = []) => {
     const instrumentQueue = new InstrumentQueue();
     connectStr = connectStr.substring(0, connectStr.length - 1);
 
+    setInterval(() => {
+      console.log('spot:1m', instrumentQueue.queue.length);
+    }, 10 * 1000);
+
     const websocketConnect = () => {
       const client = new WebSocketClient(connectStr);
 
