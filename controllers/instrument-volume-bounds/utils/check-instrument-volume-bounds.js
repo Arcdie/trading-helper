@@ -175,6 +175,7 @@ const checkInstrumentVolumeBounds = async ({
             is_ask: bound.is_ask,
             quantity: bound.quantity,
             instrument_id: cacheInstrumentDoc._id,
+            instrument_name: cacheInstrumentDoc.name,
           },
         });
       }));
@@ -200,6 +201,7 @@ const checkInstrumentVolumeBounds = async ({
             is_ask: bound.is_ask,
             quantity: bound.quantity,
             instrument_id: cacheInstrumentDoc._id,
+            instrument_name: cacheInstrumentDoc.name,
           },
         });
       }));
@@ -265,6 +267,7 @@ const checkInstrumentVolumeBounds = async ({
           quantity: newBound.start_quantity,
           created_at: createdAtUnix,
           instrument_id: cacheInstrumentDoc._id,
+          instrument_name: cacheInstrumentDoc.name,
         },
       });
     }));
