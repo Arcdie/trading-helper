@@ -32,7 +32,7 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  if (!instrumentsIds || !Array.isArray(!instrumentsIds) || !instrumentsIds.length) {
+  if (!instrumentsIds || !Array.isArray(instrumentsIds) || !instrumentsIds.length) {
     return res.json({
       status: false,
       message: 'No or invalid instrumentsIds',
@@ -70,7 +70,7 @@ module.exports = async (req, res, next) => {
   }
 
   await Promise.all(resultGetInstruments.result.map(async doc => {
-    const doesIgnoreVolume = instrumentsIds.includes(doc._id.toString());
+    const doesIgnoreVolume = !instrumentsIds.includes(doc._id.toString());
 
     const resultUpdate = await updateInstrument({
       instrumentId: doc._id,

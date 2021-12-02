@@ -29,6 +29,6 @@ router.get('/experiment', extendedMiddlewares, webControllers.getExperimentPage)
 router.get('/auth/login', commonMiddlewares, webControllers.getLoginPage);
 router.get('/auth/registration', commonMiddlewares, webControllers.getRegistrationPage);
 
-router.use('/statistics', commonMiddlewares, require('./statistics'));
+router.use('/statistics', commonMiddlewares, require('./web-statistics'));
 
 module.exports = router;

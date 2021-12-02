@@ -1,0 +1,13 @@
+const TYPES_EXIT = new Map([
+  ['CANCELED', 'CANCELED'],
+  ['DEACTIVATED', 'DEACTIVATED'],
+]);
+
+const TYPES_TRADES = new Map([
+  ['INSTRUMENT_VOLUME_BOUND', 'INSTRUMENT_VOLUME_BOUND'],
+]);
+
+module.exports = {
+  TYPES_EXIT,
+  TYPES_TRADES,
+};

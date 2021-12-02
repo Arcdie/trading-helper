@@ -11,8 +11,10 @@ const loadAggTradesHistory = require('./load-aggTrades-history');
 
 const changeDoesIgnoreVolume = require('./change-does-ignore-volume');
 const createInstrumentsTrends = require('./create-instrument-trends');
+const removeCandlesDublicates = require('./remove-candles-dublicates');
 
 module.exports = () => {
+  // removeCandlesDublicates();
   // changeDoesIgnoreVolume();
   // createInstrumentsTrends();
   // loadDailyKlines();

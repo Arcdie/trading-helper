@@ -3,13 +3,13 @@ const router = require('express').Router();
 const getUser = require('../middlewares/get-user');
 const getAuthToken = require('../middlewares/get-auth-token');
 
-const statisticsControllers = require('../controllers/statistics');
+const userTradeBoundControllers = require('../controllers/user-trade-bounds');
 
 const commonMiddlewares = [
   getAuthToken,
   getUser,
 ];
 
-// router.get('/', commonMiddlewares, tradeControllers.getTrades);
+router.get('/', commonMiddlewares, userTradeBoundControllers.getUserTradeBounds);
 
 module.exports = router;

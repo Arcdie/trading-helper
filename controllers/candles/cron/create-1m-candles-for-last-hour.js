@@ -80,8 +80,9 @@ module.exports = async (req, res, next) => {
         continue;
       }
     } catch (error) {
-      sendMessage(260325716, 'Alarm! Ошибка при загрузке свечей с binance');
-      break;
+      log.warn(error.message);
+      sendMessage(260325716, `Alarm! Ошибка при загрузке свечей с binance: ${instrumentDoc.name}`);
+      continue;
     }
 
     const newCandles = resultGetCandles.result.map(candleData => {
@@ -119,6 +120,8 @@ module.exports = async (req, res, next) => {
         message: resultCreateCandles.message || 'Cant create1mCandles',
       };
     }
+
+    console.log('Ended', instrumentDoc.name);
 
     await sleep(1000);
   }
