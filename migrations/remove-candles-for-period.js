@@ -20,8 +20,8 @@ module.exports = async () => {
 
   const instrumentsIds = instrumentsDocs.map(doc => doc._id);
 
-  const startDate = moment('2021-12-02 12:00:00.000Z').utc();
-  const endDate = moment('2021-12-02 14:00:00.000Z').utc();
+  const startDate = moment('2021-12-02 15:00:00.000Z').utc();
+  const endDate = moment('2021-12-02 16:00:00.000Z').utc();
 
   const deleteMatch = {
     instrument_id: { $in: instrumentsIds },

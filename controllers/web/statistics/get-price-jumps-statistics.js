@@ -7,5 +7,5 @@ module.exports = async (req, res, next) => {
     return res.redirect('/');
   }
 
-  res.render('web/statistics/price-jump-statistics-page');
+  res.render('web/statistics/price-jumps-statistics-page');
 };

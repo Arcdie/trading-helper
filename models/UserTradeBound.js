@@ -54,6 +54,11 @@ const UserTradeBound = new mongoose.Schema({
     required: true,
   },
 
+  is_test: {
+    type: Boolean,
+    required: true,
+  },
+
   stoploss_price: Number,
   takeprofit_price: Number,
 

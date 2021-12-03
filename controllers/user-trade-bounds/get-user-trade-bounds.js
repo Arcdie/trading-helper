@@ -15,6 +15,9 @@ module.exports = async (req, res, next) => {
     query: {
       typeTrade,
       instrumentId,
+
+      startDate,
+      endDate,
     },
 
     user,
@@ -27,13 +30,6 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  if (!instrumentId || !isMongoId(instrumentId)) {
-    return res.json({
-      status: false,
-      message: 'No or invalid instrumentId',
-    });
-  }
-
   if (!typeTrade || !TYPES_TRADES.get(typeTrade)) {
     return res.json({
       status: false,
@@ -41,55 +37,64 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  let {
-    startDate,
-    endDate,
-  } = req.query;
-
-  if (!startDate || !moment(startDate).isValid()) {
+  if (instrumentId && !isMongoId(instrumentId)) {
     return res.json({
       status: false,
-      message: 'No or invalid startDate',
+      message: 'Invalid instrumentId',
     });
   }
 
-  if (!endDate || !moment(endDate).isValid()) {
+  if (startDate && !moment(startDate).isValid()) {
     return res.json({
       status: false,
-      message: 'No or invalid endDate',
+      message: 'Invalid startDate',
     });
   }
 
-  startDate = moment(startDate).utc().startOf('minute');
-  endDate = moment(endDate).utc().startOf('minute');
+  if (endDate && !moment(endDate).isValid()) {
+    return res.json({
+      status: false,
+      message: 'Invalid endDate',
+    });
+  }
+
+  const matchObj = {
+    user_id: user._id,
+  };
+
+  if (instrumentId) {
+    matchObj.instrument_id = instrumentId;
+  }
+
+  if (startDate && endDate) {
+    const momentStartTime = moment(startDate).utc().startOf('minute');
+    const momentEndTime = moment(endDate).utc().startOf('minute');
+
+    matchObj.$and = [{
+      trade_started_at: {
+        $gt: momentStartTime,
+      },
+    }, {
+      trade_started_at: {
+        $lt: momentEndTime,
+      },
+    }];
+  } else if (startDate) {
+    const momentStartTime = moment(startDate).utc().startOf('minute');
+
+    matchObj.trade_started_at = {
+      $gt: momentStartTime,
+    };
+  } else if (endDate) {
+    const momentEndTime = moment(endDate).utc().startOf('minute');
+
+    matchObj.trade_started_at = {
+      $lt: momentEndTime,
+    };
+  }
 
   const userTradeBounds = await UserTradeBound
-    .find({
-      instrument_id: instrumentId,
-      type_trade: typeTrade,
-
-      $and: [{
-        trade_started_at: {
-          $gt: startDate,
-        },
-      }, {
-        trade_started_at: {
-          $lt: endDate,
-        },
-      }],
-    }, {
-      is_long: 1,
-      is_active: 1,
-      buy_price: 1,
-      sell_price: 1,
-      type_exit: 1,
-      quantity: 1,
-      stoploss_percent: 1,
-      takeprofit_percent: 1,
-
-      trade_started_at: 1,
-      trade_ended_at: 1,
-    })
+    .find(matchObj)
     .sort({ trade_started_at: 1 })
     .exec();
 

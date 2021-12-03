@@ -4,7 +4,8 @@
   "description": "Helper for trading",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon app"
+    "dev": "nodemon app",
+    "production": "pm2 start ./app.js"
   },
   "dependencies": {
     "adm-zip": "^0.5.7",
