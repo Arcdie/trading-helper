@@ -17,6 +17,11 @@ const InstrumentNew = new mongoose.Schema({
     required: true,
   },
 
+  price_precision: {
+    type: Number,
+    // required: true,
+  },
+
   tick_size: {
     type: Number,
     required: true,

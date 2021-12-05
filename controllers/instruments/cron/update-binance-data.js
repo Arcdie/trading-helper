@@ -1,3 +1,7 @@
+const {
+  isUndefined,
+} = require('lodash');
+
 const log = require('../../../libs/logger');
 
 const {
@@ -76,8 +80,14 @@ module.exports = async (req, res, next) => {
         return null;
       }
 
+      const { pricePrecision } = targetSymbol;
       const { tickSize } = targetSymbol.filters[0];
       const { stepSize } = targetSymbol.filters[2];
+
+      if (isUndefined(pricePrecision)) {
+        log.warn(`No pricePrecision, ${doc.name}`);
+        return null;
+      }
 
       if (!tickSize) {
         log.warn(`No tickSize, ${doc.name}`);
@@ -91,6 +101,7 @@ module.exports = async (req, res, next) => {
 
       doc.step_size = parseFloat(stepSize);
       doc.tick_size = parseFloat(tickSize);
+      doc.price_precision = parseInt(pricePrecision, 10);
 
       await doc.save();
     }));
