@@ -31,6 +31,10 @@ const {
   getActiveInstruments,
 } = require('../../instruments/utils/get-active-instruments');
 
+const {
+  INTERVALS,
+} = require('../constants');
+
 const Candle1m = require('../../../models/Candle-1m');
 
 module.exports = async (req, res, next) => {
@@ -51,8 +55,14 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    const startDate = moment().utc().add(-10, 'minutes').startOf('hour');
-    const endDate = moment(startDate).endOf('hour');
+    const startDate = moment().utc()
+      .add(-10, 'minutes')
+      .startOf('hour')
+      .add(-10, 'minutes');
+
+    const endDate = moment().utc()
+      .add(-10, 'minutes')
+      .endOf('hour');
 
     const startTimeUnix = moment(startDate).unix();
     const endTimeUnix = moment(endDate).unix();
@@ -73,7 +83,7 @@ module.exports = async (req, res, next) => {
       const candlesTimeToCreate = [];
       let nextTimeUnix = getUnix(candles1mDocs[0].time);
 
-      while (nextTimeUnix !== startTimeUnix) {
+      while (nextTimeUnix !== endTimeUnix) {
         const candleDoc = candles1mDocs[0];
         const candleTimeUnix = getUnix(candleDoc.time);
 
@@ -108,8 +118,8 @@ module.exports = async (req, res, next) => {
       try {
         resultGetCandles = await execFunc({
           symbol: instrumentName,
-          interval: '1m',
-          limit: 60,
+          interval: INTERVALS.get('1m'),
+          limit: 80,
 
           startTime: startTimeUnix * 1000,
           endTime: endTimeUnix * 1000,
@@ -127,7 +137,7 @@ module.exports = async (req, res, next) => {
 
       const newCandles = [];
 
-      resultGetCandles.forEach(candleData => {
+      resultGetCandles.result.forEach(candleData => {
         const [
           startTimeBinance,
           open,

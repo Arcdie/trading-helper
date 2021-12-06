@@ -26,8 +26,8 @@ module.exports = async () => {
   // await redis.flushallAsync();
 
   if (process.env.NODE_ENV !== 'localhost') {
-    await clearSocketsInRedis();
-    await clearCandlesInRedis();
+    await clearSocketsInRedis({});
+    await clearCandlesInRedis({});
   }
 
   const instrumentsDocs = await InstrumentNew.find({

@@ -55,8 +55,14 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    const startDate = moment().utc().add(-10, 'minutes').startOf('hour');
-    const endDate = moment(startDate).endOf('hour');
+    const startDate = moment().utc()
+      .add(-10, 'minutes')
+      .startOf('hour')
+      .add(-10, 'minutes');
+
+    const endDate = moment().utc()
+      .add(-10, 'minutes')
+      .endOf('hour');
 
     const startTimeUnix = moment(startDate).unix();
     const endTimeUnix = moment(endDate).unix();
@@ -77,7 +83,7 @@ module.exports = async (req, res, next) => {
       const candlesTimeToCreate = [];
       let nextTimeUnix = getUnix(candles5mDocs[0].time);
 
-      while (nextTimeUnix !== startTimeUnix) {
+      while (nextTimeUnix !== endTimeUnix) {
         const candleDoc = candles5mDocs[0];
         const candleTimeUnix = getUnix(candleDoc.time);
 
@@ -113,7 +119,7 @@ module.exports = async (req, res, next) => {
         resultGetCandles = await execFunc({
           symbol: instrumentName,
           interval: INTERVALS.get('5m'),
-          limit: 12,
+          limit: 24, // 2 hours
 
           startTime: startTimeUnix * 1000,
           endTime: endTimeUnix * 1000,
@@ -131,7 +137,7 @@ module.exports = async (req, res, next) => {
 
       const newCandles = [];
 
-      resultGetCandles.forEach(candleData => {
+      resultGetCandles.result.forEach(candleData => {
         const [
           startTimeBinance,
           open,
