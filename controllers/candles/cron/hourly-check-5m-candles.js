@@ -12,8 +12,8 @@ const {
 } = require('../../../services/telegram-bot');
 
 const {
-  create1mCandles,
-} = require('../utils/create-1m-candles');
+  create5mCandles,
+} = require('../utils/create-5m-candles');
 
 const {
   clearCandlesInRedis,
@@ -31,7 +31,11 @@ const {
   getActiveInstruments,
 } = require('../../instruments/utils/get-active-instruments');
 
-const Candle1m = require('../../../models/Candle-1m');
+const {
+  INTERVALS,
+} = require('../constants');
+
+const Candle5m = require('../../../models/Candle-5m');
 
 module.exports = async (req, res, next) => {
   try {
@@ -60,7 +64,7 @@ module.exports = async (req, res, next) => {
     const instrumentsDocs = resultGetInstruments.result;
 
     for await (const instrumentDoc of instrumentsDocs) {
-      const candles1mDocs = await Candle1m.find({
+      const candles5mDocs = await Candle5m.find({
         instrument_id: instrumentDoc._id,
 
         $and: [{
@@ -71,19 +75,19 @@ module.exports = async (req, res, next) => {
       }, { time: 1 }).sort({ time: 1 }).exec();
 
       const candlesTimeToCreate = [];
-      let nextTimeUnix = getUnix(candles1mDocs[0].time);
+      let nextTimeUnix = getUnix(candles5mDocs[0].time);
 
       while (nextTimeUnix !== startTimeUnix) {
-        const candleDoc = candles1mDocs[0];
+        const candleDoc = candles5mDocs[0];
         const candleTimeUnix = getUnix(candleDoc.time);
 
         if (nextTimeUnix !== candleTimeUnix) {
           candlesTimeToCreate.push(nextTimeUnix);
         } else {
-          candles1mDocs.shift();
+          candles5mDocs.shift();
         }
 
-        nextTimeUnix += 60;
+        nextTimeUnix += 300;
       }
 
       if (!candlesTimeToCreate.length) {
@@ -108,8 +112,8 @@ module.exports = async (req, res, next) => {
       try {
         resultGetCandles = await execFunc({
           symbol: instrumentName,
-          interval: '1m',
-          limit: 60,
+          interval: INTERVALS.get('5m'),
+          limit: 12,
 
           startTime: startTimeUnix * 1000,
           endTime: endTimeUnix * 1000,
@@ -121,7 +125,7 @@ module.exports = async (req, res, next) => {
         }
       } catch (error) {
         log.warn(error.message);
-        sendMessage(260325716, `Alarm! Ошибка при загрузке 1m-свечей с binance: ${instrumentDoc.name}`);
+        sendMessage(260325716, `Alarm! Ошибка при загрузке 5m-свечей с binance: ${instrumentDoc.name}`);
         continue;
       }
 
@@ -155,7 +159,7 @@ module.exports = async (req, res, next) => {
         }
       });
 
-      const resultCreateCandles = await create1mCandles({
+      const resultCreateCandles = await create5mCandles({
         isFutures: instrumentDoc.is_futures,
         newCandles,
       });
@@ -163,7 +167,7 @@ module.exports = async (req, res, next) => {
       if (!resultCreateCandles || !resultCreateCandles.status) {
         return {
           status: false,
-          message: resultCreateCandles.message || 'Cant create1mCandles',
+          message: resultCreateCandles.message || 'Cant create5mCandles',
         };
       }
 
@@ -178,7 +182,7 @@ module.exports = async (req, res, next) => {
       await sleep(1000);
     }
 
-    log.info('Process hourly-check-1m-candles was finished');
+    log.info('Process hourly-check-5m-candles was finished');
 
     return res.json({
       status: true,

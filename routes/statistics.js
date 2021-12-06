@@ -10,6 +10,6 @@ const commonMiddlewares = [
   getUser,
 ];
 
-// router.get('/', commonMiddlewares, tradeControllers.getTrades);
+router.get('/volume-spot', commonMiddlewares, statisticsControllers.getVolumeSpotStatistics);
 
 module.exports = router;

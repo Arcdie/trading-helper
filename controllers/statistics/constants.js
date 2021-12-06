@@ -1,3 +1,16 @@
-module.exports = {
+// spot-volumes
+const PERIOD_FOR_COLLECT_SPOT_VOLUME_STATISTICS = 7 * 24 * 60 * 60; // in seconds
 
+const SPOT_VOLUMES_LIMITERS = {
+  LIFETIME: 0, // in seconds
+  DISTANCE: 1, // in ticks
+  NUMBER_TOUCHES: 1,
+  DOES_CONSIDER_BTC_MICRO_TREND: false,
+  DOES_CONSIDER_FUTURES_MICRO_TREND: true,
+  STOPLOSS_PERCENT: 0.3, // %
+};
+
+module.exports = {
+  SPOT_VOLUMES_LIMITERS,
+  PERIOD_FOR_COLLECT_SPOT_VOLUME_STATISTICS,
 };

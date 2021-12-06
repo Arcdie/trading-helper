@@ -8,6 +8,10 @@ const {
   getActiveInstruments,
 } = require('../instruments/utils/get-active-instruments');
 
+const {
+  PERIOD_FOR_COLLECT_SPOT_VOLUME_STATISTICS,
+} = require('./constants');
+
 module.exports = async (req, res, next) => {
   const {
     query: {
@@ -44,10 +48,11 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    startDate = moment(startDate);
+    startDate = moment(startDate).utc();
   } else {
     // todo: add constant
-    startDate = moment();
+    startDate = moment().utc()
+      .add(-PERIOD_FOR_COLLECT_SPOT_VOLUME_STATISTICS, 'seconds');
   }
 
   if (endDate) {
@@ -58,10 +63,9 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    endDate = moment(endDate);
+    endDate = moment(endDate).utc();
   } else {
-    // todo: add constant
-    endDate = moment();
+    endDate = moment().utc().startOf('hour');
   }
 
   const instrumentsIds = [];
@@ -81,16 +85,17 @@ module.exports = async (req, res, next) => {
     }
 
     const instrumentsDocs = resultGetInstruments.result;
-
-    if (!instrumentsDocs || !instrumentsDocs.length) {
-      return {
-        status: true,
-        result: [],
-      };
-    }
-
     instrumentsDocs.forEach(doc => instrumentsIds.push(doc._id));
   }
 
+  if (!instrumentsIds || !instrumentsIds.length) {
+    return res.json({
+      status: true,
+      result: [],
+    });
+  }
 
+  return res.json({
+    status: true,
+  });
 };

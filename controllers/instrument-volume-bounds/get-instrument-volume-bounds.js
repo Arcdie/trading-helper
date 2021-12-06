@@ -1,10 +1,18 @@
 const moment = require('moment');
 
 const {
+  isUndefined,
+} = require('lodash');
+
+const {
   isMongoId,
 } = require('validator');
 
-const InstrumentVolumeBound = require('../../models/InstrumentVolumeBound');
+const log = require('../../libs/logger');
+
+const {
+  getInstrumentVolumeBounds,
+} = require('./utils/get-instrument-volume-bounds');
 
 module.exports = async (req, res, next) => {
   const {
@@ -46,51 +54,38 @@ module.exports = async (req, res, next) => {
     });
   }
 
-  const matchObj = {};
+  const funcObj = {};
 
   if (instrumentId) {
-    matchObj.instrument_id = instrumentId;
+    funcObj.instrumentId = instrumentId;
   }
 
-  if (isOnlyActive) {
-    matchObj.is_active = isOnlyActive === 'true';
+  if (startTime) {
+    funcObj.startDate = startTime;
   }
 
-  if (startTime && endTime) {
-    const momentStartTime = moment(startTime).utc().startOf('minute');
-    const momentEndTime = moment(endTime).utc().startOf('minute');
-
-    matchObj.$and = [{
-      volume_started_at: {
-        $gt: momentStartTime,
-      },
-    }, {
-      volume_started_at: {
-        $lt: momentEndTime,
-      },
-    }];
-  } else if (startTime) {
-    const momentStartTime = moment(startTime).utc().startOf('minute');
-
-    matchObj.volume_started_at = {
-      $gt: momentStartTime,
-    };
-  } else if (endTime) {
-    const momentEndTime = moment(endTime).utc().startOf('minute');
-
-    matchObj.volume_started_at = {
-      $lt: momentEndTime,
-    };
+  if (endTime) {
+    funcObj.endDate = endTime;
   }
 
-  const instrumentVolumeBounds = await InstrumentVolumeBound
-    .find(matchObj)
-    .sort({ created_at: 1 })
-    // .limit(10)
-    .exec();
+  if (!isUndefined(isOnlyActive)) {
+    funcObj.isOnlyActive = isOnlyActive === 'true';
+  }
+
+  const resultGetBounds = await getInstrumentVolumeBounds(funcObj);
+
+  if (!resultGetBounds || !resultGetBounds.status) {
+    const message = resultGetBounds.message || 'Cant getInstrumentVolumeBounds';
+    log.warn(message);
+
+    return res.json({
+      status: false,
+      message,
+    });
+  }
 
   return res.json({
     status: true,
-    result: instrumentVolumeBounds.map(doc => doc._doc),
+    result: resultGetBounds.result,
   });
 };
