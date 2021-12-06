@@ -12,14 +12,16 @@ const commonMiddlewares = [
 ];
 
 // cron
-router.get('/cron/daily-clear', candleCronControllers.clearCandles);
-router.get('/cron/check-candles/1m', candleCronControllers.check1mCandles);
-router.get('/cron/check-candles/5m', candleCronControllers.check5mCandles);
+router.get('/cron/daily/clear', candleCronControllers.clearCandles);
+router.get('/cron/daily/check-candles/5m', candleCronControllers.dailyCheck5mCandles);
+router.get('/cron/hourly/check-candles/1m', candleCronControllers.hourlyCheck1mCandles);
 router.get('/cron/calculate-candles', candleCronControllers.calculateCandles);
-// router.get('/cron/create-1m-candles-for-last-hour', candleCronControllers.create1mCandlesForLastHour);
 
 router.get('/clear-candles-in-redis', commonMiddlewares, candleControllers.clearCandlesInRedis);
 
 router.get('/:interval', commonMiddlewares, candleControllers.getCandles);
+
+// deprecated
+// router.get('/cron/create-1m-candles-for-last-hour', candleCronControllers.create1mCandlesForLastHour);
 
 module.exports = router;

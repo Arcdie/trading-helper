@@ -57,7 +57,7 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    const startDate = moment().utc().startOf('day').add(-2, 'days');
+    const startDate = moment().utc().startOf('day').add(-1, 'days');
     const startDateUnix = moment(startDate).unix();
 
     const instrumentsDocs = resultGetInstruments.result;
