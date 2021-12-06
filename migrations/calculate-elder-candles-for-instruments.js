@@ -16,7 +16,7 @@ const {
   create1dCandle,
 } = require('../controllers/candles/utils/create-1d-candle');
 
-const log = require('../libs/logger');
+const log = require('../libs/logger')(module);
 
 const Candle5m = require('../models/Candle-5m');
 const InstrumentNew = require('../models/InstrumentNew');

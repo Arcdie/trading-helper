@@ -1,6 +1,6 @@
 const WebSocketClient = require('ws');
 
-const log = require('../../../libs/logger');
+const log = require('../../../libs/logger')(module);
 
 const {
   sendMessage,

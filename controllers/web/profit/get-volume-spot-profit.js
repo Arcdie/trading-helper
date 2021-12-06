@@ -1,11 +1,22 @@
+const log = require('../../../libs/logger')(module);
+
 module.exports = async (req, res, next) => {
-  const {
-    user,
-  } = req;
+  try {
+    const {
+      user,
+    } = req;
 
-  if (!user) {
-    return res.redirect('/');
+    if (!user) {
+      return res.redirect('/');
+    }
+
+    res.render('web/profit/volume-spot-profit-page');
+  } catch (error) {
+    log.warn(error.message);
+
+    return res.json({
+      status: false,
+      message: error.message,
+    });
   }
-
-  res.render('web/profit/volume-spot-profit-page');
 };

@@ -16,7 +16,7 @@ const {
   parseCSVToJSON,
 } = require('../controllers/files/utils/parse-csv-to-json');
 
-const log = require('../libs/logger');
+const log = require('../libs/logger')(module);
 
 const Trade = require('../models/Trade');
 const InstrumentNew = require('../models/InstrumentNew');

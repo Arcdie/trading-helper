@@ -22,7 +22,7 @@ const {
   create5mCandles,
 } = require('../controllers/candles/utils/create-5m-candles');
 
-const log = require('../libs/logger');
+const log = require('../libs/logger')(module);
 
 const InstrumentNew = require('../models/InstrumentNew');
 

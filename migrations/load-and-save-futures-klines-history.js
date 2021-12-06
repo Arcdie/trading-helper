@@ -18,7 +18,7 @@ const {
   create1hCandle,
 } = require('../controllers/candles/utils/create-1h-candle');
 
-const log = require('../libs/logger');
+const log = require('../libs/logger')(module);
 
 const InstrumentNew = require('../models/InstrumentNew');
 

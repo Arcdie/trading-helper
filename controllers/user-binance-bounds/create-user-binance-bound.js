@@ -1,3 +1,5 @@
+const log = require('../../libs/logger')(module);
+
 const {
   createFuturesListenKey,
 } = require('../../controllers/binance/utils/futures/create-futures-listen-key');
@@ -5,85 +7,94 @@ const {
 const UserBinanceBound = require('../../models/UserBinanceBound');
 
 module.exports = async (req, res, next) => {
-  const {
-    body: {
+  try {
+    const {
+      body: {
+        apikey,
+        secret,
+      },
+
+      user,
+    } = req;
+
+    if (!user) {
+      return res.json({
+        status: false,
+        message: 'Not authorized',
+      });
+    }
+
+    if (!apikey) {
+      return res.json({
+        status: false,
+        message: 'No apikey',
+      });
+    }
+
+    if (!secret) {
+      return res.json({
+        status: false,
+        message: 'No secret',
+      });
+    }
+
+    const resultRequestCreateListenKey = await createFuturesListenKey({
       apikey,
-      secret,
-    },
-
-    user,
-  } = req;
-
-  if (!user) {
-    return res.json({
-      status: false,
-      message: 'Not authorized',
     });
-  }
 
-  if (!apikey) {
-    return res.json({
-      status: false,
-      message: 'No apikey',
-    });
-  }
+    if (!resultRequestCreateListenKey || !resultRequestCreateListenKey.status) {
+      return res.json({
+        status: false,
+        message: resultRequestCreateListenKey.message || 'Cant createFuturesListenKey',
+      });
+    }
 
-  if (!secret) {
-    return res.json({
-      status: false,
-      message: 'No secret',
-    });
-  }
+    const resultCreateListenKey = resultRequestCreateListenKey.result;
 
-  const resultRequestCreateListenKey = await createFuturesListenKey({
-    apikey,
-  });
+    if (!resultCreateListenKey || !resultCreateListenKey.listenKey) {
+      return res.json({
+        status: false,
+        message: 'No listenKey',
+      });
+    }
 
-  if (!resultRequestCreateListenKey || !resultRequestCreateListenKey.status) {
-    return res.json({
-      status: false,
-      message: resultRequestCreateListenKey.message || 'Cant createFuturesListenKey',
-    });
-  }
+    const doesExistBound = await UserBinanceBound.findOne({
+      user_id: user._id,
+    }).exec();
 
-  const resultCreateListenKey = resultRequestCreateListenKey.result;
+    if (doesExistBound) {
+      await UserBinanceBound.findByIdAndUpdate(doesExistBound._id, {
+        is_active: true,
+        apikey,
+        secret,
+        listen_key: resultCreateListenKey.listenKey,
+        listen_key_updated_at: new Date(),
+      }).exec();
 
-  if (!resultCreateListenKey || !resultCreateListenKey.listenKey) {
-    return res.json({
-      status: false,
-      message: 'No listenKey',
-    });
-  }
+      return res.json({
+        status: true,
+      });
+    }
 
-  const doesExistBound = await UserBinanceBound.findOne({
-    user_id: user._id,
-  }).exec();
-
-  if (doesExistBound) {
-    await UserBinanceBound.findByIdAndUpdate(doesExistBound._id, {
-      is_active: true,
+    const newBound = new UserBinanceBound({
+      user_id: user._id,
       apikey,
       secret,
       listen_key: resultCreateListenKey.listenKey,
       listen_key_updated_at: new Date(),
-    }).exec();
+    });
+
+    await newBound.save();
 
     return res.json({
       status: true,
     });
+  } catch (error) {
+    log.warn(error.message);
+
+    return res.json({
+      status: false,
+      message: error.message,
+    });
   }
-
-  const newBound = new UserBinanceBound({
-    user_id: user._id,
-    apikey,
-    secret,
-    listen_key: resultCreateListenKey.listenKey,
-    listen_key_updated_at: new Date(),
-  });
-
-  await newBound.save();
-
-  return res.json({
-    status: true,
-  });
 };

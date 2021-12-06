@@ -1,3 +1,5 @@
+const log = require('../../../libs/logger')(module);
+
 const InstrumentNew = require('../../../models/InstrumentNew');
 const InstrumentTrend = require('../../../models/InstrumentTrend');
 
@@ -7,53 +9,62 @@ const createInstrument = async ({
 
   isFutures,
 }) => {
-  if (!name) {
-    return {
-      status: false,
-      message: 'No name',
-    };
-  }
+  try {
+    if (!name) {
+      return {
+        status: false,
+        message: 'No name',
+      };
+    }
 
-  if (!price) {
-    return {
-      status: false,
-      message: 'No price',
-    };
-  }
+    if (!price) {
+      return {
+        status: false,
+        message: 'No price',
+      };
+    }
 
-  const instrumentDoc = await InstrumentNew.findOne({
-    name,
-  }).exec();
+    const instrumentDoc = await InstrumentNew.findOne({
+      name,
+    }).exec();
 
-  if (instrumentDoc) {
+    if (instrumentDoc) {
+      return {
+        status: true,
+        isCreated: false,
+        result: instrumentDoc._doc,
+      };
+    }
+
+    const newInstrument = new InstrumentNew({
+      name,
+      price,
+
+      is_active: true,
+      is_futures: isFutures || false,
+    });
+
+    await newInstrument.save();
+
+    const newInstrumentTrend = new InstrumentTrend({
+      instrument_id: newInstrument._id,
+    });
+
+    await newInstrumentTrend.save();
+
     return {
       status: true,
-      isCreated: false,
-      result: instrumentDoc._doc,
+      isCreated: true,
+      result: newInstrument._doc,
+    };
+  } catch (error) {
+    log.warn(error.message);
+
+    return {
+      status: false,
+      message: error.message,
     };
   }
-
-  const newInstrument = new InstrumentNew({
-    name,
-    price,
-
-    is_active: true,
-    is_futures: isFutures || false,
-  });
-
-  await newInstrument.save();
-
-  const newInstrumentTrend = new InstrumentTrend({
-    instrument_id: newInstrument._id,
-  });
-
-  await newInstrumentTrend.save();
-
-  return {
-    status: true,
-    isCreated: true,
-    result: newInstrument._doc,
-  };
 };
 
 module.exports = {

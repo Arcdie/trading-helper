@@ -3,6 +3,7 @@ const {
 } = require('validator');
 
 const redis = require('../../../libs/redis');
+const log = require('../../../libs/logger')(module);
 
 const InstrumentTrend = require('../../../models/InstrumentTrend');
 
@@ -10,50 +11,59 @@ const getInstrumentTrend = async ({
   instrumentId,
   instrumentName,
 }) => {
-  if (!instrumentName) {
-    return {
-      status: false,
-      message: 'No instrumentName',
-    };
-  }
+  try {
+    if (!instrumentName) {
+      return {
+        status: false,
+        message: 'No instrumentName',
+      };
+    }
 
-  if (!instrumentId || !isMongoId(instrumentId.toString())) {
-    return {
-      status: false,
-      message: 'No or invalid instrumentId',
-    };
-  }
+    if (!instrumentId || !isMongoId(instrumentId.toString())) {
+      return {
+        status: false,
+        message: 'No or invalid instrumentId',
+      };
+    }
 
-  const keyInstrumentTrend = `INSTRUMENT:${instrumentName}:TREND`;
-  const instrumentTrend = await redis.getAsync(keyInstrumentTrend);
+    const keyInstrumentTrend = `INSTRUMENT:${instrumentName}:TREND`;
+    const instrumentTrend = await redis.getAsync(keyInstrumentTrend);
 
-  if (instrumentTrend) {
+    if (instrumentTrend) {
+      return {
+        status: true,
+        result: JSON.parse(instrumentTrend),
+      };
+    }
+
+    const instrumentTrendDoc = await InstrumentTrend.findOne({
+      instrument_id: instrumentId,
+    }).exec();
+
+    if (!instrumentTrendDoc) {
+      return {
+        status: false,
+        message: 'No InstrumentTrend',
+      };
+    }
+
+    await redis.setAsync([
+      keyInstrumentTrend,
+      JSON.stringify(instrumentTrendDoc._doc),
+    ]);
+
     return {
       status: true,
-      result: JSON.parse(instrumentTrend),
+      result: instrumentTrendDoc._doc,
     };
-  }
+  } catch (error) {
+    log.warn(error.message);
 
-  const instrumentTrendDoc = await InstrumentTrend.findOne({
-    instrument_id: instrumentId,
-  }).exec();
-
-  if (!instrumentTrendDoc) {
     return {
       status: false,
-      message: 'No InstrumentTrend',
+      message: error.message,
     };
   }
-
-  await redis.setAsync([
-    keyInstrumentTrend,
-    JSON.stringify(instrumentTrendDoc._doc),
-  ]);
-
-  return {
-    status: true,
-    result: instrumentTrendDoc._doc,
-  };
 };
 
 module.exports = {

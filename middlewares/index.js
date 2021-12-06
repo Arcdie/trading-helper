@@ -12,7 +12,7 @@ require('../libs/redis');
 require('../libs/mongodb');
 const morgan = require('../libs/morgan');
 
-const log = require('../libs/logger');
+const log = require('../libs/logger')(module);
 
 const app = express();
 

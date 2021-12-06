@@ -3,6 +3,7 @@ const {
 } = require('validator');
 
 const redis = require('../../../libs/redis');
+const log = require('../../../libs/logger')(module);
 
 const {
   sendPrivateData,
@@ -19,103 +20,112 @@ const checkUserLevelBounds = async ({
   instrumentName,
   instrumentPrice,
 }) => {
-  if (!instrumentId || !isMongoId(instrumentId.toString())) {
-    return {
-      status: false,
-      message: 'No or invalid instrumentId',
-    };
-  }
-
-  if (!instrumentName) {
-    return {
-      status: false,
-      message: 'No instrumentName',
-    };
-  }
-
-  if (!instrumentPrice) {
-    return {
-      status: false,
-      message: 'No instrumentPrice',
-    };
-  }
-
-  const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:LEVEL_BOUNDS`;
-  let cacheInstrumentLevelBoundsKeys = await redis.hkeysAsync(keyInstrumentLevelBounds);
-
-  if (!cacheInstrumentLevelBoundsKeys) {
-    cacheInstrumentLevelBoundsKeys = [];
-  }
-
-  const targetKeys = [];
-
-  cacheInstrumentLevelBoundsKeys.forEach(key => {
-    let [price, prefix] = key.split('_');
-    const isLong = prefix === 'long';
-
-    price = parseFloat(price);
-
-    if (isLong
-      && price < instrumentPrice) {
-      targetKeys.push(key);
-    } else if (!isLong
-      && instrumentPrice < price) {
-      targetKeys.push(key);
+  try {
+    if (!instrumentId || !isMongoId(instrumentId.toString())) {
+      return {
+        status: false,
+        message: 'No or invalid instrumentId',
+      };
     }
-  });
 
-  if (!targetKeys.length) {
-    return {
-      status: true,
-    };
-  }
+    if (!instrumentName) {
+      return {
+        status: false,
+        message: 'No instrumentName',
+      };
+    }
 
-  const cacheInstrumentLevelBounds = await redis.hmgetAsync(
-    keyInstrumentLevelBounds, targetKeys,
-  );
+    if (!instrumentPrice) {
+      return {
+        status: false,
+        message: 'No instrumentPrice',
+      };
+    }
 
-  if (!cacheInstrumentLevelBounds || !cacheInstrumentLevelBounds.length) {
-    return {
-      status: true,
-    };
-  }
+    const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:LEVEL_BOUNDS`;
+    let cacheInstrumentLevelBoundsKeys = await redis.hkeysAsync(keyInstrumentLevelBounds);
 
-  const boundsIds = [];
+    if (!cacheInstrumentLevelBoundsKeys) {
+      cacheInstrumentLevelBoundsKeys = [];
+    }
 
-  cacheInstrumentLevelBounds.forEach(bounds => {
-    bounds = JSON.parse(bounds);
+    const targetKeys = [];
 
-    bounds.forEach(bound => {
-      boundsIds.push(bound.bound_id);
+    cacheInstrumentLevelBoundsKeys.forEach(key => {
+      let [price, prefix] = key.split('_');
+      const isLong = prefix === 'long';
 
-      sendPrivateData({
-        userId: bound.user_id,
-        actionName: PRIVATE_ACTION_NAMES.get('levelWasWorked'),
-        data: {
-          instrumentId,
-          boundId: bound.bound_id,
-        },
+      price = parseFloat(price);
+
+      if (isLong
+        && price < instrumentPrice) {
+        targetKeys.push(key);
+      } else if (!isLong
+        && instrumentPrice < price) {
+        targetKeys.push(key);
+      }
+    });
+
+    if (!targetKeys.length) {
+      return {
+        status: true,
+      };
+    }
+
+    const cacheInstrumentLevelBounds = await redis.hmgetAsync(
+      keyInstrumentLevelBounds, targetKeys,
+    );
+
+    if (!cacheInstrumentLevelBounds || !cacheInstrumentLevelBounds.length) {
+      return {
+        status: true,
+      };
+    }
+
+    const boundsIds = [];
+
+    cacheInstrumentLevelBounds.forEach(bounds => {
+      bounds = JSON.parse(bounds);
+
+      bounds.forEach(bound => {
+        boundsIds.push(bound.bound_id);
+
+        sendPrivateData({
+          userId: bound.user_id,
+          actionName: PRIVATE_ACTION_NAMES.get('levelWasWorked'),
+          data: {
+            instrumentId,
+            boundId: bound.bound_id,
+          },
+        });
       });
     });
-  });
 
-  await UserLevelBound.updateMany({
-    _id: {
-      $in: boundsIds,
-    },
-  }, {
-    is_worked: true,
-    worked_at: new Date(),
-  });
+    await UserLevelBound.updateMany({
+      _id: {
+        $in: boundsIds,
+      },
+    }, {
+      is_worked: true,
+      worked_at: new Date(),
+    });
 
-  await redis.hdelAsync(
-    keyInstrumentLevelBounds,
-    targetKeys,
-  );
+    await redis.hdelAsync(
+      keyInstrumentLevelBounds,
+      targetKeys,
+    );
 
-  return {
-    status: true,
-  };
+    return {
+      status: true,
+    };
+  } catch (error) {
+    log.warn(error.message);
+
+    return {
+      status: false,
+      message: error.message,
+    };
+  }
 };
 
 module.exports = {

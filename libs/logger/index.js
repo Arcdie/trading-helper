@@ -39,9 +39,13 @@ const consoleFormat = options => {
       const level = data[Object.getOwnPropertySymbols(data)[0]];
       const colorfullLevel = colors[COLORS_FOR_LEVELS[level]](level);
 
-      return `${colorfullLevel}: ${data.message} (${moment(data.timestamp).format('DD.MM HH:mm')})
-  ${options.filePath}
-  ${data.userId || 'Not specified'}`;
+      let returnStr = `${colorfullLevel}: ${data.message}`;
+
+      if (level !== 'info') {
+        returnStr += `\n${options.filePath}`;
+      }
+
+      return returnStr;
     }),
   );
 };
@@ -49,8 +53,8 @@ const consoleFormat = options => {
 class Logger {
   constructor(logModule) {
     this.filePath = logModule.id
-      .split(name)[1]
-      .replace('.js', '');
+      .split(name)[1];
+      // .replace('.js', '');
 
     const options = {
       filePath: this.filePath,
