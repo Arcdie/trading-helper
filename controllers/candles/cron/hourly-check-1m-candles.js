@@ -1,6 +1,6 @@
 const moment = require('moment');
 
-const log = require('../../../libs/logger');
+const log = require('../../../libs/logger')(module);
 
 const {
   sleep,

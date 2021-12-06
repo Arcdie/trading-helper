@@ -1,5 +1,5 @@
-const log = require('../libs/logger');
 const redis = require('../libs/redis');
+const log = require('../libs/logger')(module);
 
 const memoryUsage = require('./memory-usage');
 const binanceProcesses = require('./binance');

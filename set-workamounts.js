@@ -10,15 +10,15 @@ const {
 
 xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
-const log = require('./libs/logger');
+const log = require('./libs/logger')(module);
 
 const {
-  getExchangeInfo,
-} = require('./controllers/binance/utils/get-exchange-info');
+  getFuturesExchangeInfo,
+} = require('./controllers/binance/utils/futures/get-futures-exchange-info');
 
 const {
-  getBinanceInstruments,
-} = require('./controllers/binance/utils/get-binance-instruments');
+  getFuturesInstruments,
+} = require('./controllers/binance/utils/futures/get-futures-instruments');
 
 const pathToRoot = path.parse(process.cwd()).root;
 // const pathToSettingsFolder = path.join(__dirname, './files/MVS');
@@ -76,17 +76,17 @@ const askQuestion = () => {
 };
 
 const setWorkAmounts = async workAmounts => {
-  const resultGetExchangeInfo = await getExchangeInfo();
+  const resultGetExchangeInfo = await getFuturesExchangeInfo();
 
   if (!resultGetExchangeInfo || !resultGetExchangeInfo.status) {
-    log.error(resultGetExchangeInfo.message || 'Cant getExchangeInfo');
+    log.error(resultGetExchangeInfo.message || 'Cant getFuturesExchangeInfo');
     return false;
   }
 
-  const resultGetPrices = await getBinanceInstruments();
+  const resultGetPrices = await getFuturesInstruments();
 
   if (!resultGetPrices || !resultGetPrices.status) {
-    log.error(resultGetPrices.message || 'Cant getBinanceInstruments');
+    log.error(resultGetPrices.message || 'Cant getFuturesInstruments');
     return false;
   }
 

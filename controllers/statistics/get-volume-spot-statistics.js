@@ -4,7 +4,7 @@ const {
   isMongoId,
 } = require('validator');
 
-const log = require('../../libs/logger');
+const log = require('../../libs/logger')(module);
 
 const {
   getUnix,
