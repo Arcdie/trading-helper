@@ -18,6 +18,8 @@ router.get('/cron/check-candles/5m', candleCronControllers.check5mCandles);
 router.get('/cron/calculate-candles', candleCronControllers.calculateCandles);
 // router.get('/cron/create-1m-candles-for-last-hour', candleCronControllers.create1mCandlesForLastHour);
 
+router.get('/clear-candles-in-redis', commonMiddlewares, candleControllers.clearCandlesInRedis);
+
 router.get('/:interval', commonMiddlewares, candleControllers.getCandles);
 
 module.exports = router;

@@ -28,7 +28,7 @@ module.exports = async () => {
 
   const instrumentsDocs = await InstrumentNew.find({
     is_active: true,
-    is_futures: true,
+    // is_futures: true,
   }).exec();
 
   if (!instrumentsDocs || !instrumentsDocs.length) {
@@ -43,8 +43,8 @@ module.exports = async () => {
     log.info(`${processedInstruments} / ${totalInstruments}`);
   }, 10 * 1000);
 
-  const startDate = moment('2021-11-03 00:00:00.000Z').utc();
-  const endDate = moment('2021-11-04 00:00:00.000Z').utc();
+  const startDate = moment('2021-11-01 00:00:00.000Z').utc();
+  const endDate = moment('2021-12-05 15:00:00.000Z').utc();
 
   for (const instrumentDoc of instrumentsDocs) {
     const allCandlesDocs = await Candle5m.find({

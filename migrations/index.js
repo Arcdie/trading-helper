@@ -15,13 +15,14 @@ const removeCandlesDublicates = require('./remove-candles-dublicates');
 
 module.exports = () => {
   // removeCandlesDublicates();
+  // removeCandlesForPeriod();
+  // calculateElderCandlesForInstruments();
+
   // changeDoesIgnoreVolume();
   // createInstrumentsTrends();
   // loadDailyKlines();
 
-  // removeCandlesForPeriod();
   // loadAndSaveFuturesKlinesHistory();
-  // calculateElderCandlesForInstruments();
 
   // kline
   // loadAndSaveKlinesHistory();

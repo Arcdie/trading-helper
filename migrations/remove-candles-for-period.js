@@ -9,19 +9,19 @@ const Candle1d = require('../models/Candle-1d');
 const InstrumentNew = require('../models/InstrumentNew');
 
 module.exports = async () => {
-  return;
+  // return;
   console.time('migration');
   console.log('Migration started');
 
   const instrumentsDocs = await InstrumentNew.find({
     is_active: true,
-    is_futures: false,
+    // is_futures: false,
   }, { _id: 1 }).exec();
 
   const instrumentsIds = instrumentsDocs.map(doc => doc._id);
 
-  const startDate = moment('2021-12-02 15:00:00.000Z').utc();
-  const endDate = moment('2021-12-02 16:00:00.000Z').utc();
+  const startDate = moment('2021-11-01 00:00:00.000Z').utc();
+  const endDate = moment('2021-12-05 15:00:00.000Z').utc();
 
   const deleteMatch = {
     instrument_id: { $in: instrumentsIds },
@@ -33,11 +33,11 @@ module.exports = async () => {
     }],
   };
 
-  await Candle1m.deleteMany(deleteMatch).exec();
+  // await Candle1m.deleteMany(deleteMatch).exec();
   // await Candle5m.deleteMany(deleteMatch).exec();
-  // await Candle1h.deleteMany(deleteMatch).exec();
-  // await Candle4h.deleteMany(deleteMatch).exec();
-  // await Candle1d.deleteMany(deleteMatch).exec();
+  await Candle1h.deleteMany(deleteMatch).exec();
+  await Candle4h.deleteMany(deleteMatch).exec();
+  await Candle1d.deleteMany(deleteMatch).exec();
 
   console.timeEnd('migration');
 };
