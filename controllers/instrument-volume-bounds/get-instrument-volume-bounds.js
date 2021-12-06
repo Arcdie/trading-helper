@@ -8,51 +8,52 @@ const {
   isMongoId,
 } = require('validator');
 
-const log = require('../../libs/logger');
+const log = require('../../libs/logger')(module);
 
 const {
   getInstrumentVolumeBounds,
 } = require('./utils/get-instrument-volume-bounds');
 
 module.exports = async (req, res, next) => {
-  const {
-    query: {
-      isOnlyActive,
-      instrumentId,
-      startTime,
-      endTime,
-    },
+  try {
+    const {
+      query: {
+        isOnlyActive,
+        instrumentId,
+        startTime,
+        endTime,
+      },
 
-    user,
-  } = req;
+      user,
+    } = req;
 
-  if (!user) {
-    return res.json({
-      status: false,
-      message: 'Not authorized',
-    });
-  }
+    if (!user) {
+      return res.json({
+        status: false,
+        message: 'Not authorized',
+      });
+    }
 
-  if (instrumentId && !isMongoId(instrumentId.toString())) {
-    return res.json({
-      status: false,
-      message: 'Invalid instrumentId',
-    });
-  }
+    if (instrumentId && !isMongoId(instrumentId.toString())) {
+      return res.json({
+        status: false,
+        message: 'Invalid instrumentId',
+      });
+    }
 
-  if (startTime && !moment(startTime).isValid()) {
-    return res.json({
-      status: false,
-      message: 'Invalid startTime',
-    });
-  }
+    if (startTime && !moment(startTime).isValid()) {
+      return res.json({
+        status: false,
+        message: 'Invalid startTime',
+      });
+    }
 
-  if (endTime && !moment(endTime).isValid()) {
-    return res.json({
-      status: false,
-      message: 'Invalid endTime',
-    });
-  }
+    if (endTime && !moment(endTime).isValid()) {
+      return res.json({
+        status: false,
+        message: 'Invalid endTime',
+      });
+    }
 
   const funcObj = {};
 

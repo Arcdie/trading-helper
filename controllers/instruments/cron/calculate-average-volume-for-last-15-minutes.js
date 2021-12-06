@@ -1,4 +1,4 @@
-const log = require('../../../libs/logger');
+const log = require('../../../libs/logger')(module);
 
 const {
   updateInstrument,
@@ -25,68 +25,77 @@ const {
 } = require('../../candles/constants');
 
 module.exports = async (req, res, next) => {
-  const resultGetInstruments = await getActiveInstruments({});
+  try {
+    const resultGetInstruments = await getActiveInstruments({});
 
-  if (!resultGetInstruments || !resultGetInstruments.status) {
-    return res.json({
-      status: false,
-      message: resultGetInstruments.message || 'Cant getActiveInstruments',
-    });
-  }
-
-  const numberRequiredCandles = 3;
-
-  for await (const instrumentDoc of resultGetInstruments.result) {
-    const resultGetCandles = await getCandlesFromRedis({
-      instrumentId: instrumentDoc._id,
-      instrumentName: instrumentDoc.name,
-      interval: INTERVALS.get('5m'),
-    });
-
-    if (!resultGetCandles || !resultGetCandles.status) {
-      log.warn(resultGetCandles.message || 'Cant getCandlesFromRedis');
-      continue;
+    if (!resultGetInstruments || !resultGetInstruments.status) {
+      return res.json({
+        status: false,
+        message: resultGetInstruments.message || 'Cant getActiveInstruments',
+      });
     }
 
-    const candlesDocs = resultGetCandles.result;
+    const numberRequiredCandles = 3;
 
-    if (!candlesDocs || candlesDocs.length < numberRequiredCandles) {
-      continue;
-    }
+    for await (const instrumentDoc of resultGetInstruments.result) {
+      const resultGetCandles = await getCandlesFromRedis({
+        instrumentId: instrumentDoc._id,
+        instrumentName: instrumentDoc.name,
+        interval: INTERVALS.get('5m'),
+      });
 
-    const targetCandlesDocs = candlesDocs.slice(0, numberRequiredCandles + 1);
+      if (!resultGetCandles || !resultGetCandles.status) {
+        log.warn(resultGetCandles.message || 'Cant getCandlesFromRedis');
+        continue;
+      }
 
-    let sumVolume = 0;
-    targetCandlesDocs.forEach(doc => {
-      sumVolume += doc.volume;
-    });
+      const candlesDocs = resultGetCandles.result;
 
-    if (sumVolume === 0) {
-      continue;
-    }
+      if (!candlesDocs || candlesDocs.length < numberRequiredCandles) {
+        continue;
+      }
 
-    const averageVolumeForLast15Minutes = Math.ceil(sumVolume / numberRequiredCandles);
+      const targetCandlesDocs = candlesDocs.slice(0, numberRequiredCandles + 1);
 
-    await updateInstrument({
-      averageVolumeForLast15Minutes,
-      instrumentId: instrumentDoc._id,
-    });
+      let sumVolume = 0;
+      targetCandlesDocs.forEach(doc => {
+        sumVolume += doc.volume;
+      });
 
-    await updateInstrumentInRedis({
-      averageVolumeForLast15Minutes,
-      instrumentName: instrumentDoc.name,
-    });
+      if (sumVolume === 0) {
+        continue;
+      }
 
-    sendData({
-      actionName: 'updateAverageVolume',
-      data: {
+      const averageVolumeForLast15Minutes = Math.ceil(sumVolume / numberRequiredCandles);
+
+      await updateInstrument({
         averageVolumeForLast15Minutes,
         instrumentId: instrumentDoc._id,
-      },
-    });
-  }
+      });
 
-  return res.json({
-    status: true,
-  });
+      await updateInstrumentInRedis({
+        averageVolumeForLast15Minutes,
+        instrumentName: instrumentDoc.name,
+      });
+
+      sendData({
+        actionName: 'updateAverageVolume',
+        data: {
+          averageVolumeForLast15Minutes,
+          instrumentId: instrumentDoc._id,
+        },
+      });
+    }
+
+    return res.json({
+      status: true,
+    });
+  } catch (error) {
+    log.warn(error.message);
+
+    return {
+      status: false,
+      message: error.message,
+    };
+  }
 };

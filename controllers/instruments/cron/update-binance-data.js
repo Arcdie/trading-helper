@@ -2,7 +2,7 @@ const {
   isUndefined,
 } = require('lodash');
 
-const log = require('../../../libs/logger');
+const log = require('../../../libs/logger')(module);
 
 const {
   getSpotExchangeInfo,
@@ -19,97 +19,106 @@ const {
 const InstrumentNew = require('../../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
-  const instrumentsDocs = await InstrumentNew.find({}).exec();
+  try {
+    const instrumentsDocs = await InstrumentNew.find({}).exec();
 
-  const spotDocs = instrumentsDocs.filter(doc => !doc.is_futures);
-  const futuresDocs = instrumentsDocs.filter(doc => doc.is_futures);
+    const spotDocs = instrumentsDocs.filter(doc => !doc.is_futures);
+    const futuresDocs = instrumentsDocs.filter(doc => doc.is_futures);
 
-  if (spotDocs.length) {
-    const resultGetExchangeInfo = await getSpotExchangeInfo();
+    if (spotDocs.length) {
+      const resultGetExchangeInfo = await getSpotExchangeInfo();
 
-    if (!resultGetExchangeInfo || !resultGetExchangeInfo.status) {
-      log.warn(resultGetExchangeInfo.message || 'Cant getSpotExchangeInfo');
-      return res.json({ status: false });
+      if (!resultGetExchangeInfo || !resultGetExchangeInfo.status) {
+        log.warn(resultGetExchangeInfo.message || 'Cant getSpotExchangeInfo');
+        return res.json({ status: false });
+      }
+
+      await Promise.all(spotDocs.map(async doc => {
+        const targetSymbol = resultGetExchangeInfo.result.symbols
+          .find(symbol => symbol.symbol === doc.name);
+
+        if (!targetSymbol) {
+          log.warn(`Cant find ${doc.name}`);
+          return null;
+        }
+
+        const { tickSize } = targetSymbol.filters[0];
+        const { stepSize } = targetSymbol.filters[2];
+
+        if (!tickSize) {
+          log.warn(`No tickSize, ${doc.name}`);
+          return null;
+        }
+
+        if (!stepSize) {
+          log.warn(`No stepSize, ${doc.name}`);
+          return null;
+        }
+
+        doc.step_size = parseFloat(stepSize);
+        doc.tick_size = parseFloat(tickSize);
+
+        await doc.save();
+      }));
     }
 
-    await Promise.all(spotDocs.map(async doc => {
-      const targetSymbol = resultGetExchangeInfo.result.symbols
-        .find(symbol => symbol.symbol === doc.name);
+    if (futuresDocs.length) {
+      const resultGetExchangeInfo = await getFuturesExchangeInfo();
 
-      if (!targetSymbol) {
-        log.warn(`Cant find ${doc.name}`);
-        return null;
+      if (!resultGetExchangeInfo || !resultGetExchangeInfo.status) {
+        log.warn(resultGetExchangeInfo.message || 'Cant getFuturesExchangeInfo');
+        return res.json({ status: false });
       }
 
-      const { tickSize } = targetSymbol.filters[0];
-      const { stepSize } = targetSymbol.filters[2];
+      await Promise.all(futuresDocs.map(async doc => {
+        const docName = doc.name.replace('PERP', '');
 
-      if (!tickSize) {
-        log.warn(`No tickSize, ${doc.name}`);
-        return null;
-      }
+        const targetSymbol = resultGetExchangeInfo.result.symbols
+          .find(symbol => symbol.symbol === docName);
 
-      if (!stepSize) {
-        log.warn(`No stepSize, ${doc.name}`);
-        return null;
-      }
+        if (!targetSymbol) {
+          log.warn(`Cant find ${doc.name}`);
+          return null;
+        }
 
-      doc.step_size = parseFloat(stepSize);
-      doc.tick_size = parseFloat(tickSize);
+        const { pricePrecision } = targetSymbol;
+        const { tickSize } = targetSymbol.filters[0];
+        const { stepSize } = targetSymbol.filters[2];
 
-      await doc.save();
-    }));
-  }
+        if (isUndefined(pricePrecision)) {
+          log.warn(`No pricePrecision, ${doc.name}`);
+          return null;
+        }
 
-  if (futuresDocs.length) {
-    const resultGetExchangeInfo = await getFuturesExchangeInfo();
+        if (!tickSize) {
+          log.warn(`No tickSize, ${doc.name}`);
+          return null;
+        }
 
-    if (!resultGetExchangeInfo || !resultGetExchangeInfo.status) {
-      log.warn(resultGetExchangeInfo.message || 'Cant getFuturesExchangeInfo');
-      return res.json({ status: false });
+        if (!stepSize) {
+          log.warn(`No stepSize, ${doc.name}`);
+          return null;
+        }
+
+        doc.step_size = parseFloat(stepSize);
+        doc.tick_size = parseFloat(tickSize);
+        doc.price_precision = parseInt(pricePrecision, 10);
+
+        await doc.save();
+      }));
     }
 
-    await Promise.all(futuresDocs.map(async doc => {
-      const docName = doc.name.replace('PERP', '');
+    await renewInstrumentsInRedis();
 
-      const targetSymbol = resultGetExchangeInfo.result.symbols
-        .find(symbol => symbol.symbol === docName);
+    return res.json({
+      status: true,
+    });
+  } catch (error) {
+    log.warn(error.message);
 
-      if (!targetSymbol) {
-        log.warn(`Cant find ${doc.name}`);
-        return null;
-      }
-
-      const { pricePrecision } = targetSymbol;
-      const { tickSize } = targetSymbol.filters[0];
-      const { stepSize } = targetSymbol.filters[2];
-
-      if (isUndefined(pricePrecision)) {
-        log.warn(`No pricePrecision, ${doc.name}`);
-        return null;
-      }
-
-      if (!tickSize) {
-        log.warn(`No tickSize, ${doc.name}`);
-        return null;
-      }
-
-      if (!stepSize) {
-        log.warn(`No stepSize, ${doc.name}`);
-        return null;
-      }
-
-      doc.step_size = parseFloat(stepSize);
-      doc.tick_size = parseFloat(tickSize);
-      doc.price_precision = parseInt(pricePrecision, 10);
-
-      await doc.save();
-    }));
+    return {
+      status: false,
+      message: error.message,
+    };
   }
-
-  await renewInstrumentsInRedis();
-
-  return res.json({
-    status: true,
-  });
 };

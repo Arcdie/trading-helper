@@ -7,48 +7,59 @@ const {
   isUndefined,
 } = require('lodash');
 
+const log = require('../../libs/logger')(module);
+
 const {
   updateInstrument,
 } = require('./utils/update-instrument');
 
 module.exports = async (req, res, next) => {
-  const {
-    params: {
-      id: instrumentId,
-    },
+  try {
+    const {
+      params: {
+        id: instrumentId,
+      },
 
-    body: {
-      doesIgnoreVolume,
-    },
-  } = req;
+      body: {
+        doesIgnoreVolume,
+      },
+    } = req;
 
-  if (!instrumentId || !isMongoId(instrumentId)) {
-    return res.json({
-      status: false,
-      text: 'No or invalid instrumentId',
-    });
-  }
-
-  const updateObj = {
-    instrumentId,
-  };
-
-  if (!isUndefined(doesIgnoreVolume)) {
-    updateObj.doesIgnoreVolume = doesIgnoreVolume;
-  }
-
-  if (!isEmpty(updateObj)) {
-    const resultUpdate = await updateInstrument(updateObj);
-
-    if (!resultUpdate) {
+    if (!instrumentId || !isMongoId(instrumentId)) {
       return res.json({
         status: false,
-        result: resultUpdate.result || 'Cant updateInstrument',
+        text: 'No or invalid instrumentId',
       });
     }
-  }
 
-  return res.json({
-    status: true,
-  });
+    const updateObj = {
+      instrumentId,
+    };
+
+    if (!isUndefined(doesIgnoreVolume)) {
+      updateObj.doesIgnoreVolume = doesIgnoreVolume;
+    }
+
+    if (!isEmpty(updateObj)) {
+      const resultUpdate = await updateInstrument(updateObj);
+
+      if (!resultUpdate) {
+        return res.json({
+          status: false,
+          result: resultUpdate.result || 'Cant updateInstrument',
+        });
+      }
+    }
+
+    return res.json({
+      status: true,
+    });
+  } catch (error) {
+    log.warn(error.message);
+
+    return res.json({
+      status: false,
+      message: error.message,
+    });
+  }
 };

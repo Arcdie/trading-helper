@@ -2,6 +2,8 @@ const {
   isMongoId,
 } = require('validator');
 
+const log = require('../../../libs/logger')(module);
+
 const {
   sendData,
 } = require('../../../websocket/websocket-server');
@@ -17,93 +19,124 @@ const create1hCandle = async ({
   low,
   volume,
 }) => {
-  if (!instrumentId || !isMongoId(instrumentId.toString())) {
-    return {
-      status: false,
-      message: 'No or invalid instrumentId',
-    };
-  }
-
-  if (!startTime) {
-    return {
-      status: false,
-      message: 'No startTime',
-    };
-  }
-
-  if (!open) {
-    return {
-      status: false,
-      message: 'No open',
-    };
-  }
-
-  if (!close) {
-    return {
-      status: false,
-      message: 'No close',
-    };
-  }
-
-  if (!high) {
-    return {
-      status: false,
-      message: 'No high',
-    };
-  }
-
-  if (!low) {
-    return {
-      status: false,
-      message: 'No low',
-    };
-  }
-
-  if (!volume) {
-    return {
-      status: false,
-      message: 'No volume',
-    };
-  }
-
-  open = parseFloat(open);
-  close = parseFloat(close);
-  high = parseFloat(high);
-  low = parseFloat(low);
-  volume = parseInt(volume, 10);
-
-  const existCandle = await Candle1h.findOne({
-    instrument_id: instrumentId,
-    time: startTime,
-  }, {
-    data: 1,
-    volume: 1,
-  }).exec();
-
-  if (existCandle) {
-    const updateObj = {};
-
-    if (high > existCandle.data[3]) {
-      existCandle.data[3] = high;
-      updateObj.data = existCandle.data;
+  try {
+    if (!instrumentId || !isMongoId(instrumentId.toString())) {
+      return {
+        status: false,
+        message: 'No or invalid instrumentId',
+      };
     }
 
-    if (low < existCandle.data[2]) {
-      existCandle.data[2] = low;
-      updateObj.data = existCandle.data;
+    if (!startTime) {
+      return {
+        status: false,
+        message: 'No startTime',
+      };
     }
 
-    if (close !== existCandle.data[1]) {
-      existCandle.data[1] = close;
-      updateObj.data = existCandle.data;
+    if (!open) {
+      return {
+        status: false,
+        message: 'No open',
+      };
     }
 
-    if (existCandle.volume !== volume) {
-      existCandle.volume = volume;
-      updateObj.volume = existCandle.volume;
+    if (!close) {
+      return {
+        status: false,
+        message: 'No close',
+      };
     }
 
-    await Candle1h.findByIdAndUpdate(existCandle._id, updateObj).exec();
+    if (!high) {
+      return {
+        status: false,
+        message: 'No high',
+      };
+    }
+
+    if (!low) {
+      return {
+        status: false,
+        message: 'No low',
+      };
+    }
+
+    if (!volume) {
+      return {
+        status: false,
+        message: 'No volume',
+      };
+    }
+
+    open = parseFloat(open);
+    close = parseFloat(close);
+    high = parseFloat(high);
+    low = parseFloat(low);
+    volume = parseInt(volume, 10);
+
+    const existCandle = await Candle1h.findOne({
+      instrument_id: instrumentId,
+      time: startTime,
+    }, {
+      data: 1,
+      volume: 1,
+    }).exec();
+
+    if (existCandle) {
+      const updateObj = {};
+
+      if (high > existCandle.data[3]) {
+        existCandle.data[3] = high;
+        updateObj.data = existCandle.data;
+      }
+
+      if (low < existCandle.data[2]) {
+        existCandle.data[2] = low;
+        updateObj.data = existCandle.data;
+      }
+
+      if (close !== existCandle.data[1]) {
+        existCandle.data[1] = close;
+        updateObj.data = existCandle.data;
+      }
+
+      if (existCandle.volume !== volume) {
+        existCandle.volume = volume;
+        updateObj.volume = existCandle.volume;
+      }
+
+      await Candle1h.findByIdAndUpdate(existCandle._id, updateObj).exec();
+
+      sendData({
+        actionName: 'candle1hData',
+        data: {
+          instrumentId,
+          startTime: new Date(startTime).getTime(),
+          open,
+          close,
+          high,
+          low,
+          volume,
+        },
+      });
+
+      return {
+        status: true,
+        isCreated: false,
+        result: existCandle._doc,
+      };
+    }
+
+    const newCandle = new Candle1h({
+      instrument_id: instrumentId,
+      data: [open, close, low, high],
+
+      volume,
+      time: startTime,
+    });
+
+    await newCandle.save();
 
     sendData({
       actionName: 'candle1hData',
@@ -120,39 +153,17 @@ const create1hCandle = async ({
 
     return {
       status: true,
-      isCreated: false,
-      result: existCandle._doc,
+      isCreated: true,
+      result: newCandle._doc,
+    };
+  } catch (error) {
+    log.error(error.message);
+
+    return {
+      status: true,
+      message: error.message,
     };
   }
-
-  const newCandle = new Candle1h({
-    instrument_id: instrumentId,
-    data: [open, close, low, high],
-
-    volume,
-    time: startTime,
-  });
-
-  await newCandle.save();
-
-  sendData({
-    actionName: 'candle1hData',
-    data: {
-      instrumentId,
-      startTime: new Date(startTime).getTime(),
-      open,
-      close,
-      high,
-      low,
-      volume,
-    },
-  });
-
-  return {
-    status: true,
-    isCreated: true,
-    result: newCandle._doc,
-  };
 };
 
 module.exports = {

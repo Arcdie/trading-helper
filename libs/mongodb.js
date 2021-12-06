@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { mongodbConf } = require('../config');
 
-const log = require('./logger');
+const log = require('./logger')(module);
 
 mongoose.Promise = global.Promise;
 

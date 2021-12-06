@@ -1,48 +1,55 @@
+const log = require('../../../libs/logger')(module);
+
 const getLowLevels = ({
   candles, distanceInBars,
 }) => {
-  const levels = [];
-  const lCandles = candles.length;
-  const revercedCandles = [...candles].reverse();
+  try {
+    const levels = [];
+    const lCandles = candles.length;
+    const revercedCandles = [...candles].reverse();
 
-  for (let index = 0; index < lCandles - distanceInBars; index += 1) {
-    const candle = revercedCandles[index];
+    for (let index = 0; index < lCandles - distanceInBars; index += 1) {
+      const candle = revercedCandles[index];
 
-    let isLowest = true;
-    let isLowCrossed = false;
+      let isLowest = true;
+      let isLowCrossed = false;
 
-    for (let j = index; j < revercedCandles.length; j += 1) {
-      const tmpCandle = revercedCandles[j];
-      if (tmpCandle.low < candle.low) {
-        isLowCrossed = true;
-        break;
-      }
-    }
-
-    if (!isLowCrossed) {
-      for (let j = 0; j < distanceInBars; j += 1) {
-        const tmpCandle = revercedCandles[index - j];
-
-        if (!tmpCandle) {
-          break;
-        }
-
+      for (let j = index; j < revercedCandles.length; j += 1) {
+        const tmpCandle = revercedCandles[j];
         if (tmpCandle.low < candle.low) {
-          isLowest = false;
+          isLowCrossed = true;
           break;
         }
       }
+
+      if (!isLowCrossed) {
+        for (let j = 0; j < distanceInBars; j += 1) {
+          const tmpCandle = revercedCandles[index - j];
+
+          if (!tmpCandle) {
+            break;
+          }
+
+          if (tmpCandle.low < candle.low) {
+            isLowest = false;
+            break;
+          }
+        }
+      }
+
+      if (!isLowCrossed && isLowest) {
+        levels.push({
+          levelPrice: candle.low,
+          levelStartCandleTime: candle.time,
+        });
+      }
     }
 
-    if (!isLowCrossed && isLowest) {
-      levels.push({
-        levelPrice: candle.low,
-        levelStartCandleTime: candle.time,
-      });
-    }
+    return levels;
+  } catch (error) {
+    log.warn(error.message);
+    return [];
   }
-
-  return levels;
 };
 
 module.exports = {

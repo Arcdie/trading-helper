@@ -7,8 +7,8 @@ const {
   isMongoId,
 } = require('validator');
 
-const log = require('../libs/logger');
 const redis = require('../libs/redis');
+const log = require('../libs/logger')(module);
 
 const {
   ACTION_NAMES,

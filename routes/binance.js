@@ -10,6 +10,4 @@ const commonMiddlewares = [
   getUser,
 ];
 
-router.post('/new-order', commonMiddlewares, binanceControllers.newOrder);
-
 module.exports = router;

@@ -8,7 +8,7 @@ const {
   sleep,
 } = require('../libs/support');
 
-const log = require('../libs/logger');
+const log = require('../libs/logger')(module);
 
 const InstrumentNew = require('../models/InstrumentNew');
 

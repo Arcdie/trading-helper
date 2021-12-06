@@ -4,7 +4,7 @@ const axios = require('axios');
 const moment = require('moment');
 const AdmZip = require('adm-zip');
 
-const log = require('../../../libs/logger');
+const log = require('../../../libs/logger')(module);
 
 const {
   getUnix,
@@ -321,11 +321,12 @@ module.exports = async (req, res, next) => {
     return res.json({
       status: true,
     });
-  } catch (err) {
-    log.warn(err.message);
+  } catch (error) {
+    log.error(error.message);
 
     return res.json({
       status: false,
+      message: error.message,
     });
   }
 };

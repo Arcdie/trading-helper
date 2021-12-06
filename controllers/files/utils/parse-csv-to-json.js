@@ -1,8 +1,7 @@
 const fs = require('fs');
-const path = require('path');
 const csv = require('fast-csv');
 
-const log = require('../../../libs/logger');
+const log = require('../../../libs/logger')(module);
 
 const parseCSVToJSON = ({
   pathToFile,
@@ -22,10 +21,12 @@ const parseCSVToJSON = ({
           status: true,
           result: data,
         }));
-    } catch (err) {
+    } catch (error) {
+      log.error(error.message);
+
       reject({
         status: false,
-        message: err.message,
+        message: error.message,
       });
     }
   });

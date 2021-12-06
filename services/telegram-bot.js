@@ -1,7 +1,5 @@
 const TeleBot = require('telebot');
 
-const log = require('../libs/logger');
-
 const {
   telegramConf: {
     secret,

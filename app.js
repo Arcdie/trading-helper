@@ -1,5 +1,5 @@
-const log = require('./libs/logger');
 const app = require('./middlewares');
+const log = require('./libs/logger')(module);
 
 const config = require('./config');
 
