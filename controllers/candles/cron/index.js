@@ -14,9 +14,9 @@ module.exports = {
 
   hourlyCheck1mCandles,
   hourlyCheck5mCandles,
+  dailyCheck1mCandles,
   dailyCheck5mCandles,
 
   // deprecated
-  dailyCheck1mCandles,
   create1mCandlesForLastHour,
 };
