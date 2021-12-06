@@ -2,29 +2,20 @@ const axios = require('axios');
 
 const log = require('../../../../libs/logger')(module);
 
-const getFuturesCandles = async ({
+const setLeverage = async ({
   symbol,
-  interval,
-  limit,
-
-  startTime,
-  endTime,
+  signature,
+  timestamp,
+  leverage,
+  apikey,
 }) => {
   try {
-    let queryParams = `symbol=${symbol}&interval=${interval}&limit=${limit}`;
-
-    if (startTime) {
-      queryParams += `&startTime=${startTime}`;
-    }
-
-    if (endTime) {
-      queryParams += `&endTime=${endTime}`;
-    }
-
     const resultRequest = await axios({
-      method: 'GET',
-      url: `https://fapi.binance.com/fapi/v1/klines?${queryParams}`,
+      method: 'POST',
+      url: `https://fapi.binance.com/fapi/v1/leverage?symbol=${symbol}&leverage=${leverage}&timestamp=${timestamp}&signature=${signature}`,
+
       headers: {
+        'X-MBX-APIKEY': apikey,
         'Content-Type': 'application/json',
       },
     });
@@ -44,5 +35,5 @@ const getFuturesCandles = async ({
 };
 
 module.exports = {
-  getFuturesCandles,
+  setLeverage,
 };

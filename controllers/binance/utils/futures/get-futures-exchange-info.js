@@ -1,18 +1,29 @@
 const axios = require('axios');
 
-const getFuturesExchangeInfo = async () => {
-  const responseGetInfo = await axios({
-    method: 'get',
-    url: 'https://fapi.binance.com/fapi/v1/exchangeInfo',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+const log = require('../../../../libs/logger')(module);
 
-  return {
-    status: true,
-    result: responseGetInfo.data,
-  };
+const getFuturesExchangeInfo = async () => {
+  try {
+    const resultRequest = await axios({
+      method: 'GET',
+      url: 'https://fapi.binance.com/fapi/v1/exchangeInfo',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return {
+      status: true,
+      result: resultRequest.data,
+    };
+  } catch (error) {
+    log.error(error.message);
+
+    return {
+      status: false,
+      message: error.response.data,
+    };
+  }
 };
 
 module.exports = {

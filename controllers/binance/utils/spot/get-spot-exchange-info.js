@@ -1,18 +1,29 @@
 const axios = require('axios');
 
-const getSpotExchangeInfo = async () => {
-  const responseGetInfo = await axios({
-    method: 'get',
-    url: 'https://api.binance.com/api/v3/exchangeInfo',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+const log = require('../../../../libs/logger')(module);
 
-  return {
-    status: true,
-    result: responseGetInfo.data,
-  };
+const getSpotExchangeInfo = async () => {
+  try {
+    const resultRequest = await axios({
+      method: 'GET',
+      url: 'https://api.binance.com/api/v3/exchangeInfo',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return {
+      status: true,
+      result: resultRequest.data,
+    };
+  } catch (error) {
+    log.error(error.message);
+
+    return {
+      status: false,
+      message: error.response.data,
+    };
+  }
 };
 
 module.exports = {

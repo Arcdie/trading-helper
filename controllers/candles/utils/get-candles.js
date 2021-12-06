@@ -4,6 +4,8 @@ const {
   isMongoId,
 } = require('validator');
 
+const log = require('../../../libs/logger')(module);
+
 const {
   INTERVALS,
   LIMIT_CANDLES,
@@ -22,97 +24,106 @@ const getCandles = async ({
   endTime,
   limit,
 }) => {
-  if (!instrumentId || !isMongoId(instrumentId.toString())) {
-    return {
-      status: false,
-      message: 'No or invalid instrumentId',
+  try {
+    if (!instrumentId || !isMongoId(instrumentId.toString())) {
+      return {
+        status: false,
+        message: 'No or invalid instrumentId',
+      };
+    }
+
+    if (!interval || !INTERVALS.get(interval)) {
+      return {
+        status: false,
+        message: 'No or invalid interval',
+      };
+    }
+
+    if (startTime && !moment(startTime).isValid()) {
+      return {
+        status: false,
+        message: 'Invalid startTime',
+      };
+    }
+
+    if (endTime && !moment(endTime).isValid()) {
+      return {
+        status: false,
+        message: 'Invalid endTime',
+      };
+    }
+
+    if (limit && limit > LIMIT_CANDLES) {
+      limit = LIMIT_CANDLES;
+    }
+
+    let SearchModel;
+
+    if (interval === '1m') {
+      SearchModel = Candle1m;
+    } else if (interval === '5m') {
+      SearchModel = Candle5m;
+    } else if (interval === '1h') {
+      SearchModel = Candle1h;
+    } else if (interval === '4h') {
+      SearchModel = Candle4h;
+    } else if (interval === '1d') {
+      SearchModel = Candle1d;
+    }
+
+    const matchObj = {
+      instrument_id: instrumentId,
     };
-  }
 
-  if (!interval || !INTERVALS.get(interval)) {
-    return {
-      status: false,
-      message: 'No or invalid interval',
-    };
-  }
+    if (startTime && endTime) {
+      const momentStartTime = moment(startTime).utc().startOf('minute');
+      const momentEndTime = moment(endTime).utc().startOf('minute');
 
-  if (startTime && !moment(startTime).isValid()) {
-    return {
-      status: false,
-      message: 'Invalid startTime',
-    };
-  }
+      matchObj.$and = [{
+        time: {
+          $gt: momentStartTime,
+        },
+      }, {
+        time: {
+          $lt: momentEndTime,
+        },
+      }];
+    } else if (startTime) {
+      const momentStartTime = moment(startTime).utc().startOf('minute');
 
-  if (endTime && !moment(endTime).isValid()) {
-    return {
-      status: false,
-      message: 'Invalid endTime',
-    };
-  }
-
-  if (limit && limit > LIMIT_CANDLES) {
-    limit = LIMIT_CANDLES;
-  }
-
-  let SearchModel;
-
-  if (interval === '1m') {
-    SearchModel = Candle1m;
-  } else if (interval === '5m') {
-    SearchModel = Candle5m;
-  } else if (interval === '1h') {
-    SearchModel = Candle1h;
-  } else if (interval === '4h') {
-    SearchModel = Candle4h;
-  } else if (interval === '1d') {
-    SearchModel = Candle1d;
-  }
-
-  const matchObj = {
-    instrument_id: instrumentId,
-  };
-
-  if (startTime && endTime) {
-    const momentStartTime = moment(startTime).utc().startOf('minute');
-    const momentEndTime = moment(endTime).utc().startOf('minute');
-
-    matchObj.$and = [{
-      time: {
+      matchObj.time = {
         $gt: momentStartTime,
-      },
-    }, {
-      time: {
+      };
+    } else if (endTime) {
+      const momentEndTime = moment(endTime).utc().startOf('minute');
+
+      matchObj.time = {
         $lt: momentEndTime,
-      },
-    }];
-  } else if (startTime) {
-    const momentStartTime = moment(startTime).utc().startOf('minute');
+      };
+    }
 
-    matchObj.time = {
-      $gt: momentStartTime,
+    const Query = SearchModel
+      .find(matchObj)
+      .sort({ time: -1 });
+
+    if (limit) {
+      Query.limit(parseInt(limit, 10));
+    }
+
+    const candlesDocs = await Query.exec();
+
+    return {
+      status: true,
+      result: candlesDocs.map(doc => doc._doc),
     };
-  } else if (endTime) {
-    const momentEndTime = moment(endTime).utc().startOf('minute');
+  } catch (error) {
+    log.error(error.message);
 
-    matchObj.time = {
-      $lt: momentEndTime,
+    return {
+      status: true,
+      message: error.message,
     };
   }
-
-  const Query = SearchModel
-    .find(matchObj)
-    .sort({ time: -1 });
-
-  if (limit) {
-    Query.limit(parseInt(limit, 10));
-  }
-
-  const candlesDocs = await Query.exec();
-
-  return {
-    status: true,
-    result: candlesDocs.map(doc => doc._doc),
-  };
 };
 
 module.exports = {

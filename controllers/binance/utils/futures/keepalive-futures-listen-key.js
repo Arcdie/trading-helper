@@ -1,11 +1,13 @@
 const axios = require('axios');
 
+const log = require('../../../../libs/logger')(module);
+
 const keepaliveFuturesListenKey = async ({
   apikey,
 }) => {
   try {
-    const responseKeepaliveListenKey = await axios({
-      method: 'put',
+    const resultRequest = await axios({
+      method: 'PUT',
       url: 'https://fapi.binance.com/fapi/v1/listenKey',
 
       headers: {
@@ -16,9 +18,11 @@ const keepaliveFuturesListenKey = async ({
 
     return {
       status: true,
-      result: responseKeepaliveListenKey.data,
+      result: resultRequest.data,
     };
   } catch (error) {
+    log.error(error.message);
+
     return {
       status: false,
       message: error.response.data,

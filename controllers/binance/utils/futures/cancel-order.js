@@ -1,13 +1,14 @@
 const axios = require('axios');
 
+const log = require('../../../../libs/logger')(module);
+
 const cancelOrder = async ({
   apikey,
-  signature,
   signatureStr,
 }) => {
   try {
-    const responseNewOrder = await axios({
-      method: 'delete',
+    const resultRequest = await axios({
+      method: 'DELETE',
       url: `https://fapi.binance.com/fapi/v1/order?${signatureStr}`,
 
       headers: {
@@ -18,9 +19,11 @@ const cancelOrder = async ({
 
     return {
       status: true,
-      result: responseNewOrder.data,
+      result: resultRequest.data,
     };
   } catch (error) {
+    log.error(error.message);
+
     return {
       status: false,
       message: error.response.data,
