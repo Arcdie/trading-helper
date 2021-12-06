@@ -55,38 +55,46 @@ module.exports = async (req, res, next) => {
       });
     }
 
-  const funcObj = {};
+    const funcObj = {};
 
-  if (instrumentId) {
-    funcObj.instrumentId = instrumentId;
-  }
+    if (instrumentId) {
+      funcObj.instrumentId = instrumentId;
+    }
 
-  if (startTime) {
-    funcObj.startDate = startTime;
-  }
+    if (startTime) {
+      funcObj.startDate = startTime;
+    }
 
-  if (endTime) {
-    funcObj.endDate = endTime;
-  }
+    if (endTime) {
+      funcObj.endDate = endTime;
+    }
 
-  if (!isUndefined(isOnlyActive)) {
-    funcObj.isOnlyActive = isOnlyActive === 'true';
-  }
+    if (!isUndefined(isOnlyActive)) {
+      funcObj.isOnlyActive = isOnlyActive === 'true';
+    }
 
-  const resultGetBounds = await getInstrumentVolumeBounds(funcObj);
+    const resultGetBounds = await getInstrumentVolumeBounds(funcObj);
 
-  if (!resultGetBounds || !resultGetBounds.status) {
-    const message = resultGetBounds.message || 'Cant getInstrumentVolumeBounds';
-    log.warn(message);
+    if (!resultGetBounds || !resultGetBounds.status) {
+      const message = resultGetBounds.message || 'Cant getInstrumentVolumeBounds';
+      log.warn(message);
+
+      return res.json({
+        status: false,
+        message,
+      });
+    }
+
+    return res.json({
+      status: true,
+      result: resultGetBounds.result,
+    });
+  } catch (error) {
+    log.warn(error.message);
 
     return res.json({
       status: false,
-      message,
+      message: error.message,
     });
   }
-
-  return res.json({
-    status: true,
-    result: resultGetBounds.result,
-  });
 };
