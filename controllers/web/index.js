@@ -1,4 +1,5 @@
 const getMainPage = require('./get-main-page');
+const getLogsPage = require('./get-logs-page');
 const getProfilePage = require('./get-profile-page');
 const getUtilitiesPage = require('./get-utilities-page');
 const getExperimentPage = require('./get-experiment-page');
@@ -12,6 +13,7 @@ const getRegistrationPage = require('./get-registration-page');
 
 module.exports = {
   getMainPage,
+  getLogsPage,
   getProfilePage,
   getUtilitiesPage,
   getExperimentPage,

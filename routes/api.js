@@ -1,6 +1,8 @@
 const router = require('express').Router();
 
 router.use('/binance', require('./binance'));
+
+router.use('/logs', require('./logs'));
 router.use('/telegram', require('./telegram'));
 
 router.use('/users', require('./users'));
