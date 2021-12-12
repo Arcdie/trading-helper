@@ -12,6 +12,10 @@ const Candle5m = require('../../../models/Candle-5m');
 
 module.exports = async (req, res, next) => {
   try {
+    res.json({
+      status: true,
+    });
+
     const nowDateUnix = moment().unix();
 
     const remove1mCandlesDate = moment.unix(nowDateUnix - LIFETIME_1M_CANDLES);
@@ -24,16 +28,8 @@ module.exports = async (req, res, next) => {
     await Candle5m.deleteMany({
       time: { $lt: remove5mCandlesDate },
     }).exec();
-
-    return res.json({
-      status: true,
-    });
   } catch (error) {
     log.error(error.message);
-
-    return res.json({
-      status: false,
-      message: error.message,
-    });
+    return false;
   }
 };

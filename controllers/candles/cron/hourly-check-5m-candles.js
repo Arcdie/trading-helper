@@ -39,30 +39,27 @@ const Candle5m = require('../../../models/Candle-5m');
 
 module.exports = async (req, res, next) => {
   try {
+    res.json({
+      status: true,
+    });
+
     const resultGetInstruments = await getActiveInstruments({});
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
       log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
-
-      return res.json({
-        status: false,
-      });
+      return false;
     }
 
     if (!resultGetInstruments.result || !resultGetInstruments.result.length) {
-      return res.json({
-        status: true,
-      });
+      return true;
     }
 
     const startDate = moment().utc()
-      .add(-10, 'minutes')
       .startOf('hour')
-      .add(-10, 'minutes');
+      .add(-70, 'minutes');
 
     const endDate = moment().utc()
-      .add(-10, 'minutes')
-      .endOf('hour');
+      .startOf('hour');
 
     const startTimeUnix = moment(startDate).unix();
     const endTimeUnix = moment(endDate).unix();
@@ -79,6 +76,11 @@ module.exports = async (req, res, next) => {
           time: { $lt: endDate },
         }],
       }, { time: 1 }).sort({ time: 1 }).exec();
+
+      if (!candles5mDocs.length) {
+        console.log('No candles5mDocs', instrumentDoc.name, startTimeUnix, endTimeUnix);
+        continue;
+      }
 
       const candlesTimeToCreate = [];
       let nextTimeUnix = getUnix(candles5mDocs[0].time);
@@ -189,15 +191,8 @@ module.exports = async (req, res, next) => {
     }
 
     log.info('Process hourly-check-5m-candles was finished');
-
-    return res.json({
-      status: true,
-    });
   } catch (err) {
     log.warn(err.message);
-
-    return res.json({
-      status: false,
-    });
+    return false;
   }
 };

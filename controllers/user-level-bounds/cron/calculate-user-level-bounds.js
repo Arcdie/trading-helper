@@ -37,6 +37,10 @@ const UserLevelBound = require('../../../models/UserLevelBound');
 
 module.exports = async (req, res, next) => {
   try {
+    res.json({
+      status: true,
+    });
+
     await clearLevelsInRedis();
 
     const usersDocs = await User.find({}, {
@@ -44,9 +48,7 @@ module.exports = async (req, res, next) => {
     }).exec();
 
     if (!usersDocs || !usersDocs.length) {
-      return {
-        status: true,
-      };
+      return true;
     }
 
     const resultGetInstruments = await getActiveInstruments({
@@ -54,18 +56,14 @@ module.exports = async (req, res, next) => {
     });
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
-      return res.json({
-        status: false,
-        message: resultGetInstruments.message || 'Cant getActiveInstruments',
-      });
+      log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
+      return false;
     }
 
     const instrumentsDocs = resultGetInstruments.result;
 
     if (!instrumentsDocs || !instrumentsDocs.length) {
-      return {
-        status: true,
-      };
+      return true;
     }
 
     for await (const instrumentDoc of instrumentsDocs) {
@@ -268,14 +266,9 @@ module.exports = async (req, res, next) => {
     }
 
     console.log('end');
-    return res.json({ status: true });
   } catch (error) {
     log.warn(error.message);
-
-    return {
-      status: false,
-      message: error.message,
-    };
+    return false;
   }
 };
 

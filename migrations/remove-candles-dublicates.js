@@ -18,36 +18,50 @@ module.exports = async () => {
     // is_futures: false,
   }, { name: 1 }).exec();
 
-  const startDate = moment('2021-12-05 00:00:00.000Z').utc();
-  const endDate = moment('2021-12-05 16:00:00.000Z').utc();
+  // const startDate = moment('2021-12-05 00:00:00.000Z').utc();
+  // const endDate = moment('2021-12-05 16:00:00.000Z').utc();
 
   for await (const doc of instrumentsDocs) {
     const fetchPromises = [
       Candle1m.find({
         instrument_id: doc._id,
 
-        $and: [{
-          time: { $gte: startDate },
-        }, {
-          time: { $lt: endDate },
-        }],
+        // $and: [{
+        //   time: { $gte: startDate },
+        // }, {
+        //   time: { $lt: endDate },
+        // }],
       }, { time: 1 }).exec(),
 
       Candle5m.find({
         instrument_id: doc._id,
 
-        $and: [{
-          time: { $gte: startDate },
-        }, {
-          time: { $lt: endDate },
-        }],
-      }, { time: 1 }).exec(),
+        // $and: [{
+        //   time: { $gte: startDate },
+        // }, {
+        //   time: { $lt: endDate },
+        // }],
+      }, { time: 1 }).exec()
     ];
 
     const [
-      candles1mDocs,
-      candles5mDocs,
+      candles1m,
+      candles5m,
     ] = await Promise.all(fetchPromises);
+
+    const candles1mDocs = candles1m.map(doc => {
+      return {
+        timeUnix: getUnix(doc.time),
+        ...doc._doc,
+      };
+    });
+
+    const candles5mDocs = candles5m.map(doc => {
+      return {
+        timeUnix: getUnix(doc.time),
+        ...doc._doc,
+      };
+    });
 
     const arrDublicates1mIds = [];
     const arrDublicates5mIds = [];
@@ -55,14 +69,14 @@ module.exports = async () => {
     const lCandles5m = candles5mDocs.length;
 
     for (let i = 0; i < lCandles1m; i += 1) {
-      const targetCandleTimeUnix = getUnix(candles1mDocs[i].time);
+      const targetCandleTimeUnix = candles1mDocs[i].timeUnix;
 
       for (let j = i + 1; j < lCandles1m; j += 1) {
         if (!candles1mDocs[j]) {
           break;
         }
 
-        const candleTimeUnix = getUnix(candles1mDocs[j].time);
+        const candleTimeUnix = candles1mDocs[j].timeUnix;
 
         if (targetCandleTimeUnix === candleTimeUnix) {
           arrDublicates1mIds.push(candles1mDocs[j]._id);
@@ -71,14 +85,14 @@ module.exports = async () => {
     }
 
     for (let i = 0; i < lCandles5m; i += 1) {
-      const targetCandleTimeUnix = getUnix(candles5mDocs[i].time);
+      const targetCandleTimeUnix = candles5mDocs[i].timeUnix;
 
-      for (let j = i + 1; j < lCandles1m; j += 1) {
+      for (let j = i + 1; j < lCandles5m; j += 1) {
         if (!candles5mDocs[j]) {
           break;
         }
 
-        const candleTimeUnix = getUnix(candles5mDocs[j].time);
+        const candleTimeUnix = candles5mDocs[j].timeUnix;
 
         if (targetCandleTimeUnix === candleTimeUnix) {
           arrDublicates5mIds.push(candles5mDocs[j]._id);

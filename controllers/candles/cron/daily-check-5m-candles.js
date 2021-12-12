@@ -41,20 +41,19 @@ const Candle1d = require('../../../models/Candle-1d');
 
 module.exports = async (req, res, next) => {
   try {
+    res.json({
+      status: true,
+    });
+
     const resultGetInstruments = await getActiveInstruments({});
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
       log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
-
-      return res.json({
-        status: false,
-      });
+      return false;
     }
 
     if (!resultGetInstruments.result || !resultGetInstruments.result.length) {
-      return res.json({
-        status: true,
-      });
+      return true;
     }
 
     const startDate = moment().utc().startOf('day').add(-1, 'days');
@@ -317,17 +316,9 @@ module.exports = async (req, res, next) => {
     }
 
     log.info('Process check-5m-candles was finished');
-
-    return res.json({
-      status: true,
-    });
   } catch (error) {
     log.error(error.message);
-
-    return res.json({
-      status: false,
-      message: error.message,
-    });
+    return false;
   }
 };
 

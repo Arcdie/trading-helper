@@ -20,6 +20,10 @@ const InstrumentNew = require('../../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
   try {
+    res.json({
+      status: true,
+    });
+
     const instrumentsDocs = await InstrumentNew.find({}).exec();
 
     const spotDocs = instrumentsDocs.filter(doc => !doc.is_futures);
@@ -109,16 +113,8 @@ module.exports = async (req, res, next) => {
     }
 
     await renewInstrumentsInRedis();
-
-    return res.json({
-      status: true,
-    });
   } catch (error) {
     log.warn(error.message);
-
-    return {
-      status: false,
-      message: error.message,
-    };
+    return false;
   }
 };

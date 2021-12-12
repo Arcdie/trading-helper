@@ -26,13 +26,15 @@ const {
 
 module.exports = async (req, res, next) => {
   try {
+    res.json({
+      status: true,
+    });
+
     const resultGetInstruments = await getActiveInstruments({});
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
-      return res.json({
-        status: false,
-        message: resultGetInstruments.message || 'Cant getActiveInstruments',
-      });
+      log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
+      return false;
     }
 
     const numberRequiredCandles = 3;
@@ -86,16 +88,8 @@ module.exports = async (req, res, next) => {
         },
       });
     }
-
-    return res.json({
-      status: true,
-    });
   } catch (error) {
     log.warn(error.message);
-
-    return {
-      status: false,
-      message: error.message,
-    };
+    return false;
   }
 };

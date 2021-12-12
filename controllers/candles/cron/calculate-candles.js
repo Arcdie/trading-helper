@@ -35,15 +35,17 @@ module.exports = async (req, res, next) => {
       });
     }
 
+    res.json({
+      status: true,
+    });
+
     const resultGetInstruments = await getActiveInstruments({
       isOnlyFutures: true,
     });
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
-      return res.json({
-        status: false,
-        message: resultGetInstruments.message || 'Cant getActiveInstruments',
-      });
+      log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
+      return false;
     }
 
     let execFunc;
@@ -66,16 +68,8 @@ module.exports = async (req, res, next) => {
         return null;
       }
     }
-
-    return res.json({
-      status: true,
-    });
   } catch (error) {
     log.error(error.message);
-
-    return res.json({
-      status: false,
-      message: error.message,
-    });
+    return false;
   }
 };

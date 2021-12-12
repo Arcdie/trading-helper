@@ -28,19 +28,21 @@ const {
 
 module.exports = async (req, res, next) => {
   try {
+    res.json({
+      status: true,
+    });
+
     const resultGetInstruments = await getActiveInstruments({
       isOnlySpot: true,
     });
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
-      return res.json({
-        status: false,
-        message: resultGetInstruments.message || 'Cant getActiveInstruments',
-      });
+      log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
+      return false;
     }
 
     if (!resultGetInstruments.result || !resultGetInstruments.result.length) {
-      return res.json({ status: true });
+      return true;
     }
 
     const instrumentsDocs = resultGetInstruments.result;
@@ -126,16 +128,8 @@ module.exports = async (req, res, next) => {
 
       await sleep(1000);
     }
-
-    return res.json({
-      status: true,
-    });
   } catch (error) {
     log.error(error.message);
-
-    return res.json({
-      status: false,
-      message: error.message,
-    });
+    return false;
   }
 };
