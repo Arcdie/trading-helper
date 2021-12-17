@@ -23,7 +23,7 @@ const {
 } = require('../../../controllers/instrument-trends/utils/calculate-trend-for-5m-timeframe');
 
 const {
-  binanceScreenerConf: { port },
+  binanceScreenerConf: { websocketPort },
 } = require('../../../config');
 
 const {
@@ -39,9 +39,10 @@ const CONNECTION_NAME = 'BinanceScreener:Spot:Kline_5m';
 module.exports = async () => {
   try {
     let sendPongInterval;
-    const connectStr = `ws://localhost:${port}`;
+    const connectStr = `ws://localhost:${websocketPort}`;
 
     const websocketConnect = () => {
+      let isOpened = false;
       const client = new WebSocketClient(connectStr);
 
       client.on('open', () => {
@@ -78,7 +79,7 @@ module.exports = async () => {
           low,
           volume,
           isClosed,
-        } = parsedData;
+        } = parsedData.data;
 
         const resultUpdateInstrument = await updateInstrumentInRedis({
           instrumentName,
@@ -89,6 +90,7 @@ module.exports = async () => {
           log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
         }
 
+        /*
         sendData({
           actionName: ACTION_NAMES.get('spotCandle5mData'),
           data: {
@@ -102,6 +104,7 @@ module.exports = async () => {
             volume,
           },
         });
+        */
 
         if (isClosed) {
           const resultUpdate = await updateCandlesInRedis({
@@ -132,6 +135,14 @@ module.exports = async () => {
           }
         }
       });
+
+      setTimeout(() => {
+        if (!isOpened) {
+          sendMessage(260325716, `Cant connect to ${CONNECTION_NAME}`);
+          clearInterval(sendPongInterval);
+          websocketConnect();
+        }
+      }, 10 * 1000); // 10 seconds
     };
 
     websocketConnect();

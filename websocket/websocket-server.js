@@ -15,19 +15,23 @@ const {
   ACION_NAMES_CANDLE_DATA,
 } = require('./constants');
 
+const {
+  app: { websocketPort },
+} = require('../config');
+
 const WebSocketRoom = require('./websocket-room');
 
 const pathToFolder = '/etc/letsencrypt/live/trading-helper.ru';
 
 const wsSettings = {};
 
-if (process.env.NODE_ENV === 'localhost') {
-  wsSettings.port = 3001;
+if (process.env.NODE_ENV !== 'localhost') {
+  wsSettings.port = websocketPort;
 } else {
   wsSettings.server = https.createServer({
     cert: fs.readFileSync(`${pathToFolder}/fullchain.pem`, 'utf8'),
     key: fs.readFileSync(`${pathToFolder}/privkey.pem`, 'utf8'),
-  }).listen(3001);
+  }).listen(websocketPort);
 }
 
 const rooms = [];

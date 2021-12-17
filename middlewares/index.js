@@ -61,6 +61,10 @@ app.use((err, req, res, next) => {
 });
 
 process.on('uncaughtException', (err) => {
+  if (err.code === 'ECONNREFUSED') {
+    return true;
+  }
+
   log.error(err);
   process.exit(1);
 });

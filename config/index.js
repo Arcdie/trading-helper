@@ -1,6 +1,7 @@
 module.exports = {
   app: {
     host: 'localhost',
+    websocketPort: 3100,
     name: 'trading-helper',
     url: process.env.APP_URL,
     port: process.env.APP_PORT,
@@ -39,6 +40,6 @@ module.exports = {
   },
 
   binanceScreenerConf: {
-    port: 3101,
+    websocketPort: 3101,
   },
 };
