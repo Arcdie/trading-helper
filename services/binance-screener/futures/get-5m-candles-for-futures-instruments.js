@@ -50,6 +50,7 @@ module.exports = async () => {
       const client = new WebSocketClient(connectStr);
 
       client.on('open', () => {
+        isOpened = true;
         log.info(`${CONNECTION_NAME} was opened`);
 
         client.send(JSON.stringify({
