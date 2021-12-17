@@ -4,10 +4,6 @@ const {
 
 const log = require('../../../libs/logger')(module);
 
-const {
-  sendData,
-} = require('../../../websocket/websocket-server');
-
 const Candle4h = require('../../../models/Candle-4h');
 
 const create4hCandle = async ({
@@ -108,19 +104,6 @@ const create4hCandle = async ({
 
       await Candle4h.findByIdAndUpdate(existCandle._id, updateObj).exec();
 
-      sendData({
-        actionName: 'candle4hData',
-        data: {
-          instrumentId,
-          startTime: new Date(startTime).getTime(),
-          open,
-          close,
-          high,
-          low,
-          volume,
-        },
-      });
-
       return {
         status: true,
         isCreated: false,
@@ -137,19 +120,6 @@ const create4hCandle = async ({
     });
 
     await newCandle.save();
-
-    sendData({
-      actionName: 'candle4hData',
-      data: {
-        instrumentId,
-        startTime: new Date(startTime).getTime(),
-        open,
-        close,
-        high,
-        low,
-        volume,
-      },
-    });
 
     return {
       status: true,

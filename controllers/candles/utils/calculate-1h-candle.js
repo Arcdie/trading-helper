@@ -15,6 +15,10 @@ const {
 } = require('./update-candles-in-redis');
 
 const {
+  sendData,
+} = require('../../../websocket/websocket-server');
+
+const {
   INTERVALS,
 } = require('../constants');
 
@@ -85,6 +89,8 @@ const calculate1hCandle = async ({
     }
 
     if (resultCreateCandle.isCreated) {
+      // todo: send data to websocket
+
       const resultUpdate = await updateCandlesInRedis({
         instrumentId,
         interval: INTERVALS.get('1h'),

@@ -4,10 +4,6 @@ const {
 
 const log = require('../../../libs/logger')(module);
 
-const {
-  sendData,
-} = require('../../../websocket/websocket-server');
-
 const Candle1m = require('../../../models/Candle-1m');
 
 const create1mCandles = async ({
@@ -54,23 +50,6 @@ const create1mCandles = async ({
     });
 
     const result = await Candle1m.insertMany(arrToInsert);
-
-    if (isFutures) {
-      newCandles.forEach(newCandle => {
-        sendData({
-          actionName: 'candle1mData',
-          data: {
-            instrumentId: newCandle.instrumentId,
-            startTime: new Date(newCandle.startTime).getTime(),
-            open: newCandle.open,
-            close: newCandle.close,
-            high: newCandle.high,
-            low: newCandle.low,
-            volume: newCandle.volume,
-          },
-        });
-      });
-    }
 
     return {
       result,

@@ -37,4 +37,8 @@ module.exports = {
     apikey: process.env.BINANCE_API_KEY,
     secret: process.env.BINANCE_API_SECRET,
   },
+
+  binanceScreenerConf: {
+    port: 3101,
+  },
 };

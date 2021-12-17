@@ -2,7 +2,7 @@ const redis = require('../libs/redis');
 const log = require('../libs/logger')(module);
 
 const memoryUsage = require('./memory-usage');
-const binanceProcesses = require('./binance');
+const binanceScreenerProcesses = require('./binance-screener');
 
 const {
   createWebsocketRooms,
@@ -20,54 +20,70 @@ const {
   updateInstrument,
 } = require('../controllers/instruments/utils/update-instrument');
 
-const InstrumentNew = require('../models/InstrumentNew');
+const {
+  getActiveInstruments,
+} = require('../controllers/instruments/utils/get-active-instruments');
 
 module.exports = async () => {
-  // await redis.flushallAsync();
+  try {
+    // await redis.flushallAsync();
 
-  if (process.env.NODE_ENV !== 'localhost') {
-    await clearSocketsInRedis({});
-    await clearCandlesInRedis({});
-  }
-
-  const instrumentsDocs = await InstrumentNew.find({
-    is_active: true,
-  }).exec();
-
-  /*
-  await redis.setAsync([
-    'ACTIVE_INSTRUMENTS',
-    JSON.stringify(instrumentsDocs.map(doc => ({
-      is_futures: doc.is_futures,
-      instrument_id: doc._id.toString(),
-    }))),
-  ]);
-  */
-
-  await Promise.all(instrumentsDocs.map(async doc => {
-    const key = `INSTRUMENT:${doc.name}`;
-    const cacheDoc = await redis.getAsync(key);
-
-    if (!cacheDoc) {
-      await redis.setAsync([key, JSON.stringify(doc._doc)]);
-      await redis.setAsync([`INSTRUMENT:${doc._id.toString()}:NAME`, doc.name]);
+    if (process.env.NODE_ENV !== 'localhost') {
+      await clearSocketsInRedis({});
+      await clearCandlesInRedis({});
     }
 
-    return null;
-  }));
+    const resultGetInstruments = await getActiveInstruments({});
 
-  await binanceProcesses(instrumentsDocs);
-  await createWebsocketRooms(instrumentsDocs);
+    if (!resultGetInstruments || !resultGetInstruments.status) {
+      log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
+      return false;
+    }
 
-  // check memory
-  /*
-  setInterval(() => {
-    memoryUsage();
-  }, 10 * 1000); // 10 seconds
-  */
+    const instrumentsDocs = resultGetInstruments.result || [];
 
-  // update price for instrument in database
-  await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
+    if (!instrumentsDocs || !instrumentsDocs.length) {
+      return true;
+    }
+
+    /*
+    await redis.setAsync([
+      'ACTIVE_INSTRUMENTS',
+      JSON.stringify(instrumentsDocs.map(doc => ({
+        is_futures: doc.is_futures,
+        instrument_id: doc._id.toString(),
+      }))),
+    ]);
+    */
+
+    await Promise.all(instrumentsDocs.map(async doc => {
+      const key = `INSTRUMENT:${doc.name}`;
+      const cacheDoc = await redis.getAsync(key);
+
+      if (!cacheDoc) {
+        await redis.setAsync([key, JSON.stringify(doc)]);
+        await redis.setAsync([`INSTRUMENT:${doc._id.toString()}:NAME`, doc.name]);
+      }
+
+      return null;
+    }));
+
+    await createWebsocketRooms(instrumentsDocs);
+    await binanceScreenerProcesses();
+
+    // check memory
+    /*
+    setInterval(() => {
+      memoryUsage();
+    }, 10 * 1000); // 10 seconds
+    */
+
+    // update price for instrument in database
+    await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
+  } catch (error) {
+    log.error(error.message);
+    return false;
+  }
 };
 
 const intervalUpdateInstrument = async (instrumentsDocs = [], interval) => {

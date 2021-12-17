@@ -268,7 +268,7 @@ module.exports = {
 };
 
 const intervalCheckDeadConnections = async (interval) => {
-  for (const client of wss.clients) {
+  for await (const client of wss.clients) {
     if (client.isAlive) {
       client.isAlive = false;
       continue;
