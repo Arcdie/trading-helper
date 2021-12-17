@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const Trade = new mongoose.Schema({
+const modelSchema = {
   instrument_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -33,6 +33,9 @@ const Trade = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const Trade = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('Trade', Trade, 'trades');
+module.exports.modelSchema = modelSchema;

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const InstrumentNew = new mongoose.Schema({
+const modelSchema = {
   name: {
     unique: true,
     type: String,
@@ -68,6 +68,9 @@ const InstrumentNew = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const InstrumentNew = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('InstrumentNew', InstrumentNew, 'instruments-new');
+module.exports.modelSchema = modelSchema;

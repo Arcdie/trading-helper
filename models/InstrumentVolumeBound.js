@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const InstrumentVolumeBound = new mongoose.Schema({
+const modelSchema = {
   instrument_id: {
     index: true,
     type: mongoose.Schema.ObjectId,
@@ -17,7 +17,9 @@ const InstrumentVolumeBound = new mongoose.Schema({
     required: true,
   },
 
-  end_quantity: Number,
+  end_quantity: {
+    type: Number,
+  },
 
   min_quantity_for_cancel: {
     type: Number,
@@ -49,8 +51,13 @@ const InstrumentVolumeBound = new mongoose.Schema({
     required: true,
   },
 
-  volume_started_at: Date,
-  volume_ended_at: Date,
+  volume_started_at: {
+    type: Date,
+  },
+
+  volume_ended_at: {
+    type: Date,
+  },
 
   created_at: {
     type: Date,
@@ -63,6 +70,9 @@ const InstrumentVolumeBound = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const InstrumentVolumeBound = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('InstrumentVolumeBound', InstrumentVolumeBound, 'instrument-volume-bounds');
+module.exports.modelSchema = modelSchema;

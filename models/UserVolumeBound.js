@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const UserVolumeBound = new mongoose.Schema({
+const modelSchema = {
   user_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -37,6 +37,9 @@ const UserVolumeBound = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const UserVolumeBound = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('UserVolumeBound', UserVolumeBound, 'user-volume-bounds');
+module.exports.modelSchema = modelSchema;

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const UserBinanceBound = new mongoose.Schema({
+const modelSchema = {
   user_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -16,8 +16,13 @@ const UserBinanceBound = new mongoose.Schema({
     required: true,
   },
 
-  listen_key: String,
-  listen_key_updated_at: Date,
+  listen_key: {
+    type: String,
+  },
+
+  listen_key_updated_at: {
+    type: Date,
+  },
 
   is_active: {
     type: Boolean,
@@ -35,6 +40,9 @@ const UserBinanceBound = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const UserBinanceBound = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('UserBinanceBound', UserBinanceBound, 'user-binance-bounds');
+module.exports.modelSchema = modelSchema;

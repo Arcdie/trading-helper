@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const InstrumentRobotBound = new mongoose.Schema({
+const modelSchema = {
   instrument_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -27,6 +27,9 @@ const InstrumentRobotBound = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const InstrumentRobotBound = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('InstrumentRobotBound', InstrumentRobotBound, 'instrument-robot-bounds');
+module.exports.modelSchema = modelSchema;

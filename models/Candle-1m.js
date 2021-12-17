@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const Candle1m = new mongoose.Schema({
+const modelSchema = {
   instrument_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -8,7 +8,7 @@ const Candle1m = new mongoose.Schema({
   },
 
   // open, close, low, high
-  data: [Number, Number, Number, Number],
+  data: [{ type: Number }, { type: Number }, { type: Number }, { type: Number }],
 
   volume: {
     type: Number,
@@ -26,6 +26,9 @@ const Candle1m = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const Candle1m = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('Candle1m', Candle1m, 'candles-1m');
+module.exports.modelSchema = modelSchema;

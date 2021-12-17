@@ -22,21 +22,21 @@ module.exports = async (req, res, next) => {
     if (!name) {
       return res.json({
         status: false,
-        text: 'No name',
+        message: 'No name',
       });
     }
 
     if (!price) {
       return res.json({
         status: false,
-        text: 'No price',
+        message: 'No price',
       });
     }
 
     if (isUndefined(isFutures)) {
       return res.json({
         status: false,
-        text: 'No isFutures',
+        message: 'No isFutures',
       });
     }
 

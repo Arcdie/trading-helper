@@ -4,7 +4,7 @@ const {
   DEFAULT_INDENT_IN_PERCENTS,
 } = require('../controllers/user-level-bounds/constants');
 
-const UserLevelBound = new mongoose.Schema({
+const modelSchema = {
   user_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -56,7 +56,9 @@ const UserLevelBound = new mongoose.Schema({
     default: false,
   },
 
-  worked_at: Date,
+  worked_at: {
+    type: Date,
+  },
 
   created_at: {
     type: Date,
@@ -69,8 +71,9 @@ const UserLevelBound = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
+};
 
-  worked_at: Date,
-}, { versionKey: false });
+const UserLevelBound = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('UserLevelBound', UserLevelBound, 'user-level-bounds');
+module.exports.modelSchema = modelSchema;

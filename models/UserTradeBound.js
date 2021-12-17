@@ -8,7 +8,7 @@ const {
 const typesExit = [...TYPES_EXIT.values()];
 const typesTrades = [...TYPES_TRADES.values()];
 
-const UserTradeBound = new mongoose.Schema({
+const modelSchema = {
   user_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -43,11 +43,21 @@ const UserTradeBound = new mongoose.Schema({
     required: true,
   },
 
-  binance_trade_id: String,
-  binance_stoploss_trade_id: String,
+  binance_trade_id: {
+    type: String,
+  },
 
-  buy_price: Number,
-  sell_price: Number,
+  binance_stoploss_trade_id: {
+    type: String,
+  },
+
+  buy_price: {
+    type: Number,
+  },
+
+  sell_price: {
+    type: Number,
+  },
 
   quantity: {
     type: Number,
@@ -59,13 +69,25 @@ const UserTradeBound = new mongoose.Schema({
     required: true,
   },
 
-  stoploss_price: Number,
-  takeprofit_price: Number,
+  stoploss_price: {
+    type: Number,
+  },
 
-  stoploss_percent: Number,
-  takeprofit_percent: Number,
+  takeprofit_price: {
+    type: Number,
+  },
 
-  profit_step_size: Number,
+  stoploss_percent: {
+    type: Number,
+  },
+
+  takeprofit_percent: {
+    type: Number,
+  },
+
+  profit_step_size: {
+    type: Number,
+  },
 
   is_long: {
     type: Boolean,
@@ -77,8 +99,13 @@ const UserTradeBound = new mongoose.Schema({
     required: true,
   },
 
-  trade_started_at: Date,
-  trade_ended_at: Date,
+  trade_started_at: {
+    type: Date,
+  },
+
+  trade_ended_at: {
+    type: Date,
+  },
 
   created_at: {
     type: Date,
@@ -91,6 +118,9 @@ const UserTradeBound = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const UserTradeBound = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('UserTradeBound', UserTradeBound, 'user-trade-bounds');
+module.exports.modelSchema = modelSchema;

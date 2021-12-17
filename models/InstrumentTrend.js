@@ -6,7 +6,7 @@ const {
 
 const typesTrends = [...TYPES_TRENDS.values()];
 
-const InstrumentTrend = new mongoose.Schema({
+const modelSchema = {
   instrument_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -84,6 +84,9 @@ const InstrumentTrend = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
-}, { versionKey: false });
+};
+
+const InstrumentTrend = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('InstrumentTrend', InstrumentTrend, 'instrument-trends');
+module.exports.modelSchema = modelSchema;

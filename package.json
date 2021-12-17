@@ -21,7 +21,6 @@
     "fast-csv": "^4.3.6",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
-    "lightweight-charts": "^3.4.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mongodb": "^4.1.2",

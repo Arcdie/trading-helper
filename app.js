@@ -14,5 +14,5 @@ app.listen(config.app.port, config.app.host, (err) => {
 
   migrations();
   experiments();
-  initServices();
+  // initServices();
 });

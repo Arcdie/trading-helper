@@ -5,7 +5,7 @@ const {
   MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
 } = require('../controllers/user-level-bounds/constants');
 
-const User = new mongoose.Schema({
+const modelSchema = {
   fullname: {
     unique: true,
     type: String,
@@ -21,7 +21,9 @@ const User = new mongoose.Schema({
   tradingview_chart_id: String,
   tradingview_session_id: String,
 
-  telegram_user_id: String,
+  telegram_user_id: {
+    type: String,
+  },
 
   settings: {
     is_bounded_telegram: {
@@ -104,6 +106,9 @@ const User = new mongoose.Schema({
   /* DEPRECATED
     tradingview_list_id: String,
   */
-}, { versionKey: false });
+};
+
+const User = new mongoose.Schema(modelSchema, { versionKey: false });
 
 module.exports = mongoose.model('User', User, 'users');
+module.exports.modelSchema = modelSchema;
