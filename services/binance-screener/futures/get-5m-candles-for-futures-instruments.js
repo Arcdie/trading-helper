@@ -40,14 +40,76 @@ const {
 
 const CONNECTION_NAME = 'BinanceScreener:Futures:Kline_5m';
 
+class InstrumentQueue {
+  constructor() {
+    this.queue = [];
+    this.isActive = false;
+
+    this.LIMITER = 50;
+  }
+
+  addIteration(obj) {
+    this.queue.push(obj);
+
+    if (!this.isActive) {
+      this.isActive = true;
+      this.nextStep();
+    }
+  }
+
+  async nextStep() {
+    const lQueue = this.queue.length;
+
+    if (lQueue > 0) {
+      const targetSteps = this.queue.splice(0, this.LIMITER);
+
+      await Promise.all(targetSteps.map(async step => {
+        const resultUpdate = await updateCandlesInRedis({
+          instrumentId: step.instrumentId,
+          instrumentName: step.instrumentName,
+          interval: INTERVALS.get('5m'),
+
+          newCandle: {
+            volume: step.volume,
+            time: step.startTime,
+            data: [step.open, step.close, step.low, step.high],
+          },
+        });
+
+        if (!resultUpdate || !resultUpdate.status) {
+          log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
+          return null;
+        }
+
+        const resultCalculate = await calculateTrendFor5mTimeframe({
+          instrumentId: step.instrumentId,
+          instrumentName: step.instrumentName,
+        });
+
+        if (!resultCalculate || !resultCalculate.status) {
+          log.warn(resultCalculate.message || 'Cant calculateTrendFor5mTimeframe');
+          return null;
+        }
+      }));
+
+      setTimeout(() => {
+        return this.nextStep();
+      }, 2000);
+    } else {
+      this.isActive = false;
+    }
+  }
+}
+
 module.exports = async () => {
   try {
     let sendPongInterval;
+    const instrumentQueue = new InstrumentQueue();
     const connectStr = `ws://localhost:${websocketPort}`;
 
     const websocketConnect = () => {
       let isOpened = false;
-      const client = new WebSocketClient(connectStr);
+      let client = new WebSocketClient(connectStr);
 
       client.on('open', () => {
         isOpened = true;
@@ -66,8 +128,9 @@ module.exports = async () => {
       client.on('close', (message) => {
         log.info(`${CONNECTION_NAME} was closed`);
 
-        sendMessage(260325716, `${CONNECTION_NAME} was closed (${message})`);
+        client = false;
         clearInterval(sendPongInterval);
+        sendMessage(260325716, `${CONNECTION_NAME} was closed (${message})`);
         websocketConnect();
       });
 
@@ -77,12 +140,7 @@ module.exports = async () => {
         const {
           instrumentId,
           instrumentName,
-          startTime,
-          open,
           close,
-          high,
-          low,
-          volume,
           isClosed,
         } = parsedData.data;
 
@@ -103,52 +161,19 @@ module.exports = async () => {
 
         sendData({
           actionName: ACTION_NAMES.get('futuresCandle5mData'),
-          data: {
-            instrumentId,
-            instrumentName,
-            startTime,
-            open,
-            close,
-            high,
-            low,
-            volume,
-          },
+          data: parsedData.data,
         });
 
         if (isClosed) {
-          const resultUpdate = await updateCandlesInRedis({
-            instrumentId,
-            instrumentName,
-            interval: INTERVALS.get('5m'),
-
-            newCandle: {
-              volume,
-              time: startTime,
-              data: [open, close, low, high],
-            },
-          });
-
-          if (!resultUpdate || !resultUpdate.status) {
-            log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
-            return true;
-          }
-
-          const resultCalculate = await calculateTrendFor5mTimeframe({
-            instrumentId,
-            instrumentName,
-          });
-
-          if (!resultCalculate || !resultCalculate.status) {
-            log.warn(resultCalculate.message || 'Cant calculateTrendFor5mTimeframe');
-            return true;
-          }
+          instrumentQueue.addIteration(parsedData.data);
         }
       });
 
       setTimeout(() => {
         if (!isOpened) {
-          sendMessage(260325716, `Cant connect to ${CONNECTION_NAME}`);
+          client = false;
           clearInterval(sendPongInterval);
+          sendMessage(260325716, `Cant connect to ${CONNECTION_NAME}`);
           websocketConnect();
         }
       }, 10 * 1000); // 10 seconds

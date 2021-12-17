@@ -72,11 +72,11 @@ module.exports = async () => {
     await binanceScreenerProcesses();
 
     // check memory
-    /*
+    // /*
     setInterval(() => {
       memoryUsage();
     }, 10 * 1000); // 10 seconds
-    */
+    // */
 
     // update price for instrument in database
     await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
