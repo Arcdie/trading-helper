@@ -1,11 +1,7 @@
-const getPriceJumpsStatistics = require('./get-price-jumps-statistics');
-
-const getVolumeSpotStatistics = require('./get-volume-spot-statistics');
-const getVolumeFuturesStatistics = require('./get-volume-futures-statistics');
+const getTypeChoicePage = require('./get-type-choice-page');
+const getStrategyChoicePage = require('./get-strategy-choice-page');
 
 module.exports = {
-  getPriceJumpsStatistics,
-
-  getVolumeSpotStatistics,
-  getVolumeFuturesStatistics,
+  getTypeChoicePage,
+  getStrategyChoicePage,
 };

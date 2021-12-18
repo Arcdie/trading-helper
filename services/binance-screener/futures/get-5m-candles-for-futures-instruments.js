@@ -88,7 +88,16 @@ class InstrumentQueue {
 
         if (!resultCalculate || !resultCalculate.status) {
           log.warn(resultCalculate.message || 'Cant calculateTrendFor5mTimeframe');
-          return null;
+        }
+
+        const resultCheck = await checkUserLevelBounds({
+          instrumentId: step.instrumentId,
+          instrumentName: step.instrumentName,
+          instrumentPrice: parseFloat(close),
+        });
+
+        if (!resultCheck || !resultCheck.status) {
+          log.warn(resultCheck.message || 'Cant checkUserLevelBounds');
         }
       }));
 
@@ -138,7 +147,6 @@ module.exports = async () => {
         const parsedData = JSON.parse(bufferData.toString());
 
         const {
-          instrumentId,
           instrumentName,
           close,
           isClosed,
@@ -152,12 +160,6 @@ module.exports = async () => {
         if (!resultUpdateInstrument || !resultUpdateInstrument.status) {
           log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
         }
-
-        await checkUserLevelBounds({
-          instrumentId,
-          instrumentName,
-          instrumentPrice: parseFloat(close),
-        });
 
         sendData({
           actionName: ACTION_NAMES.get('futuresCandle5mData'),

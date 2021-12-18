@@ -5,7 +5,7 @@ router.use('/binance', require('./binance'));
 router.use('/users', require('./users'));
 router.use('/trades', require('./trades'));
 router.use('/candles', require('./candles'));
-router.use('/statistics', require('./statistics'));
+router.use('/strategies', require('./strategies'));
 router.use('/instruments', require('./instruments'));
 
 router.use('/user-level-bounds', require('./user-level-bounds'));

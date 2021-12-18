@@ -25,7 +25,7 @@ const pathToFolder = '/etc/letsencrypt/live/trading-helper.ru';
 
 const wsSettings = {};
 
-if (process.env.NODE_ENV !== 'localhost') {
+if (process.env.NODE_ENV === 'localhost') {
   wsSettings.port = websocketPort;
 } else {
   wsSettings.server = https.createServer({

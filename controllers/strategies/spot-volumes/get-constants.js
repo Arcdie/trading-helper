@@ -1,16 +1,13 @@
 const log = require('../../../libs/logger')(module);
 
+const constants = require('./constants');
+
 module.exports = async (req, res, next) => {
   try {
-    const {
-      user,
-    } = req;
-
-    if (!user) {
-      return res.redirect('/');
-    }
-
-    res.render('web/statistics/volume-futures-statistics-page');
+    return res.json({
+      status: true,
+      result: constants,
+    });
   } catch (error) {
     log.warn(error.message);
 
