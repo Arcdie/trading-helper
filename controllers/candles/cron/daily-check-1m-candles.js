@@ -205,8 +205,12 @@ module.exports = async (req, res, next) => {
 
     log.info('Process check-1m-candles was finished');
   } catch (error) {
-    log.error(error.message);
-    return false;
+    log.warn(error.message);
+
+    res.json({
+      status: false,
+      message: error.message,
+    });
   }
 };
 

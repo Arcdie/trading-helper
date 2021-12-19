@@ -29,7 +29,11 @@ module.exports = async (req, res, next) => {
       time: { $lt: remove5mCandlesDate },
     }).exec();
   } catch (error) {
-    log.error(error.message);
-    return false;
+    log.warn(error.message);
+
+    res.json({
+      status: false,
+      message: error.message,
+    });
   }
 };

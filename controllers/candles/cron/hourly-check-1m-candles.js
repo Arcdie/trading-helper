@@ -87,6 +87,11 @@ module.exports = async (req, res, next) => {
 
       while (nextTimeUnix !== endTimeUnix) {
         const candleDoc = candles1mDocs[0];
+
+        if (!candleDoc) {
+          break;
+        }
+
         const candleTimeUnix = getUnix(candleDoc.time);
 
         if (nextTimeUnix !== candleTimeUnix) {
@@ -191,8 +196,12 @@ module.exports = async (req, res, next) => {
     }
 
     log.info('Process hourly-check-1m-candles was finished');
-  } catch (err) {
-    log.warn(err.message);
-    return false;
+  } catch (error) {
+    log.warn(error.message);
+
+    res.json({
+      status: false,
+      message: error.message,
+    });
   }
 };
