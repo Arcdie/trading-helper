@@ -1,5 +1,5 @@
-const priceJumps = require('./price-jumps');
+const getConstants = require('./get-constants');
 
 module.exports = {
-  priceJumps,
+  getConstants,
 };

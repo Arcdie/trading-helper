@@ -52,6 +52,12 @@ const calculate1dCandle = async ({
       .sort({ time: 1 })
       .exec();
 
+    if (!candlesDocs.length) {
+      return {
+        status: true,
+      };
+    }
+
     const open = candlesDocs[0].data[0];
     const close = candlesDocs[candlesDocs.length - 1].data[1];
 

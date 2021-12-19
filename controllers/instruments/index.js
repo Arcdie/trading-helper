@@ -8,7 +8,6 @@ const updateInstrument = require('./update-instrument');
 
 const updateDoesIgnoreVolume = require('./update-does-ignore-volume');
 const renewInstrumentsInRedis = require('./renew-instruments-in-redis');
-const uploadNewInstrumentsFromBinance = require('./upload-new-instuments-from-binance');
 
 module.exports = {
   findOneById,
@@ -21,5 +20,4 @@ module.exports = {
 
   updateDoesIgnoreVolume,
   renewInstrumentsInRedis,
-  uploadNewInstrumentsFromBinance,
 };

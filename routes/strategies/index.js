@@ -1,6 +1,10 @@
 const router = require('express').Router();
 
-router.use('/price-jumps', require('./price-jumps'));
-router.use('/spot-volumes', require('./spot-volumes'));
+const strategyControllers = require('../../controllers/strategies');
+
+router.get('/constants', strategyControllers.getConstants);
+
+router.use('/priceJumps', require('./price-jumps'));
+router.use('/spotVolumes', require('./spot-volumes'));
 
 module.exports = router;

@@ -20,10 +20,11 @@ router.get('/renew', commonMiddlewares, instrumentControllers.renewInstrumentsIn
 router.post('/', commonMiddlewares, instrumentControllers.createInstrument);
 
 router.post('/update-does-ignore-volume', commonMiddlewares, instrumentControllers.updateDoesIgnoreVolume);
-router.get('/upload-new-instruments-from-binance', commonMiddlewares, instrumentControllers.uploadNewInstrumentsFromBinance);
 
 // cron
 router.get('/cron/update-binance-data', instrumentCronControllers.updateBinanceData);
+router.get('/cron/check-inactive-instruments', instrumentCronControllers.checkInactiveInstruments);
+router.get('/cron/upload-new-instruments-from-binance', instrumentCronControllers.uploadNewInstrumentsFromBinance);
 router.get('/cron/calculate-average-volume-for-last-day', instrumentCronControllers.calculateAverageVolumeForLastDay);
 router.get('/cron/calculate-average-volume-for-last-15-minutes', instrumentCronControllers.calculateAverageVolumeForLast15Minutes);
 

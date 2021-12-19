@@ -90,6 +90,10 @@ module.exports = async (req, res, next) => {
     }
   } catch (error) {
     log.warn(error.message);
-    return false;
+
+    res.json({
+      status: false,
+      message: error.message,
+    });
   }
 };

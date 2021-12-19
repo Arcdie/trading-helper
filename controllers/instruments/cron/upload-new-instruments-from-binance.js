@@ -1,29 +1,22 @@
-const log = require('../../libs/logger')(module);
+const log = require('../../../libs/logger')(module);
 
 const {
   createInstrument,
-} = require('./utils/create-instrument');
+} = require('../utils/create-instrument');
 
 const {
   getSpotInstruments,
-} = require('../binance/utils/spot/get-spot-instruments');
+} = require('../../binance/utils/spot/get-spot-instruments');
 
 const {
   getFuturesInstruments,
-} = require('../binance/utils/futures/get-futures-instruments');
+} = require('../../binance/utils/futures/get-futures-instruments');
 
 module.exports = async (req, res, next) => {
   try {
-    const {
-      user,
-    } = req;
-
-    if (!user) {
-      return res.json({
-        status: false,
-        message: 'Not authorized',
-      });
-    }
+    res.json({
+      status: true,
+    });
 
     const resultGetSpotInstruments = await getSpotInstruments();
 
