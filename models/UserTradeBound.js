@@ -26,6 +26,11 @@ const modelSchema = {
     required: true,
   },
 
+  strategy_target_id: {
+    type: mongoose.Schema.ObjectId,
+    required: true,
+  },
+
   type_trade: {
     type: String,
     required: true,

@@ -93,7 +93,7 @@ class InstrumentQueue {
         const resultCheck = await checkUserLevelBounds({
           instrumentId: step.instrumentId,
           instrumentName: step.instrumentName,
-          instrumentPrice: parseFloat(close),
+          instrumentPrice: parseFloat(step.close),
         });
 
         if (!resultCheck || !resultCheck.status) {

@@ -4,7 +4,8 @@ const TYPES_EXIT = new Map([
 ]);
 
 const TYPES_TRADES = new Map([
-  ['INSTRUMENT_VOLUME_BOUND', 'INSTRUMENT_VOLUME_BOUND'],
+  ['PRICE_JUMP', 'PRICE_JUMP'],
+  ['SPOT_VOLUME', 'SPOT_VOLUME'],
 ]);
 
 module.exports = {
