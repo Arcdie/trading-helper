@@ -62,6 +62,11 @@ class Logger {
 
     this.winston = winston.createLogger({
       transports: [
+        new transports.Console({
+          level: 'debug',
+          format: consoleFormat(options),
+        }),
+
         new transports.File({
           level: 'error',
           name: 'error-log',
@@ -77,20 +82,6 @@ class Logger {
         }),
       ],
     });
-
-    if (process.env.NODE_ENV === 'localhost') {
-      this.winston.add(
-        new transports.Console({
-          level: 'debug',
-          format: consoleFormat(options),
-        }),
-
-        new transports.Console({
-          level: 'info',
-          format: consoleFormat(options),
-        }),
-      );
-    }
   }
 
   info(ctx) {
