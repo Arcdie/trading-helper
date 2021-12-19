@@ -151,16 +151,7 @@ module.exports = async () => {
         /*
         sendData({
           actionName: ACTION_NAMES.get('spotCandle5mData'),
-          data: {
-            instrumentId,
-            instrumentName,
-            startTime,
-            open,
-            close,
-            high,
-            low,
-            volume,
-          },
+          data: parsedData.data,
         });
         */
 

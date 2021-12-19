@@ -129,30 +129,16 @@ module.exports = async () => {
       client.on('message', async bufferData => {
         const parsedData = JSON.parse(bufferData.toString());
 
+        /*
         sendData({
           actionName: ACTION_NAMES.get('spotCandle1mData'),
           data: parsedData.data,
         });
+        */
 
         if (parsedData.data.isClosed) {
           instrumentQueue.addIteration(parsedData.data);
         }
-
-        /*
-        sendData({
-          actionName: ACTION_NAMES.get('spotCandle1mData'),
-          data: {
-            instrumentId,
-            instrumentName,
-            startTime,
-            open,
-            close,
-            high,
-            low,
-            volume,
-          },
-        });
-        */
       });
 
       setTimeout(() => {
