@@ -41,5 +41,6 @@ module.exports = {
 
   binanceScreenerConf: {
     websocketPort: 3101,
+    host: process.env.BINANCE_SCREENER_HOST,
   },
 };

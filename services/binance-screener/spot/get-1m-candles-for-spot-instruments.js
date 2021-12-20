@@ -23,7 +23,7 @@ const {
 } = require('../../../controllers/instrument-trends/utils/calculate-trend-for-1m-timeframe');
 
 const {
-  binanceScreenerConf: { websocketPort },
+  binanceScreenerConf,
 } = require('../../../config');
 
 const {
@@ -34,14 +34,12 @@ const {
   INTERVALS,
 } = require('../../../controllers/candles/constants');
 
-const CONNECTION_NAME = 'BinanceScreener:Spot:Kline_1m';
+const CONNECTION_NAME = 'TradingHelperToBinanceScreener:Spot:Kline_1m';
 
 class InstrumentQueue {
   constructor() {
     this.queue = [];
     this.isActive = false;
-
-    this.LIMITER = 50;
   }
 
   addIteration(obj) {
@@ -54,54 +52,46 @@ class InstrumentQueue {
   }
 
   async nextStep() {
-    const lQueue = this.queue.length;
+    const step = this.queue.shift();
 
-    if (lQueue > 0) {
-      const targetSteps = this.queue.splice(0, this.LIMITER);
-
-      await Promise.all(targetSteps.map(async step => {
-        const resultUpdateInstrument = await updateInstrumentInRedis({
-          instrumentName: step.instrumentName,
-          price: parseFloat(step.close),
-        });
-
-        if (!resultUpdateInstrument || !resultUpdateInstrument.status) {
-          log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
-        }
-
-        const resultUpdate = await updateCandlesInRedis({
-          instrumentId: step.instrumentId,
-          instrumentName: step.instrumentName,
-          interval: INTERVALS.get('1m'),
-
-          newCandle: {
-            volume: step.volume,
-            time: step.startTime,
-            data: [step.open, step.close, step.low, step.high],
-          },
-        });
-
-        if (!resultUpdate || !resultUpdate.status) {
-          log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
-          return null;
-        }
-
-        const resultCalculate = await calculateTrendFor1mTimeframe({
-          instrumentId: step.instrumentId,
-          instrumentName: step.instrumentName,
-        });
-
-        if (!resultCalculate || !resultCalculate.status) {
-          log.warn(resultCalculate.message || 'Cant calculateTrendFor1mTimeframe');
-          return null;
-        }
-      }));
-
-      setTimeout(() => {
-        return this.nextStep();
-      }, 2000);
-    } else {
+    if (!step) {
       this.isActive = false;
+      return true;
+    }
+
+    const resultUpdateInstrument = await updateInstrumentInRedis({
+      instrumentName: step.instrumentName,
+      price: parseFloat(step.close),
+    });
+
+    if (!resultUpdateInstrument || !resultUpdateInstrument.status) {
+      log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
+    }
+
+    const resultUpdate = await updateCandlesInRedis({
+      instrumentId: step.instrumentId,
+      instrumentName: step.instrumentName,
+      interval: INTERVALS.get('1m'),
+
+      newCandle: {
+        volume: step.volume,
+        time: step.startTime,
+        data: [step.open, step.close, step.low, step.high],
+      },
+    });
+
+    if (!resultUpdate || !resultUpdate.status) {
+      log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
+      return true;
+    }
+
+    const resultCalculate = await calculateTrendFor1mTimeframe({
+      instrumentId: step.instrumentId,
+      instrumentName: step.instrumentName,
+    });
+
+    if (!resultCalculate || !resultCalculate.status) {
+      log.warn(resultCalculate.message || 'Cant calculateTrendFor1mTimeframe');
     }
   }
 }
@@ -110,7 +100,7 @@ module.exports = async () => {
   try {
     let sendPongInterval;
     const instrumentQueue = new InstrumentQueue();
-    const connectStr = `ws://localhost:${websocketPort}`;
+    const connectStr = `ws://${binanceScreenerConf.host}:${binanceScreenerConf.websocketPort}`;
 
     const websocketConnect = () => {
       let isOpened = false;
@@ -127,7 +117,7 @@ module.exports = async () => {
 
         sendPongInterval = setInterval(() => {
           client.send(JSON.stringify({ actionName: 'pong' }));
-        }, 30 * 60 * 1000); // 30 minutes
+        }, 10 * 60 * 1000); // 10 minutes
       });
 
       client.on('close', (message) => {

@@ -75,7 +75,7 @@ module.exports = async () => {
     await binanceScreenerProcesses();
 
     // check memory
-    /*
+    // /*
     setInterval(() => {
       memoryUsage();
     }, 10 * 1000); // 10 seconds
