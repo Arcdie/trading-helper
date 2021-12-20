@@ -28,11 +28,6 @@ module.exports = async () => {
   try {
     // await redis.flushallAsync();
 
-    if (process.env.NODE_ENV !== 'localhost') {
-      await clearSocketsInRedis({});
-      await clearCandlesInRedis({});
-    }
-
     const resultGetInstruments = await getActiveInstruments({});
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
@@ -56,17 +51,25 @@ module.exports = async () => {
     ]);
     */
 
-    await Promise.all(instrumentsDocs.map(async doc => {
-      const key = `INSTRUMENT:${doc.name}`;
-      const cacheDoc = await redis.getAsync(key);
+    if (process.env.NODE_ENV !== 'localhost') {
+      await clearSocketsInRedis({});
+      // await clearCandlesInRedis({});
 
-      if (!cacheDoc) {
-        await redis.setAsync([key, JSON.stringify(doc)]);
-        await redis.setAsync([`INSTRUMENT:${doc._id.toString()}:NAME`, doc.name]);
-      }
+      await Promise.all(instrumentsDocs.map(async doc => {
+        const key = `INSTRUMENT:${doc.name}`;
+        const cacheDoc = await redis.getAsync(key);
 
-      return null;
-    }));
+        if (!cacheDoc) {
+          await redis.setAsync([key, JSON.stringify(doc)]);
+          await redis.setAsync([`INSTRUMENT:${doc._id.toString()}:NAME`, doc.name]);
+        }
+
+        return null;
+      }));
+
+      // update price for instrument in database
+      await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
+    }
 
     await createWebsocketRooms(instrumentsDocs);
     await binanceScreenerProcesses();
@@ -77,9 +80,6 @@ module.exports = async () => {
       memoryUsage();
     }, 10 * 1000); // 10 seconds
     // */
-
-    // update price for instrument in database
-    await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
   } catch (error) {
     log.error(error.message);
     return false;

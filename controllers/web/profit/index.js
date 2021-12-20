@@ -1,5 +1,7 @@
-const getVolumeSpotProfit = require('./get-volume-spot-profit');
+const getTypeChoicePage = require('./get-type-choice-page');
+const getStrategyChoicePage = require('./get-strategy-choice-page');
 
 module.exports = {
-  getVolumeSpotProfit,
+  getTypeChoicePage,
+  getStrategyChoicePage,
 };

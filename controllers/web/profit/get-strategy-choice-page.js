@@ -10,7 +10,7 @@ module.exports = async (req, res, next) => {
       return res.redirect('/');
     }
 
-    res.render('web/profit/volume-spot-profit-page');
+    res.render('web/profit/strategy-choice-page');
   } catch (error) {
     log.warn(error.message);
 
