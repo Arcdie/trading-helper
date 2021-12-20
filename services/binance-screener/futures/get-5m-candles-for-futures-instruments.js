@@ -15,10 +15,6 @@ const {
 } = require('../../../controllers/candles/utils/update-candles-in-redis');
 
 const {
-  updateInstrumentInRedis,
-} = require('../../../controllers/instruments/utils/update-instrument-in-redis');
-
-const {
   checkUserLevelBounds,
 } = require('../../../controllers/user-level-bounds/utils/check-user-level-bounds');
 
@@ -90,6 +86,7 @@ class InstrumentQueue {
           log.warn(resultCalculate.message || 'Cant calculateTrendFor5mTimeframe');
         }
 
+        /*
         const resultCheck = await checkUserLevelBounds({
           instrumentId: step.instrumentId,
           instrumentName: step.instrumentName,
@@ -99,6 +96,7 @@ class InstrumentQueue {
         if (!resultCheck || !resultCheck.status) {
           log.warn(resultCheck.message || 'Cant checkUserLevelBounds');
         }
+        */
       }));
 
       setTimeout(() => {
@@ -146,27 +144,12 @@ module.exports = async () => {
       client.on('message', async bufferData => {
         const parsedData = JSON.parse(bufferData.toString());
 
-        const {
-          instrumentName,
-          close,
-          isClosed,
-        } = parsedData.data;
-
-        const resultUpdateInstrument = await updateInstrumentInRedis({
-          instrumentName,
-          price: parseFloat(close),
-        });
-
-        if (!resultUpdateInstrument || !resultUpdateInstrument.status) {
-          log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
-        }
-
         sendData({
           actionName: ACTION_NAMES.get('futuresCandle5mData'),
           data: parsedData.data,
         });
 
-        if (isClosed) {
+        if (parsedData.data.isClosed) {
           instrumentQueue.addIteration(parsedData.data);
         }
       });

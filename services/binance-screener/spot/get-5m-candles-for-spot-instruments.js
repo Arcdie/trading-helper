@@ -15,10 +15,6 @@ const {
 } = require('../../../controllers/candles/utils/update-candles-in-redis');
 
 const {
-  updateInstrumentInRedis,
-} = require('../../../controllers/instruments/utils/update-instrument-in-redis');
-
-const {
   calculateTrendFor5mTimeframe,
 } = require('../../../controllers/instrument-trends/utils/calculate-trend-for-5m-timeframe');
 
@@ -133,21 +129,6 @@ module.exports = async () => {
       client.on('message', async bufferData => {
         const parsedData = JSON.parse(bufferData.toString());
 
-        const {
-          instrumentName,
-          close,
-          isClosed,
-        } = parsedData.data;
-
-        const resultUpdateInstrument = await updateInstrumentInRedis({
-          instrumentName,
-          price: parseFloat(close),
-        });
-
-        if (!resultUpdateInstrument || !resultUpdateInstrument.status) {
-          log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
-        }
-
         /*
         sendData({
           actionName: ACTION_NAMES.get('spotCandle5mData'),
@@ -155,7 +136,7 @@ module.exports = async () => {
         });
         */
 
-        if (isClosed) {
+        if (parsedData.data.isClosed) {
           instrumentQueue.addIteration(parsedData.data);
         }
       });

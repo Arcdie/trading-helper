@@ -15,6 +15,10 @@ const {
 } = require('../../../controllers/candles/utils/update-candles-in-redis');
 
 const {
+  updateInstrumentInRedis,
+} = require('../../../controllers/instruments/utils/update-instrument-in-redis');
+
+const {
   calculateTrendFor1mTimeframe,
 } = require('../../../controllers/instrument-trends/utils/calculate-trend-for-1m-timeframe');
 
@@ -56,6 +60,15 @@ class InstrumentQueue {
       const targetSteps = this.queue.splice(0, this.LIMITER);
 
       await Promise.all(targetSteps.map(async step => {
+        const resultUpdateInstrument = await updateInstrumentInRedis({
+          instrumentName: step.instrumentName,
+          price: parseFloat(close),
+        });
+
+        if (!resultUpdateInstrument || !resultUpdateInstrument.status) {
+          log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
+        }
+
         const resultUpdate = await updateCandlesInRedis({
           instrumentId: step.instrumentId,
           instrumentName: step.instrumentName,
