@@ -62,7 +62,7 @@ class InstrumentQueue {
       await Promise.all(targetSteps.map(async step => {
         const resultUpdateInstrument = await updateInstrumentInRedis({
           instrumentName: step.instrumentName,
-          price: parseFloat(close),
+          price: parseFloat(step.close),
         });
 
         if (!resultUpdateInstrument || !resultUpdateInstrument.status) {

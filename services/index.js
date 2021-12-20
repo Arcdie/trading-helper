@@ -68,7 +68,7 @@ module.exports = async () => {
       }));
 
       // update price for instrument in database
-      await intervalUpdateInstrument(instrumentsDocs, 1 * 60 * 1000); // 1 minute
+      await intervalUpdateInstrument(instrumentsDocs, 5 * 60 * 1000); // 5 minutes
     }
 
     await createWebsocketRooms(instrumentsDocs);
