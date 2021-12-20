@@ -59,40 +59,47 @@ class InstrumentQueue {
       return true;
     }
 
-    const resultUpdateInstrument = await updateInstrumentInRedis({
-      instrumentName: step.instrumentName,
-      price: parseFloat(step.close),
-    });
+    const [
+      resultUpdateInstrument,
+      resultUpdate,
+      resultCalculate,
+    ] = await Promise.all([
+      updateInstrumentInRedis({
+        instrumentName: step.instrumentName,
+        price: parseFloat(step.close),
+      }),
+
+      updateCandlesInRedis({
+        instrumentId: step.instrumentId,
+        instrumentName: step.instrumentName,
+        interval: INTERVALS.get('1m'),
+
+        newCandle: {
+          volume: step.volume,
+          time: step.startTime,
+          data: [step.open, step.close, step.low, step.high],
+        },
+      }),
+
+      calculateTrendFor1mTimeframe({
+        instrumentId: step.instrumentId,
+        instrumentName: step.instrumentName,
+      }),
+    ]);
 
     if (!resultUpdateInstrument || !resultUpdateInstrument.status) {
       log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
     }
 
-    const resultUpdate = await updateCandlesInRedis({
-      instrumentId: step.instrumentId,
-      instrumentName: step.instrumentName,
-      interval: INTERVALS.get('1m'),
-
-      newCandle: {
-        volume: step.volume,
-        time: step.startTime,
-        data: [step.open, step.close, step.low, step.high],
-      },
-    });
-
     if (!resultUpdate || !resultUpdate.status) {
       log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
-      return true;
     }
-
-    const resultCalculate = await calculateTrendFor1mTimeframe({
-      instrumentId: step.instrumentId,
-      instrumentName: step.instrumentName,
-    });
 
     if (!resultCalculate || !resultCalculate.status) {
       log.warn(resultCalculate.message || 'Cant calculateTrendFor1mTimeframe');
     }
+
+    return this.nextStep();
   }
 }
 

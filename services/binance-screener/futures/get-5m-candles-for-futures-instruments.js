@@ -59,31 +59,37 @@ class InstrumentQueue {
       return true;
     }
 
-    const resultUpdate = await updateCandlesInRedis({
-      instrumentId: step.instrumentId,
-      instrumentName: step.instrumentName,
-      interval: INTERVALS.get('5m'),
+    const [
+      resultUpdate,
+      resultCalculate,
+    ] = await Promise.all([
+      updateCandlesInRedis({
+        instrumentId: step.instrumentId,
+        instrumentName: step.instrumentName,
+        interval: INTERVALS.get('5m'),
 
-      newCandle: {
-        volume: step.volume,
-        time: step.startTime,
-        data: [step.open, step.close, step.low, step.high],
-      },
-    });
+        newCandle: {
+          volume: step.volume,
+          time: step.startTime,
+          data: [step.open, step.close, step.low, step.high],
+        },
+      }),
+
+      calculateTrendFor5mTimeframe({
+        instrumentId: step.instrumentId,
+        instrumentName: step.instrumentName,
+      }),
+    ]);
 
     if (!resultUpdate || !resultUpdate.status) {
       log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
-      return true;
     }
-
-    const resultCalculate = await calculateTrendFor5mTimeframe({
-      instrumentId: step.instrumentId,
-      instrumentName: step.instrumentName,
-    });
 
     if (!resultCalculate || !resultCalculate.status) {
       log.warn(resultCalculate.message || 'Cant calculateTrendFor5mTimeframe');
     }
+
+    return this.nextStep();
 
     /*
     const resultCheck = await checkUserLevelBounds({
