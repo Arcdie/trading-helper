@@ -11,6 +11,7 @@ const {
 } = require('./constants');
 
 const UserTradeBound = require('../../models/UserTradeBound');
+const UserTradeBoundTest = require('../../models/UserTradeBoundTest');
 
 module.exports = async (req, res, next) => {
   try {
@@ -21,6 +22,8 @@ module.exports = async (req, res, next) => {
 
         startDate,
         endDate,
+
+        isTest,
       },
 
       user,
@@ -61,6 +64,8 @@ module.exports = async (req, res, next) => {
       });
     }
 
+    const TargetBoundModel = isTest && isTest === 'true' ? UserTradeBoundTest : UserTradeBound;
+
     const matchObj = {
       user_id: user._id,
     };
@@ -96,7 +101,7 @@ module.exports = async (req, res, next) => {
       };
     }
 
-    const userTradeBounds = await UserTradeBound
+    const userTradeBounds = await TargetBoundModel
       .find(matchObj)
       .sort({ trade_started_at: 1 })
       .exec();
