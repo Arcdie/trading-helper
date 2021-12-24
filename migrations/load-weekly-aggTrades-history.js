@@ -38,10 +38,9 @@ module.exports = async () => {
       return false;
     }
 
-    let instrumentsDocs = (resultGetInstruments.result || [])
-      .filter(d => d.name !== 'ADAUSDTPERP');
+    const arr = ['1000SHIBUSDTPERP', 'ADAUSDTPERP', 'AVAXUSDTPERP', 'BTCUSDTPERP', 'EGLDUSDTPERP', 'ETHUSDTPERP', 'MANAUSDTPERP', 'MATICUSDTPERP', 'NEARUSDTPERP', 'YFIUSDTPERP'];
 
-    instrumentsDocs.splice(0, 48);
+    const instrumentsDocs = (resultGetInstruments.result || []).filter(d => arr.includes(d.name));
 
     if (!instrumentsDocs || !instrumentsDocs.length) {
       return false;
@@ -114,6 +113,7 @@ module.exports = async () => {
           filesNames.push(fileName);
         });
 
+      /*
       let doRemove = true;
 
       for await (const fileName of filesNames) {
@@ -126,6 +126,7 @@ module.exports = async () => {
         const stats = fs.statSync(pathToFile);
         const fileSizeInMegabytes = stats.size / (1024 * 1024);
 
+        /*
         if (fileSizeInMegabytes > 50) {
           doRemove = false;
           console.log(`${instrumentDoc.name} is too large`);
@@ -164,6 +165,7 @@ module.exports = async () => {
           JSON.stringify(weeklyFileData),
         );
       }
+      */
 
       incrementProcessedInstruments();
       log.info(`Ended ${instrumentDoc.name}`);

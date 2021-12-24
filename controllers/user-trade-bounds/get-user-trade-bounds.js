@@ -68,6 +68,7 @@ module.exports = async (req, res, next) => {
 
     const matchObj = {
       user_id: user._id,
+      type_trade: typeTrade,
     };
 
     if (instrumentId) {
