@@ -3,6 +3,7 @@ const router = require('express').Router();
 router.use('/binance', require('./binance'));
 
 router.use('/users', require('./users'));
+router.use('/files', require('./files'));
 router.use('/trades', require('./trades'));
 router.use('/candles', require('./candles'));
 router.use('/strategies', require('./strategies'));

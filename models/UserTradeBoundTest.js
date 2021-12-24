@@ -69,11 +69,6 @@ const modelSchema = {
     required: true,
   },
 
-  is_test: {
-    type: Boolean,
-    required: true,
-  },
-
   stoploss_price: {
     type: Number,
   },
@@ -125,7 +120,7 @@ const modelSchema = {
   },
 };
 
-const UserTradeBound = new mongoose.Schema(modelSchema, { versionKey: false });
+const UserTradeBoundTest = new mongoose.Schema(modelSchema, { versionKey: false });
 
-module.exports = mongoose.model('UserTradeBound', UserTradeBound, 'user-trade-bounds_test');
+module.exports = mongoose.model('UserTradeBoundTest', UserTradeBoundTest, 'user-trade-bounds_test');
 module.exports.modelSchema = modelSchema;

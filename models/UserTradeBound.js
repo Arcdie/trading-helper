@@ -69,11 +69,6 @@ const modelSchema = {
     required: true,
   },
 
-  is_test: {
-    type: Boolean,
-    required: true,
-  },
-
   stoploss_price: {
     type: Number,
   },

@@ -8,6 +8,7 @@ const calculateElderCandlesForInstruments = require('./calculate-elder-candles-f
 // aggTrades
 const saveAggTrades = require('./save-aggTrades');
 const loadAggTradesHistory = require('./load-aggTrades-history');
+const loadWeeklyAggTradesHistory = require('./load-weekly-aggTrades-history');
 
 const changeDoesIgnoreVolume = require('./change-does-ignore-volume');
 const createInstrumentsTrends = require('./create-instrument-trends');
@@ -30,4 +31,5 @@ module.exports = () => {
   // aggTrades
   // loadAggTradesHistory();
   // saveAggTrades();
+  // loadWeeklyAggTradesHistory();
 };
