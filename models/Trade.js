@@ -1,26 +1,8 @@
 const mongoose = require('mongoose');
 
 const modelSchema = {
-  instrument_id: {
-    type: mongoose.Schema.ObjectId,
-    required: true,
-    index: true,
-  },
-
-  price: {
-    type: Number,
-    required: true,
-  },
-
-  quantity: {
-    type: Number,
-    required: true,
-  },
-
-  is_long: {
-    type: Boolean,
-    required: true,
-  },
+  // price, quantity, isLong
+  data: [{ type: Number }, { type: Number }, { type: Boolean }],
 
   time: {
     type: Date,
