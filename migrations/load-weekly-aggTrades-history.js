@@ -38,9 +38,7 @@ module.exports = async () => {
       return false;
     }
 
-    const arr = ['1000SHIBUSDTPERP', 'ADAUSDTPERP', 'AVAXUSDTPERP', 'BTCUSDTPERP', 'EGLDUSDTPERP', 'ETHUSDTPERP', 'MANAUSDTPERP', 'MATICUSDTPERP', 'NEARUSDTPERP', 'YFIUSDTPERP'];
-
-    const instrumentsDocs = (resultGetInstruments.result || []).filter(d => arr.includes(d.name));
+    const instrumentsDocs = (resultGetInstruments.result || []);
 
     if (!instrumentsDocs || !instrumentsDocs.length) {
       return false;
@@ -87,6 +85,7 @@ module.exports = async () => {
 
       const links = targetDates.map(date => `data/${typeInstrument}/daily/aggTrades/${instrumentName}/${instrumentName}-aggTrades-${date.year}-${date.month}-${date.day}.zip`);
 
+      /*
       for await (const link of links) {
         try {
           const resultGetFile = await axios({
@@ -103,6 +102,7 @@ module.exports = async () => {
 
         await sleep(2000);
       }
+      */
 
       const filesNames = [];
       const weeklyFileData = [];
@@ -113,7 +113,6 @@ module.exports = async () => {
           filesNames.push(fileName);
         });
 
-      /*
       let doRemove = true;
 
       for await (const fileName of filesNames) {
@@ -126,14 +125,14 @@ module.exports = async () => {
         const stats = fs.statSync(pathToFile);
         const fileSizeInMegabytes = stats.size / (1024 * 1024);
 
-        /*
-        if (fileSizeInMegabytes > 50) {
-          doRemove = false;
-          console.log(`${instrumentDoc.name} is too large`);
-        }
+        // if (fileSizeInMegabytes > 50) {
+        //   doRemove = false;
+        //   console.log(`${instrumentDoc.name} is too large`);
+        // }
 
         if (doRemove) {
-          const resultGetFile = await parseCSVToJSON({
+          let validResult = [];
+          let resultGetFile = await parseCSVToJSON({
             pathToFile,
           });
 
@@ -142,17 +141,20 @@ module.exports = async () => {
             continue;
           }
 
-          const validResult = [];
-
           resultGetFile.result.forEach(elem => {
             const [tradeId, price, quantity, firstTradeId, lastTradeId, timestamp, direction] = elem;
             validResult.push([price, quantity, timestamp]);
           });
 
+          resultGetFile = false;
+
           const queues = getQueue(validResult, 100000);
+
+          validResult = [];
 
           queues.forEach(queue => {
             weeklyFileData.push(...queue);
+            queue = [];
           });
 
           fs.unlinkSync(pathToFile);
@@ -165,7 +167,6 @@ module.exports = async () => {
           JSON.stringify(weeklyFileData),
         );
       }
-      */
 
       incrementProcessedInstruments();
       log.info(`Ended ${instrumentDoc.name}`);

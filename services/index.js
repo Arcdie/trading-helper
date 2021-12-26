@@ -72,7 +72,7 @@ module.exports = async () => {
     }
 
     await createWebsocketRooms(instrumentsDocs);
-    // await binanceScreenerProcesses();
+    await binanceScreenerProcesses();
 
     // check memory
     /*
