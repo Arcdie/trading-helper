@@ -12,7 +12,6 @@ module.exports = async (req, res, next) => {
   try {
     const {
       params: {
-        type,
         strategy,
       },
 
@@ -21,16 +20,6 @@ module.exports = async (req, res, next) => {
 
     if (!user) {
       return res.redirect('/');
-    }
-
-    if (!type || !TYPES_STATISTICS.get(type)) {
-      const message = 'No or invalid type';
-
-      log.warn(message);
-      return res.json({
-        status: false,
-        message,
-      });
     }
 
     if (!strategy || !STRATEGIES.get(strategy)) {
@@ -43,7 +32,7 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    res.render(`web/statistics/${type}/${strategy}-page`);
+    res.render(`web/statistics/${strategy}-page`);
   } catch (error) {
     log.warn(error.message);
 

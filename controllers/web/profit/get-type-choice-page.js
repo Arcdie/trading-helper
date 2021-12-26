@@ -2,7 +2,7 @@ const log = require('../../../libs/logger')(module);
 
 const {
   TYPES_STATISTICS,
-} = require('../statistics/constants');
+} = require('./constants');
 
 const {
   STRATEGIES,
