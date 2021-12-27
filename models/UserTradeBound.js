@@ -89,6 +89,10 @@ const modelSchema = {
     type: Number,
   },
 
+  commission: {
+    type: Number,
+  },
+
   is_long: {
     type: Boolean,
     required: true,

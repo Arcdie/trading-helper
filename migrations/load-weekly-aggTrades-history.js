@@ -46,13 +46,15 @@ module.exports = async () => {
 
     const targetDates = [];
 
-    const startToday = moment().utc()
-      .add(-1, 'days').startOf('day');
+    const startDate = moment.unix(1639958400).utc()
+      // .add(-1, 'days').startOf('day');
 
-    const weekAgo = moment(startToday).utc()
-      .add(-7, 'days').startOf('day');
+    const endDate = moment().utc()
+      .startOf('day').add(-2, 'days');
 
-    const tmpDate = moment(weekAgo);
+    const endDateUnix = endDate.unix();
+
+    const tmpDate = moment(startDate);
     const incrementProcessedInstruments = processedInstrumentsCounter(instrumentsDocs.length);
 
     while (1) {
@@ -64,12 +66,12 @@ module.exports = async () => {
 
       tmpDate.add(1, 'days');
 
-      if (tmpDate.unix() === startToday.unix()) {
+      if (tmpDate.unix() === endDateUnix) {
         break;
       }
     }
 
-    const pathToFrontFolder = path.join(__dirname, '../../trading-helper-front/public/files/aggTrades/weekly');
+    const pathToFrontFolder = path.join(__dirname, '../../trading-helper-front/public/files/aggTrades');
 
     for await (const instrumentDoc of instrumentsDocs) {
       log.info(`Started ${instrumentDoc.name}`);
@@ -83,9 +85,15 @@ module.exports = async () => {
         fs.mkdirSync(pathToFolder);
       }
 
-      const links = targetDates.map(date => `data/${typeInstrument}/daily/aggTrades/${instrumentName}/${instrumentName}-aggTrades-${date.year}-${date.month}-${date.day}.zip`);
+      const doesExistJsonFileInFolder = fs.existsSync(`${pathToFolder}/${instrumentDoc.name}.json`);
+
+      if (doesExistJsonFileInFolder) {
+        continue;
+      }
 
       /*
+      const links = targetDates.map(date => `data/${typeInstrument}/daily/aggTrades/${instrumentName}/${instrumentName}-aggTrades-${date.year}-${date.month}-${date.day}.zip`);
+
       for await (const link of links) {
         try {
           const resultGetFile = await axios({
@@ -100,7 +108,7 @@ module.exports = async () => {
           console.log(`${link}: `, error);
         }
 
-        await sleep(2000);
+        await sleep(1000);
       }
       */
 

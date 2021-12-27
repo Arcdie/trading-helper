@@ -12,6 +12,7 @@ const {
 
 const UserTradeBound = require('../../models/UserTradeBound');
 const UserTradeBoundTest = require('../../models/UserTradeBoundTest');
+const UserTradeBoundStatistics = require('../../models/UserTradeBoundStatistics');
 
 module.exports = async (req, res, next) => {
   try {
@@ -24,6 +25,7 @@ module.exports = async (req, res, next) => {
         endDate,
 
         isTest,
+        isStatistics,
       },
 
       user,
@@ -36,10 +38,10 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    if (!typeTrade || !TYPES_TRADES.get(typeTrade)) {
+    if (typeTrade && !TYPES_TRADES.get(typeTrade)) {
       return res.json({
         status: false,
-        message: 'No or invalid typeTrade',
+        message: 'Invalid typeTrade',
       });
     }
 
@@ -64,15 +66,26 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    const TargetBoundModel = isTest && isTest === 'true' ? UserTradeBoundTest : UserTradeBound;
+    let TargetBoundModel;
+
+    if (isTest && isTest === 'true') {
+      TargetBoundModel = UserTradeBoundTest;
+    } else if (isStatistics && isStatistics === 'true') {
+      TargetBoundModel = UserTradeBoundStatistics;
+    } else {
+      TargetBoundModel = UserTradeBound;
+    }
 
     const matchObj = {
       user_id: user._id,
-      type_trade: typeTrade,
     };
 
     if (instrumentId) {
       matchObj.instrument_id = instrumentId;
+    }
+
+    if (typeTrade) {
+      matchObj.type_trade = typeTrade;
     }
 
     if (startDate && endDate) {
