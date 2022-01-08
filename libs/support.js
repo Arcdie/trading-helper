@@ -1,7 +1,11 @@
+const crypto = require('crypto');
 const mongodb = require('mongodb');
 
 const getUnix = targetDate =>
   parseInt((targetDate ? new Date(targetDate) : new Date()).getTime() / 1000, 10);
+
+const randStr = limit =>
+  crypto.randomBytes(20).toString('hex').substring(0, limit);
 
 const sleep = ms => {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -51,6 +55,7 @@ const getPrecision = (price) => {
 module.exports = {
   sleep,
   getUnix,
+  randStr,
   getQueue,
   getPrecision,
   generateMongoId,

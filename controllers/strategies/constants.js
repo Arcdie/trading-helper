@@ -7,6 +7,8 @@ const STRATEGIES = new Map([
   ['priceJumps', 'priceJumps'],
   ['priceRebounds', 'priceRebounds'],
 
+  ['trendTrading', 'trendTrading'],
+
   ['spotVolumes', 'spotVolumes'],
   ['futuresVolumes', 'futuresVolumes'],
 ]);

@@ -7,6 +7,8 @@ const TYPES_TRADES = new Map([
   ['PRICE_JUMP', 'PRICE_JUMP'],
   ['PRICE_REBOUND', 'PRICE_REBOUND'],
 
+  ['TREND_TRADING', 'TREND_TRADING'],
+
   ['SPOT_VOLUME', 'SPOT_VOLUME'],
 ]);
 

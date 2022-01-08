@@ -12,6 +12,6 @@ const commonMiddlewares = [
 
 router.get('/', commonMiddlewares, userTradeBoundControllers.getUserTradeBounds);
 
-router.post('/for-statistics', userTradeBoundControllers.createUserTradeBoundForStatistics);
+router.post('/for-statistics', commonMiddlewares, userTradeBoundControllers.createUserTradeBoundForStatistics);
 
 module.exports = router;

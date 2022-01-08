@@ -1,10 +1,6 @@
 const log = require('../../../libs/logger')(module);
 
 const {
-  calculate1hCandle,
-} = require('../utils/calculate-1h-candle');
-
-const {
   calculate4hCandle,
 } = require('../utils/calculate-4h-candle');
 
@@ -50,9 +46,7 @@ module.exports = async (req, res, next) => {
 
     let execFunc;
 
-    if (interval === INTERVALS.get('1h')) {
-      execFunc = calculate1hCandle;
-    } else if (interval === INTERVALS.get('4h')) {
+    if (interval === INTERVALS.get('4h')) {
       execFunc = calculate4hCandle;
     } else if (interval === INTERVALS.get('1d')) {
       execFunc = calculate1dCandle;

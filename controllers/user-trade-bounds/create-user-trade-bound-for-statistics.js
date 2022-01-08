@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const {
   isMongoId,
 } = require('validator');
@@ -7,16 +5,14 @@ const {
 const log = require('../../libs/logger')(module);
 
 const {
-  TYPES_TRADES,
-} = require('./constants');
-
-const UserTradeBoundStatistics = require('../../models/UserTradeBoundStatistics');
+  createUserTradeBoundForStatistics,
+} = require('./utils/create-user-trade-bound-for-statistics');
 
 module.exports = async (req, res, next) => {
   try {
     const {
       body: {
-
+        instrumentId,
       },
 
       user,
@@ -29,9 +25,29 @@ module.exports = async (req, res, next) => {
       });
     }
 
+    if (!instrumentId || !isMongoId(instrumentId)) {
+      return res.json({
+        status: false,
+        message: 'No or invalid instrumentId',
+      });
+    }
+
+    const resultCreateBound = await createUserTradeBoundForStatistics(req.body);
+
+    if (!resultCreateBound || !resultCreateBound.status) {
+      const message = resultCreateBound.message || 'Cant createUserTradeBoundForStatistics';
+
+      log.warn(message);
+
+      return res.json({
+        status: false,
+        message,
+      });
+    }
+
     return res.json({
       status: true,
-      result: {},
+      result: resultCreateBound.result,
     });
   } catch (error) {
     log.warn(error.message);

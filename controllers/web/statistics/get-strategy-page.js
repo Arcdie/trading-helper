@@ -1,10 +1,6 @@
 const log = require('../../../libs/logger')(module);
 
 const {
-  TYPES_STATISTICS,
-} = require('./constants');
-
-const {
   STRATEGIES,
 } = require('../../strategies/constants');
 

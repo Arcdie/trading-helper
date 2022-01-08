@@ -21,6 +21,8 @@ router.get('/utilities', extendedMiddlewares, webControllers.getUtilitiesPage);
 router.get('/volume-monitoring', extendedMiddlewares, webControllers.getVolumeMonitoringPage);
 router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 
+router.get('/monitoring', extendedMiddlewares, webControllers.getMonitoringPage);
+
 router.get('/volume-statistics', extendedMiddlewares, webControllers.getVolumeStatisticsPage);
 router.get('/robots-statistics', extendedMiddlewares, webControllers.getRobotsStatisticsPage);
 

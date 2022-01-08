@@ -9,19 +9,19 @@ const Candle1d = require('../models/Candle-1d');
 const InstrumentNew = require('../models/InstrumentNew');
 
 module.exports = async () => {
-  // return;
+  return;
   console.time('migration');
   console.log('Migration started');
 
   const instrumentsDocs = await InstrumentNew.find({
-    is_active: true,
+    // is_active: true,
     // is_futures: false,
   }, { _id: 1 }).exec();
 
   const instrumentsIds = instrumentsDocs.map(doc => doc._id);
 
-  const startDate = moment('2021-11-01 00:00:00.000Z').utc();
-  const endDate = moment('2021-12-05 15:00:00.000Z').utc();
+  const startDate = moment('2010-11-01 00:00:00.000Z').utc();
+  const endDate = moment('2022-01-01 00:00:00.000Z').utc();
 
   const deleteMatch = {
     instrument_id: { $in: instrumentsIds },

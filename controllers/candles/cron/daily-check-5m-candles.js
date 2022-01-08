@@ -15,10 +15,6 @@ const {
 } = require('../utils/create-5m-candles');
 
 const {
-  create1hCandle,
-} = require('../utils/create-1h-candle');
-
-const {
   create4hCandle,
 } = require('../utils/create-4h-candle');
 
@@ -35,7 +31,6 @@ const {
 } = require('../../instruments/utils/get-active-instruments');
 
 const Candle5m = require('../../../models/Candle-5m');
-const Candle1h = require('../../../models/Candle-1h');
 const Candle4h = require('../../../models/Candle-4h');
 const Candle1d = require('../../../models/Candle-1d');
 
@@ -232,7 +227,6 @@ module.exports = async (req, res, next) => {
         };
 
         const fetchPromises = [
-          Candle1h.deleteMany(deleteMatch).exec(),
           Candle4h.deleteMany(deleteMatch).exec(),
           Candle1d.deleteMany(deleteMatch).exec(),
         ];
@@ -258,26 +252,8 @@ module.exports = async (req, res, next) => {
           time: candle.time,
         }));
 
-        const oneHourCandles = calculateOneHourTimeFrameData(preparedCandles);
         const fourHourCandles = calculateFourHoursTimeFrameData(preparedCandles);
         const dayCandles = calculateDayTimeFrameData(preparedCandles);
-
-        await Promise.all(oneHourCandles.map(async candle => {
-          const resultCreateCandle = await create1hCandle({
-            instrumentId: instrumentDoc._id,
-            startTime: candle.time,
-            open: candle.open,
-            close: candle.close,
-            high: candle.high,
-            low: candle.low,
-            volume: candle.volume,
-          });
-
-          if (!resultCreateCandle || !resultCreateCandle.status) {
-            log.warn(resultCreateCandle.message || 'Cant create1hCandle');
-            return null;
-          }
-        }));
 
         await Promise.all(fourHourCandles.map(async candle => {
           const resultCreateCandle = await create4hCandle({

@@ -25,6 +25,11 @@ const modelSchema = {
     type: String,
   },
 
+  does_have_access: {
+    type: Boolean,
+    default: false,
+  },
+
   settings: {
     is_bounded_telegram: {
       type: Boolean,

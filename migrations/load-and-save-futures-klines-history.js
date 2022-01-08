@@ -44,12 +44,7 @@ module.exports = async () => {
     return true;
   }
 
-  let processedInstruments = 0;
-  const totalInstruments = instrumentsDocs.length;
-
-  const checkInterval = setInterval(() => {
-    log.info(`${processedInstruments} / ${totalInstruments}`);
-  }, 10 * 1000);
+  const incrementProcessedInstruments = processedInstrumentsCounter(instrumentsDocs.length);
 
   for (const instrumentDoc of instrumentsDocs) {
     console.log(`Started ${instrumentDoc.name}`);
@@ -154,7 +149,7 @@ module.exports = async () => {
       }));
     }
 
-    processedInstruments += 1;
+    incrementProcessedInstruments();
     console.log(`Ended ${instrumentDoc.name}`);
   }
 
@@ -184,4 +179,13 @@ const saveFile = ({
       }
     });
   });
+};
+
+const processedInstrumentsCounter = function (numberInstruments = 0) {
+  let processedInstruments = 0;
+
+  return function () {
+    processedInstruments += 1;
+    log.info(`${processedInstruments} / ${numberInstruments}`);
+  };
 };

@@ -24,6 +24,8 @@ module.exports = async (req, res, next) => {
         startDate,
         endDate,
 
+        isLong,
+
         isTest,
         isStatistics,
       },
@@ -88,6 +90,14 @@ module.exports = async (req, res, next) => {
       matchObj.type_trade = typeTrade;
     }
 
+    if (isLong) {
+      if (isLong === 'true') {
+        matchObj.is_long = true;
+      } else {
+        matchObj.is_long = false;
+      }
+    }
+
     if (startDate && endDate) {
       const momentStartTime = moment(startDate).utc().startOf('minute');
       const momentEndTime = moment(endDate).utc().startOf('minute');
@@ -117,7 +127,7 @@ module.exports = async (req, res, next) => {
 
     const userTradeBounds = await TargetBoundModel
       .find(matchObj)
-      .sort({ trade_started_at: 1 })
+      // .sort({ trade_started_at: 1 })
       .exec();
 
     return res.json({
