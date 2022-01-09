@@ -6,6 +6,7 @@ router.get('/constants', strategyControllers.getConstants);
 
 router.use('/priceJumps', require('./price-jumps'));
 router.use('/priceRebounds', require('./price-rebounds'));
+router.use('/priceRollbacks', require('./price-rollbacks'));
 
 router.use('/spotVolumes', require('./spot-volumes'));
 
