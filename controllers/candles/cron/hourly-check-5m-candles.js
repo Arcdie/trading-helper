@@ -186,6 +186,7 @@ module.exports = async (req, res, next) => {
 
       const resultClear = await clearCandlesInRedis({
         instrumentName: instrumentDoc.name,
+        timeframe: INTERVALS.get('5m').toUpperCase(),
       });
 
       if (!resultClear || !resultClear.status) {

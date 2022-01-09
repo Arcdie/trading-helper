@@ -2,11 +2,14 @@ const redis = require('../../../libs/redis');
 const log = require('../../../libs/logger')(module);
 
 const clearCandlesInRedis = async ({
+  timeframe,
   instrumentName,
 }) => {
   try {
-    const modifier = instrumentName || '*';
-    const key = `INSTRUMENT:${modifier}:CANDLES_*`;
+    const modifierTimeframe = timeframe || '*';
+    const modifierInstrument = instrumentName || '*';
+
+    const key = `INSTRUMENT:${modifierInstrument}:CANDLES_${modifierTimeframe}`;
     const targetKeys = await redis.keysAsync(key);
 
     await Promise.all(targetKeys.map(async targetKey => {

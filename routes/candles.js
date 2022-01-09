@@ -15,9 +15,14 @@ const commonMiddlewares = [
 router.get('/cron/daily/clear', candleCronControllers.clearCandles);
 router.get('/cron/daily/check-candles/1m', candleCronControllers.dailyCheck1mCandles);
 router.get('/cron/daily/check-candles/5m', candleCronControllers.dailyCheck5mCandles);
+router.get('/cron/daily/check-candles/1h', candleCronControllers.dailyCheck1hCandles);
+
 router.get('/cron/hourly/check-candles/1m', candleCronControllers.hourlyCheck1mCandles);
 router.get('/cron/hourly/check-candles/5m', candleCronControllers.hourlyCheck5mCandles);
+router.get('/cron/hourly/check-candles/1h', candleCronControllers.hourlyCheck1hCandles);
+
 router.get('/cron/calculate-candles', candleCronControllers.calculateCandles);
+
 
 router.get('/clear-candles-in-redis', commonMiddlewares, candleControllers.clearCandlesInRedis);
 

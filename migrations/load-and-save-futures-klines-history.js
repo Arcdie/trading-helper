@@ -15,8 +15,8 @@ const {
 } = require('../controllers/candles/utils/create-5m-candles');
 
 const {
-  create1hCandle,
-} = require('../controllers/candles/utils/create-1h-candle');
+  create1hCandles,
+} = require('../controllers/candles/utils/create-1h-candles');
 
 const log = require('../libs/logger')(module);
 
@@ -28,6 +28,7 @@ xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
 module.exports = async () => {
   return;
+  // todo: replace create1hCandle to create1hCandles
   console.time('migration');
   console.log('Migration started');
 
