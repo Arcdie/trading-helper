@@ -73,8 +73,23 @@ wss.on('connection', async (ws, req) => {
       }
 
       case 'subscribe': {
-        await newSubscribe({
+        await subscribe({
           data: data.data,
+          userId: ws.userId,
+          socketId: ws.socketId,
+        }); break;
+      }
+
+      case 'unsubscribe': {
+        await unsubscribe({
+          data: data.data,
+          userId: ws.userId,
+          socketId: ws.socketId,
+        }); break;
+      }
+
+      case 'unsubscribeFromAll': {
+        await unsubscribeFromAll({
           userId: ws.userId,
           socketId: ws.socketId,
         }); break;
@@ -165,7 +180,7 @@ const sendPrivateData = async obj => {
   });
 };
 
-const newSubscribe = async ({
+const subscribe = async ({
   data,
   userId,
   socketId,
@@ -263,6 +278,112 @@ const newSubscribe = async ({
       targetInstrumentRoom.join(socketId);
     }
   });
+};
+
+const unsubscribe = async ({
+  data,
+  userId,
+  socketId,
+}) => {
+  if (!data) {
+    log.warn('No data');
+    return false;
+  }
+
+  const subscriptionsNames = [];
+
+  if (data.subscriptionName) {
+    subscriptionsNames.push(data.subscriptionName);
+  } else {
+    subscriptionsNames.push(...data.subscriptionsNames || []);
+  }
+
+  if (!subscriptionsNames.length) {
+    log.warn('No subscriptionName');
+    return false;
+  }
+
+  let areSubscriptionsNamesValid = true;
+
+  subscriptionsNames.forEach(subscriptionName => {
+    if (!ACTION_NAMES.get(subscriptionName)) {
+      areSubscriptionsNamesValid = false;
+    }
+  });
+
+  if (!areSubscriptionsNamesValid) {
+    log.warn('Invalid subscriptionName');
+    return false;
+  }
+
+  const keyUserSubscriptions = `USER:${userId}:SOCKETS`;
+
+  let userSubscriptions = await redis.hgetAsync(
+    keyUserSubscriptions,
+    socketId,
+  );
+
+  if (!userSubscriptions) {
+    userSubscriptions = [];
+  } else {
+    userSubscriptions = JSON.parse(userSubscriptions);
+  }
+
+  userSubscriptions = userSubscriptions.filter(
+    subscription => !subscriptionsNames.includes(subscription),
+  );
+
+  await redis.hsetAsync([
+    keyUserSubscriptions,
+    socketId,
+    JSON.stringify(userSubscriptions),
+  ]);
+
+  subscriptionsNames.forEach(subscriptionName => {
+    const targetRoom = rooms.find(room => room.roomName === subscriptionName);
+
+    if (!targetRoom) {
+      log.warn(`No targetRoom; subscriptionName: ${subscriptionName}`);
+      return false;
+    }
+
+    targetRoom.leave(socketId);
+  });
+};
+
+const unsubscribeFromAll = async ({
+  userId,
+  socketId,
+}) => {
+  const keyUserSubscriptions = `USER:${userId}:SOCKETS`;
+
+  let userSubscriptions = await redis.hgetAsync(
+    keyUserSubscriptions,
+    socketId,
+  );
+
+  if (!userSubscriptions) {
+    userSubscriptions = [];
+  } else {
+    userSubscriptions = JSON.parse(userSubscriptions);
+  }
+
+  userSubscriptions.forEach(subscriptionName => {
+    const targetRoom = rooms.find(room => room.roomName === subscriptionName);
+
+    if (!targetRoom) {
+      log.warn(`No targetRoom; subscriptionName: ${subscriptionName}`);
+      return false;
+    }
+
+    targetRoom.leave(socketId);
+  });
+
+  await redis.hsetAsync([
+    keyUserSubscriptions,
+    socketId,
+    JSON.stringify([]),
+  ]);
 };
 
 module.exports = {
