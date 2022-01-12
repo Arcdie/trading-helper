@@ -61,7 +61,7 @@ class InstrumentQueue {
 
     const [
       resultUpdate,
-      resultCalculate,
+      // resultCalculate,
     ] = await Promise.all([
       updateCandlesInRedis({
         instrumentId: step.instrumentId,
@@ -75,19 +75,23 @@ class InstrumentQueue {
         },
       }),
 
+      /*
       calculateTrendFor5mTimeframe({
         instrumentId: step.instrumentId,
         instrumentName: step.instrumentName,
       }),
+      */
     ]);
 
     if (!resultUpdate || !resultUpdate.status) {
       log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
     }
 
+    /*
     if (!resultCalculate || !resultCalculate.status) {
       log.warn(resultCalculate.message || 'Cant calculateTrendFor5mTimeframe');
     }
+    */
 
     return this.nextStep();
 
