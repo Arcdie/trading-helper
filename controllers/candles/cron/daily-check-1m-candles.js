@@ -47,8 +47,6 @@ module.exports = async (req, res, next) => {
     const instrumentsDocs = resultGetInstruments.result;
 
     for await (const instrumentDoc of instrumentsDocs) {
-      log.info(`Instrument ${instrumentDoc.name}`);
-
       const candles1mDocs = await Candle1m.find({
         instrument_id: instrumentDoc._id,
 
@@ -94,8 +92,6 @@ module.exports = async (req, res, next) => {
           });
         }
       });
-
-      log.info('Started loading files');
 
       let typeInstrument = 'spot';
       let instrumentName = instrumentDoc.name;

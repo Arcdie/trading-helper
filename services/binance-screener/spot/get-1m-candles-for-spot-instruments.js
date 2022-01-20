@@ -2,6 +2,8 @@ const WebSocketClient = require('ws');
 
 const log = require('../../../libs/logger')(module);
 
+const QueueHandler = require('../../../libs/queue-handler');
+
 const {
   sendMessage,
 } = require('../../telegram-bot');
@@ -19,10 +21,6 @@ const {
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
 const {
-  calculateTrendFor1mTimeframe,
-} = require('../../../controllers/instrument-trends/utils/calculate-trend-for-1m-timeframe');
-
-const {
   binanceScreenerConf,
 } = require('../../../config');
 
@@ -36,21 +34,7 @@ const {
 
 const CONNECTION_NAME = 'TradingHelperToBinanceScreener:Spot:Kline_1m';
 
-class InstrumentQueue {
-  constructor() {
-    this.queue = [];
-    this.isActive = false;
-  }
-
-  addIteration(obj) {
-    this.queue.push(obj);
-
-    if (!this.isActive) {
-      this.isActive = true;
-      this.nextStep();
-    }
-  }
-
+class InstrumentQueue extends QueueHandler {
   async nextStep() {
     const step = this.queue.shift();
 
@@ -61,7 +45,7 @@ class InstrumentQueue {
 
     const [
       resultUpdateInstrument,
-      resultUpdate,
+      // resultUpdate,
       // resultCalculate,
     ] = await Promise.all([
       updateInstrumentInRedis({
@@ -69,6 +53,7 @@ class InstrumentQueue {
         price: parseFloat(step.close),
       }),
 
+      /*
       updateCandlesInRedis({
         instrumentId: step.instrumentId,
         instrumentName: step.instrumentName,
@@ -80,6 +65,7 @@ class InstrumentQueue {
           data: [step.open, step.close, step.low, step.high],
         },
       }),
+      */
 
       /*
       calculateTrendFor1mTimeframe({
@@ -93,9 +79,11 @@ class InstrumentQueue {
       log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
     }
 
+    /*
     if (!resultUpdate || !resultUpdate.status) {
       log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
     }
+    */
 
     /*
     if (!resultCalculate || !resultCalculate.status) {

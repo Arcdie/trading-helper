@@ -108,9 +108,6 @@ module.exports = async (req, res, next) => {
         continue;
       }
 
-      log.info(`Instrument ${instrumentDoc.name}`);
-      log.info('Started loading candles');
-
       let execFunc;
       let instrumentName = instrumentDoc.name;
 

@@ -2,6 +2,8 @@ const WebSocketClient = require('ws');
 
 const log = require('../../../libs/logger')(module);
 
+const QueueHandler = require('../../../libs/queue-handler');
+
 const {
   sendMessage,
 } = require('../../telegram-bot');
@@ -32,21 +34,7 @@ const {
 
 const CONNECTION_NAME = 'TradingHelperToBinanceScreener:Spot:Kline_5m';
 
-class InstrumentQueue {
-  constructor() {
-    this.queue = [];
-    this.isActive = false;
-  }
-
-  addIteration(obj) {
-    this.queue.push(obj);
-
-    if (!this.isActive) {
-      this.isActive = true;
-      this.nextStep();
-    }
-  }
-
+class InstrumentQueue extends QueueHandler {
   async nextStep() {
     const step = this.queue.shift();
 

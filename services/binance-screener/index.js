@@ -7,9 +7,9 @@ const get5mCandlesForFuturesInstruments = require('./futures/get-5m-candles-for-
 const get1hCandlesForFuturesInstruments = require('./futures/get-1h-candles-for-futures-instruments');
 
 module.exports = async () => {
-  await get1mCandlesForSpotInstruments();
-  await get5mCandlesForSpotInstruments();
-  await get1hCandlesForSpotInstruments();
+  // await get1mCandlesForSpotInstruments();
+  // await get5mCandlesForSpotInstruments();
+  // await get1hCandlesForSpotInstruments();
 
   await get1mCandlesForFuturesInstruments();
   await get5mCandlesForFuturesInstruments();

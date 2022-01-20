@@ -2,6 +2,8 @@ const WebSocketClient = require('ws');
 
 const log = require('../../../libs/logger')(module);
 
+const QueueHandler = require('../../../libs/queue-handler');
+
 const {
   sendMessage,
 } = require('../../telegram-bot');
@@ -19,8 +21,8 @@ const {
 } = require('../../../controllers/instruments/utils/update-instrument-in-redis');
 
 const {
-  calculateTrendFor1mTimeframe,
-} = require('../../../controllers/instrument-trends/utils/calculate-trend-for-1m-timeframe');
+  checkUserNotifications,
+} = require('../../../controllers/user-notifications/utils/check-user-notifications');
 
 const {
   binanceScreenerConf,
@@ -36,21 +38,7 @@ const {
 
 const CONNECTION_NAME = 'TradingHelperToBinanceScreener:Futures:Kline_1m';
 
-class InstrumentQueue {
-  constructor() {
-    this.queue = [];
-    this.isActive = false;
-  }
-
-  addIteration(obj) {
-    this.queue.push(obj);
-
-    if (!this.isActive) {
-      this.isActive = true;
-      this.nextStep();
-    }
-  }
-
+class InstrumentQueue extends QueueHandler {
   async nextStep() {
     const step = this.queue.shift();
 
@@ -61,7 +49,7 @@ class InstrumentQueue {
 
     const [
       resultUpdateInstrument,
-      resultUpdate,
+      // resultUpdate,
       // resultCalculate,
     ] = await Promise.all([
       updateInstrumentInRedis({
@@ -69,6 +57,7 @@ class InstrumentQueue {
         price: parseFloat(step.close),
       }),
 
+      /*
       updateCandlesInRedis({
         instrumentId: step.instrumentId,
         instrumentName: step.instrumentName,
@@ -80,6 +69,7 @@ class InstrumentQueue {
           data: [step.open, step.close, step.low, step.high],
         },
       }),
+      */
 
       /*
       calculateTrendFor1mTimeframe({
@@ -93,9 +83,11 @@ class InstrumentQueue {
       log.warn(resultUpdateInstrument.message || 'Cant updateInstrumentInRedis');
     }
 
+    /*
     if (!resultUpdate || !resultUpdate.status) {
       log.warn(resultUpdate.message || 'Cant updateCandlesInRedis');
     }
+    */
 
     /*
     if (!resultCalculate || !resultCalculate.status) {
@@ -107,11 +99,33 @@ class InstrumentQueue {
   }
 }
 
+class InstrumentQueueWithDelay extends QueueHandler {
+  async nextTick() {
+    const [
+      resultCheckNotifications,
+    ] = await Promise.all([
+      checkUserNotifications({
+        instrumentId: this.lastTick.instrumentId,
+        instrumentName: this.lastTick.instrumentName,
+        price: this.lastTick.close,
+      }),
+    ]);
+
+    if (!resultCheckNotifications || !resultCheckNotifications.status) {
+      log.warn(resultCheckNotifications.message || 'Cant checkUserNotifications');
+    }
+
+    setTimeout(() => { this.nextTick(); }, 1 * 1000);
+  }
+}
+
 module.exports = async () => {
   try {
     let sendPongInterval;
-    const instrumentQueue = new InstrumentQueue();
     const connectStr = `ws://${binanceScreenerConf.host}:${binanceScreenerConf.websocketPort}`;
+
+    const instrumentsQueues = [];
+    const instrumentQueue = new InstrumentQueue();
 
     const websocketConnect = () => {
       let isOpened = false;
@@ -147,6 +161,16 @@ module.exports = async () => {
           actionName: ACTION_NAMES.get('futuresCandle1mData'),
           data: parsedData.data,
         });
+
+        const {
+          instrumentName,
+        } = parsedData.data;
+
+        if (!instrumentsQueues[instrumentName]) {
+          instrumentsQueues[instrumentName] = new InstrumentQueueWithDelay(instrumentName);
+        }
+
+        instrumentsQueues[instrumentName].updateLastTick(parsedData.data);
 
         if (parsedData.data.isClosed) {
           instrumentQueue.addIteration(parsedData.data);
