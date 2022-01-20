@@ -108,8 +108,8 @@ const createUserNotification = async ({
     userNotifications.push(newNotification._id);
 
     await redis.hsetAsync([
-      keyPriceSymbol,
       keyInstrumentNotifications,
+      keyPriceSymbol,
       JSON.stringify(userNotifications),
     ]);
 

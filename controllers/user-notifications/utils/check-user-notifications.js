@@ -132,8 +132,9 @@ const checkUserNotifications = async ({
       await boundDoc.save();
 
       if (userDoc.telegram_user_id) {
-        const message = `Инструмент пересек уровень,
-${instrumentName}, ${boundDoc.price}`;
+        const message = `Level:${instrumentName}
+https://ru.tradingview.com/chart/?symbol=${instrumentName}&interval=60
+https://trading-helper.ru/monitoring?symbol=${instrumentName}&interval=5m`;
 
         sendMessage(userDoc.telegram_user_id, message);
       }

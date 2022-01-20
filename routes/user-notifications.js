@@ -10,6 +10,7 @@ const commonMiddlewares = [
   getUser,
 ];
 
+router.get('/', commonMiddlewares, userNotificationControllers.getUserNotifications);
 router.post('/', commonMiddlewares, userNotificationControllers.createUserNotification);
 
 module.exports = router;
