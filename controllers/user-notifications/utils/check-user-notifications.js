@@ -61,7 +61,7 @@ const checkUserNotifications = async ({
     instrumentNotificationKeys.forEach(key => {
       let [userPrice, isLong] = key.split('_');
 
-      isLong = isLong === 'true';
+      isLong = isLong === 'long';
       userPrice = parseFloat(userPrice);
 
       if ((isLong && userPrice <= price)
