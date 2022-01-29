@@ -46,13 +46,6 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    if (!instrumentId || !isMongoId(instrumentId)) {
-      return res.json({
-        status: false,
-        message: 'No or invalid instrumentId',
-      });
-    }
-
     if (!interval || !INTERVALS.get(interval)) {
       return res.json({
         status: false,
@@ -74,6 +67,13 @@ module.exports = async (req, res, next) => {
       });
     }
 
+    if (instrumentId && !isMongoId(instrumentId)) {
+      return res.json({
+        status: false,
+        message: 'Invalid instrumentId',
+      });
+    }
+
     let {
       isFirstCall,
       limit,
@@ -87,7 +87,7 @@ module.exports = async (req, res, next) => {
 
     let resultGetCandles;
 
-    if (!isFirstCall) {
+    if (!isFirstCall || !instrumentId) {
       resultGetCandles = await getCandles({
         instrumentId,
         startTime,

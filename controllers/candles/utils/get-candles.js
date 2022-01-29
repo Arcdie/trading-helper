@@ -25,13 +25,6 @@ const getCandles = async ({
   limit,
 }) => {
   try {
-    if (!instrumentId || !isMongoId(instrumentId.toString())) {
-      return {
-        status: false,
-        message: 'No or invalid instrumentId',
-      };
-    }
-
     if (!interval || !INTERVALS.get(interval)) {
       return {
         status: false,
@@ -53,6 +46,13 @@ const getCandles = async ({
       };
     }
 
+    if (instrumentId && !isMongoId(instrumentId.toString())) {
+      return {
+        status: false,
+        message: 'Invalid instrumentId',
+      };
+    }
+
     if (limit && limit > LIMIT_CANDLES) {
       limit = LIMIT_CANDLES;
     }
@@ -71,9 +71,11 @@ const getCandles = async ({
       SearchModel = Candle1d;
     }
 
-    const matchObj = {
-      instrument_id: instrumentId,
-    };
+    const matchObj = {};
+
+    if (instrumentId) {
+      matchObj.instrument_id = instrumentId;
+    }
 
     if (startTime && endTime) {
       const momentStartTime = moment(startTime).utc().startOf('minute');
