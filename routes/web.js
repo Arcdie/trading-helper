@@ -22,6 +22,7 @@ router.get('/volume-monitoring', extendedMiddlewares, webControllers.getVolumeMo
 router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 
 router.get('/monitoring', extendedMiddlewares, webControllers.getMonitoringPage);
+router.get('/monitoring-correlation', extendedMiddlewares, webControllers.getMonitoringCorrelationPage);
 
 router.get('/volume-statistics', extendedMiddlewares, webControllers.getVolumeStatisticsPage);
 router.get('/robots-statistics', extendedMiddlewares, webControllers.getRobotsStatisticsPage);

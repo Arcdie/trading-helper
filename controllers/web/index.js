@@ -8,6 +8,7 @@ const getLevelsMonitoringPage = require('./get-levels-monitoring-page');
 const getVolumeMonitoringPage = require('./get-volume-monitoring-page');
 const getVolumeStatisticsPage = require('./get-volume-statistics-page');
 const getRobotsStatisticsPage = require('./get-robots-statistics-page');
+const getMonitoringCorrelationPage = require('./get-monitoring-correlation-page');
 
 const getLoginPage = require('./get-login-page');
 const getRegistrationPage = require('./get-registration-page');
@@ -23,6 +24,7 @@ module.exports = {
   getVolumeMonitoringPage,
   getVolumeStatisticsPage,
   getRobotsStatisticsPage,
+  getMonitoringCorrelationPage,
 
   getLoginPage,
   getRegistrationPage,
