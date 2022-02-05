@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 const {
   isMongoId,
 } = require('validator');
@@ -24,6 +26,7 @@ const createUserFigureLevelBound = async ({
 
   levelPrice,
   levelTimeframe,
+  levelStartCandleTime,
 }) => {
   try {
     if (!userId || !isMongoId(userId.toString())) {
@@ -44,6 +47,13 @@ const createUserFigureLevelBound = async ({
       return {
         status: false,
         message: 'No or invalid levelTimeframe',
+      };
+    }
+
+    if (!levelStartCandleTime || !moment(levelStartCandleTime).isValid()) {
+      return {
+        status: false,
+        message: 'No or invalid levelStartCandleTime',
       };
     }
 
@@ -96,7 +106,7 @@ const createUserFigureLevelBound = async ({
 
       level_price: levelPrice,
       level_timeframe: levelTimeframe,
-      // level_start_candle_time: levelStartCandleTime,
+      level_start_candle_time: levelStartCandleTime,
     });
 
     await newLevel.save();

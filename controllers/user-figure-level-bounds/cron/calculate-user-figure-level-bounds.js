@@ -133,8 +133,9 @@ module.exports = async (req, res, next) => {
 
           if (!levelWithThisPrice && !levelWithThisPriceInBounds) {
             newLevels.push({
-              levelTimeframe: INTERVALS.get('1h'),
               levelPrice: level.levelPrice,
+              levelTimeframe: INTERVALS.get('1h'),
+              levelStartCandleTime: level.startOfLevelUnix,
             });
           }
         });
@@ -150,6 +151,7 @@ module.exports = async (req, res, next) => {
 
               levelPrice: newLevel.levelPrice,
               levelTimeframe: newLevel.levelTimeframe,
+              levelStartCandleTime: newLevel.levelStartCandleTime,
             });
 
             if (!resultCreateBound || !resultCreateBound.status) {

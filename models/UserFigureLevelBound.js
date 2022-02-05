@@ -47,6 +47,11 @@ const modelSchema = {
     type: Date,
   },
 
+  level_start_candle_time: {
+    type: Date,
+    required: true,
+  },
+
   created_at: {
     type: Date,
     required: true,
