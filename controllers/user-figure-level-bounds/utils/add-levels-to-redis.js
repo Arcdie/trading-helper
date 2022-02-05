@@ -33,7 +33,7 @@ const addLevelsToRedis = async ({
       };
     }
 
-    const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:LEVEL_BOUNDS`;
+    const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:FIGURE_LEVEL_BOUNDS`;
     let cacheInstrumentLevelBoundsKeys = await redis.hkeysAsync(keyInstrumentLevelBounds);
 
     if (!cacheInstrumentLevelBoundsKeys || !cacheInstrumentLevelBoundsKeys.length) {

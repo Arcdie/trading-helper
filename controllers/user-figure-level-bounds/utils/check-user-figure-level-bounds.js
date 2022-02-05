@@ -5,17 +5,9 @@ const {
 const redis = require('../../../libs/redis');
 const log = require('../../../libs/logger')(module);
 
-const {
-  sendPrivateData,
-} = require('../../../websocket/websocket-server');
+const UserFigureLevelBound = require('../../../models/UserFigureLevelBound');
 
-const {
-  PRIVATE_ACTION_NAMES,
-} = require('../../../websocket/constants');
-
-const UserLevelBound = require('../../../models/UserLevelBound');
-
-const checkUserLevelBounds = async ({
+const checkUserFigureLevelBounds = async ({
   instrumentId,
   instrumentName,
   instrumentPrice,
@@ -42,7 +34,7 @@ const checkUserLevelBounds = async ({
       };
     }
 
-    const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:LEVEL_BOUNDS`;
+    const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentName}:FIGURE_LEVEL_BOUNDS`;
     let cacheInstrumentLevelBoundsKeys = await redis.hkeysAsync(keyInstrumentLevelBounds);
 
     if (!cacheInstrumentLevelBoundsKeys) {
@@ -89,19 +81,10 @@ const checkUserLevelBounds = async ({
 
       bounds.forEach(bound => {
         boundsIds.push(bound.bound_id);
-
-        sendPrivateData({
-          userId: bound.user_id,
-          actionName: PRIVATE_ACTION_NAMES.get('levelWasWorked'),
-          data: {
-            instrumentId,
-            boundId: bound.bound_id,
-          },
-        });
       });
     });
 
-    await UserLevelBound.updateMany({
+    await UserFigureLevelBound.updateMany({
       _id: {
         $in: boundsIds,
       },
@@ -129,5 +112,5 @@ const checkUserLevelBounds = async ({
 };
 
 module.exports = {
-  checkUserLevelBounds,
+  checkUserFigureLevelBounds,
 };

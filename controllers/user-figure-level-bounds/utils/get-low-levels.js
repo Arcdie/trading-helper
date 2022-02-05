@@ -1,21 +1,29 @@
 const log = require('../../../libs/logger')(module);
 
 const getLowLevels = ({
-  candles, distanceInBars,
+  candles,
+  distanceFromLeftSide,
+  distanceFromRightSide,
 }) => {
   try {
+    if (!candles || !candles.length) {
+      return [];
+    }
+
     const levels = [];
     const lCandles = candles.length;
-    const revercedCandles = [...candles].reverse();
 
-    for (let index = 0; index < lCandles - distanceInBars; index += 1) {
-      const candle = revercedCandles[index];
+    candles.forEach((candle, index) => {
+      if ((lCandles - index) < distanceFromRightSide) {
+        return true;
+      }
 
       let isLowest = true;
       let isLowCrossed = false;
 
-      for (let j = index; j < revercedCandles.length; j += 1) {
-        const tmpCandle = revercedCandles[j];
+      for (let i = index; i < lCandles; i += 1) {
+        const tmpCandle = candles[i];
+
         if (tmpCandle.low < candle.low) {
           isLowCrossed = true;
           break;
@@ -23,8 +31,8 @@ const getLowLevels = ({
       }
 
       if (!isLowCrossed) {
-        for (let j = 0; j < distanceInBars; j += 1) {
-          const tmpCandle = revercedCandles[index - j];
+        for (let i = 1; i < distanceFromLeftSide + 1; i += 1) {
+          const tmpCandle = candles[index - i];
 
           if (!tmpCandle) {
             break;
@@ -40,10 +48,10 @@ const getLowLevels = ({
       if (!isLowCrossed && isLowest) {
         levels.push({
           levelPrice: candle.low,
-          levelStartCandleTime: candle.time,
+          startOfLevelUnix: candle.originalTimeUnix,
         });
       }
-    }
+    });
 
     return levels;
   } catch (error) {

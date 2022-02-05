@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const {
-  DEFAULT_INDENT_IN_PERCENTS,
-  MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
-} = require('../controllers/user-level-bounds/constants');
+  DISTANCE_FROM_LEFT_SIDE,
+  DISTANCE_FROM_RIGHT_SIDE,
+} = require('../controllers/user-figure-level-bounds/constants');
 
 const modelSchema = {
   fullname: {
@@ -17,9 +17,17 @@ const modelSchema = {
     required: true,
   },
 
-  tradingview_user_id: String,
-  tradingview_chart_id: String,
-  tradingview_session_id: String,
+  tradingview_user_id: {
+    type: String,
+  },
+
+  tradingview_chart_id: {
+    type: String,
+  },
+
+  tradingview_session_id: {
+    type: String,
+  },
 
   telegram_user_id: {
     type: String,
@@ -30,69 +38,15 @@ const modelSchema = {
     default: false,
   },
 
-  settings: {
-    is_bounded_telegram: {
-      type: Boolean,
-      default: false,
-    },
-
-    indent_in_percents: {
+  figure_levels_settings: {
+    distance_from_left_side: {
       type: Number,
-      default: DEFAULT_INDENT_IN_PERCENTS,
-    },
-  },
-
-  volume_monitoring_settings: {
-    do_spot_sort_by_distace_to_price: {
-      type: Boolean,
-      default: true,
+      default: DISTANCE_FROM_LEFT_SIDE,
     },
 
-    do_spot_sort_by_lifetime: {
-      type: Boolean,
-      default: false,
-    },
-
-    do_futures_sort_by_distace_to_price: {
-      type: Boolean,
-      default: true,
-    },
-
-    do_futures_sort_by_lifetime: {
-      type: Boolean,
-      default: false,
-    },
-  },
-
-  levels_monitoring_settings: {
-    is_draw_levels_for_1h_candles: {
-      type: Boolean,
-      default: false,
-    },
-
-    is_draw_levels_for_4h_candles: {
-      type: Boolean,
-      default: false,
-    },
-
-    is_draw_levels_for_1d_candles: {
-      type: Boolean,
-      default: false,
-    },
-
-    number_candles_for_calculate_1h_levels: {
+    distance_from_right_side: {
       type: Number,
-      default: MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
-    },
-
-    number_candles_for_calculate_4h_levels: {
-      type: Number,
-      default: MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
-    },
-
-    number_candles_for_calculate_1d_levels: {
-      type: Number,
-      default: MIN_AMOUNT_CANDLES_FOR_CALCULATE_LEVELS,
+      default: DISTANCE_FROM_RIGHT_SIDE,
     },
   },
 
@@ -107,10 +61,6 @@ const modelSchema = {
     required: true,
     default: Date.now,
   },
-
-  /* DEPRECATED
-    tradingview_list_id: String,
-  */
 };
 
 const User = new mongoose.Schema(modelSchema, { versionKey: false });

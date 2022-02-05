@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const {
-  DEFAULT_INDENT_IN_PERCENTS,
-} = require('../controllers/user-level-bounds/constants');
+  INTERVALS,
+} = require('../controllers/candles/constants');
 
 const modelSchema = {
   user_id: {
@@ -25,33 +25,20 @@ const modelSchema = {
   level_timeframe: {
     type: String,
     required: true,
+    enum: [...INTERVALS.values()],
   },
-
-  // line has to draw from date point
-  level_start_candle_time: {
-    type: Date,
-    required: true,
-  },
-
-  /*
-  indent_in_percents: {
-    type: Number,
-    required: true,
-    default: DEFAULT_INDENT_IN_PERCENTS,
-  },
-  */
 
   is_long: {
     type: Boolean,
     required: true,
   },
 
-  is_worked: {
+  is_active: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 
-  is_sended_in_telegram: {
+  is_worked: {
     type: Boolean,
     default: false,
   },
@@ -73,7 +60,7 @@ const modelSchema = {
   },
 };
 
-const UserLevelBound = new mongoose.Schema(modelSchema, { versionKey: false });
+const UserFigureLevelBound = new mongoose.Schema(modelSchema, { versionKey: false });
 
-module.exports = mongoose.model('UserLevelBound', UserLevelBound, 'user-level-bounds');
+module.exports = mongoose.model('UserFigureLevelBound', UserFigureLevelBound, 'user-figure-level-bounds');
 module.exports.modelSchema = modelSchema;

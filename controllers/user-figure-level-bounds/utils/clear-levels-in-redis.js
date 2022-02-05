@@ -3,7 +3,7 @@ const log = require('../../../libs/logger')(module);
 
 const clearLevelsInRedis = async () => {
   try {
-    const key = 'INSTRUMENT:*:LEVEL_BOUNDS';
+    const key = 'INSTRUMENT:*:FIGURE_LEVEL_BOUNDS';
     const targetKeys = await redis.keysAsync(key);
 
     await Promise.all(targetKeys.map(async targetKey => {

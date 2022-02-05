@@ -38,7 +38,8 @@ module.exports = async () => {
       return false;
     }
 
-    const instrumentsDocs = (resultGetInstruments.result || []);
+    const instrumentsDocs = (resultGetInstruments.result || [])
+      .filter(doc => ['AUDIOUSDTPERP', 'SUSHIUSDTPERP', 'BTCUSDTPERP'].includes(doc.name));
 
     if (!instrumentsDocs || !instrumentsDocs.length) {
       return false;
@@ -46,12 +47,10 @@ module.exports = async () => {
 
     const targetDates = [];
 
-    const startDate = moment.unix(1639958400).utc()
+    const startDate = moment.unix(1642982400).utc();
       // .add(-1, 'days').startOf('day');
 
-    const endDate = moment().utc()
-      .startOf('day').add(-2, 'days');
-
+    const endDate = moment(startDate).utc().add(1, 'days');
     const endDateUnix = endDate.unix();
 
     const tmpDate = moment(startDate);
@@ -66,10 +65,14 @@ module.exports = async () => {
 
       tmpDate.add(1, 'days');
 
+      console.log(tmpDate.unix(), endDateUnix);
+
       if (tmpDate.unix() === endDateUnix) {
         break;
       }
     }
+
+    console.log('targetDates', targetDates);
 
     const pathToFrontFolder = path.join(__dirname, '../../trading-helper-front/public/files/aggTrades');
 
@@ -91,7 +94,7 @@ module.exports = async () => {
         continue;
       }
 
-      /*
+      // /*
       const links = targetDates.map(date => `data/${typeInstrument}/daily/aggTrades/${instrumentName}/${instrumentName}-aggTrades-${date.year}-${date.month}-${date.day}.zip`);
 
       for await (const link of links) {
@@ -110,7 +113,7 @@ module.exports = async () => {
 
         await sleep(1000);
       }
-      */
+      // */
 
       const filesNames = [];
       const weeklyFileData = [];
@@ -151,7 +154,9 @@ module.exports = async () => {
 
           resultGetFile.result.forEach(elem => {
             const [tradeId, price, quantity, firstTradeId, lastTradeId, timestamp, direction] = elem;
-            validResult.push([price, quantity, timestamp]);
+            const isLong = direction === 'false';
+
+            validResult.push([price, quantity, timestamp, isLong]);
           });
 
           resultGetFile = false;

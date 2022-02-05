@@ -25,6 +25,10 @@ const {
 } = require('../../../controllers/user-notifications/utils/check-user-notifications');
 
 const {
+  checkUserFigureLevelBounds,
+} = require('../../../controllers/user-figure-level-bounds/utils/check-user-figure-level-bounds');
+
+const {
   binanceScreenerConf,
 } = require('../../../config');
 
@@ -103,16 +107,27 @@ class InstrumentQueueWithDelay extends QueueHandler {
   async nextTick() {
     const [
       resultCheckNotifications,
+      resultCheckUserFigureLevelBounds,
     ] = await Promise.all([
       checkUserNotifications({
         instrumentId: this.lastTick.instrumentId,
         instrumentName: this.lastTick.instrumentName,
         price: this.lastTick.close,
       }),
+
+      checkUserFigureLevelBounds({
+        instrumentId: this.lastTick.instrumentId,
+        instrumentName: this.lastTick.instrumentName,
+        instrumentPrice: this.lastTick.close,
+      }),
     ]);
 
     if (!resultCheckNotifications || !resultCheckNotifications.status) {
       log.warn(resultCheckNotifications.message || 'Cant checkUserNotifications');
+    }
+
+    if (!resultCheckUserFigureLevelBounds || !resultCheckUserFigureLevelBounds.status) {
+      log.warn(resultCheckUserFigureLevelBounds.message || 'Cant checkUserFigureLevelBounds');
     }
 
     setTimeout(() => { this.nextTick(); }, 1 * 1000);

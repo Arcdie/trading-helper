@@ -19,6 +19,8 @@ router.get('/profile', extendedMiddlewares, webControllers.getProfilePage);
 
 router.get('/utilities', extendedMiddlewares, webControllers.getUtilitiesPage);
 router.get('/volume-monitoring', extendedMiddlewares, webControllers.getVolumeMonitoringPage);
+
+router.get('/levels-editor', extendedMiddlewares, webControllers.getLevelsEditorPage);
 router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 
 router.get('/monitoring', extendedMiddlewares, webControllers.getMonitoringPage);
@@ -28,6 +30,7 @@ router.get('/volume-statistics', extendedMiddlewares, webControllers.getVolumeSt
 router.get('/robots-statistics', extendedMiddlewares, webControllers.getRobotsStatisticsPage);
 
 router.get('/experiment', extendedMiddlewares, webControllers.getExperimentPage);
+router.get('/trades-viewer', extendedMiddlewares, webControllers.getTradesViewerPage);
 
 router.get('/auth/login', commonMiddlewares, webControllers.getLoginPage);
 router.get('/auth/registration', commonMiddlewares, webControllers.getRegistrationPage);

@@ -4,8 +4,8 @@ const InstrumentNew = require('../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
   try {
-    let {
-      query: {
+    const {
+      body: {
         instrumentsIds,
       },
 
@@ -18,8 +18,6 @@ module.exports = async (req, res, next) => {
         message: 'Not authorized',
       });
     }
-
-    instrumentsIds = instrumentsIds.split(',');
 
     if (!instrumentsIds || !Array.isArray(instrumentsIds)) {
       return res.json({

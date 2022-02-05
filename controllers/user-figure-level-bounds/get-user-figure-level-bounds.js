@@ -5,8 +5,8 @@ const {
 const log = require('../../libs/logger')(module);
 
 const {
-  getUserLevelBounds,
-} = require('./utils/get-user-level-bounds');
+  getUserFigureLevelBounds,
+} = require('./utils/get-user-figure-level-bounds');
 
 module.exports = async (req, res, next) => {
   try {
@@ -32,12 +32,12 @@ module.exports = async (req, res, next) => {
       funcObj.isWorked = isWorked === 'true';
     }
 
-    const resultGetBounds = await getUserLevelBounds(funcObj);
+    const resultGetBounds = await getUserFigureLevelBounds(funcObj);
 
     if (!resultGetBounds || !resultGetBounds.status) {
       return res.json({
         status: true,
-        message: resultGetBounds.message || 'Cant getUserLevelBounds',
+        message: resultGetBounds.message || 'Cant getUserFigureLevelBounds',
       });
     }
 

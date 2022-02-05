@@ -12,8 +12,8 @@ const commonMiddlewares = [
 ];
 
 router.get('/active', instrumentControllers.getActiveInstruments);
-router.get('/by-id', commonMiddlewares, instrumentControllers.findManyById);
-router.get('/by-name', commonMiddlewares, instrumentControllers.findManyByName);
+router.post('/by-id', commonMiddlewares, instrumentControllers.findManyById);
+router.post('/by-name', commonMiddlewares, instrumentControllers.findManyByName);
 
 router.get('/renew', commonMiddlewares, instrumentControllers.renewInstrumentsInRedis);
 

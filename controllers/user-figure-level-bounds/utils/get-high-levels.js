@@ -1,23 +1,28 @@
 const log = require('../../../libs/logger')(module);
 
 const getHighLevels = ({
-  candles, distanceInBars,
+  candles,
+  distanceFromLeftSide,
+  distanceFromRightSide,
 }) => {
   try {
+    if (!candles || !candles.length) {
+      return [];
+    }
+
     const levels = [];
     const lCandles = candles.length;
-    const revercedCandles = [...candles].reverse();
 
     candles.forEach((candle, index) => {
-      if (index < distanceInBars) {
+      if ((lCandles - index) < distanceFromRightSide) {
         return true;
       }
 
       let isHighest = true;
       let isHighCrossed = false;
 
-      for (let i = (lCandles - index); i < lCandles; i += 1) {
-        const tmpCandle = revercedCandles[i];
+      for (let i = index; i < lCandles; i += 1) {
+        const tmpCandle = candles[i];
 
         if (tmpCandle.high > candle.high) {
           isHighCrossed = true;
@@ -26,8 +31,8 @@ const getHighLevels = ({
       }
 
       if (!isHighCrossed) {
-        for (let i = 0; i < distanceInBars; i += 1) {
-          const tmpCandle = revercedCandles[lCandles - index - i];
+        for (let i = 1; i < distanceFromLeftSide + 1; i += 1) {
+          const tmpCandle = candles[index - i];
 
           if (!tmpCandle) {
             break;
@@ -43,7 +48,7 @@ const getHighLevels = ({
       if (!isHighCrossed && isHighest) {
         levels.push({
           levelPrice: candle.high,
-          levelStartCandleTime: candle.time,
+          startOfLevelUnix: candle.originalTimeUnix,
         });
       }
     });

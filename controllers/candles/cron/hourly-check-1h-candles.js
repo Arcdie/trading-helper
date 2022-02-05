@@ -57,6 +57,7 @@ module.exports = async (req, res, next) => {
     }
 
     const startDate = moment().utc()
+      .startOf('hour')
       .add(-5, 'hours');
 
     const endDate = moment().utc()
@@ -124,7 +125,7 @@ module.exports = async (req, res, next) => {
         resultGetCandles = await execFunc({
           symbol: instrumentName,
           interval: INTERVALS.get('1h'),
-          limit: 10,
+          limit: 300,
 
           startTime: startTimeUnix * 1000,
           endTime: endTimeUnix * 1000,

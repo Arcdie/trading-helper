@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const {
   isMongoId,
 } = require('validator');
@@ -10,13 +8,14 @@ const {
   addLevelsToRedis,
 } = require('./add-levels-to-redis');
 
+
 const {
-  TYPE_CANDLES_FOR_FIND_LEVELS,
-} = require('../constants');
+  INTERVALS,
+} = require('../../candles/constants');
 
-const UserLevelBound = require('../../../models/UserLevelBound');
+const UserFigureLevelBound = require('../../../models/UserFigureLevelBound');
 
-const createUserLevelBound = async ({
+const createUserFigureLevelBound = async ({
   userId,
 
   instrumentId,
@@ -25,7 +24,6 @@ const createUserLevelBound = async ({
 
   levelPrice,
   levelTimeframe,
-  levelStartCandleTime,
 }) => {
   try {
     if (!userId || !isMongoId(userId.toString())) {
@@ -42,17 +40,10 @@ const createUserLevelBound = async ({
       };
     }
 
-    if (!levelTimeframe || !TYPE_CANDLES_FOR_FIND_LEVELS.includes(levelTimeframe)) {
+    if (!levelTimeframe || !INTERVALS.includes(levelTimeframe)) {
       return {
         status: false,
         message: 'No or invalid levelTimeframe',
-      };
-    }
-
-    if (!levelStartCandleTime || !moment(levelStartCandleTime).isValid()) {
-      return {
-        status: false,
-        message: 'No or invalid levelStartCandleTime',
       };
     }
 
@@ -79,7 +70,7 @@ const createUserLevelBound = async ({
 
     const isLong = levelPrice > instrumentPrice;
 
-    const userLevelBound = await UserLevelBound.findOne({
+    const userLevelBound = await UserFigureLevelBound.findOne({
       user_id: userId,
       instrument_id: instrumentId,
 
@@ -97,7 +88,7 @@ const createUserLevelBound = async ({
       };
     }
 
-    const newLevel = new UserLevelBound({
+    const newLevel = new UserFigureLevelBound({
       user_id: userId,
       instrument_id: instrumentId,
 
@@ -105,7 +96,7 @@ const createUserLevelBound = async ({
 
       level_price: levelPrice,
       level_timeframe: levelTimeframe,
-      level_start_candle_time: levelStartCandleTime,
+      // level_start_candle_time: levelStartCandleTime,
     });
 
     await newLevel.save();
@@ -136,5 +127,5 @@ const createUserLevelBound = async ({
 };
 
 module.exports = {
-  createUserLevelBound,
+  createUserFigureLevelBound,
 };

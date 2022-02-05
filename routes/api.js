@@ -9,7 +9,7 @@ router.use('/candles', require('./candles'));
 router.use('/strategies', require('./strategies'));
 router.use('/instruments', require('./instruments'));
 
-router.use('/user-level-bounds', require('./user-level-bounds'));
+// router.use('/user-level-bounds', require('./user-level-bounds'));
 router.use('/user-trade-bounds', require('./user-trade-bounds'));
 router.use('/user-notifications', require('./user-notifications'));
 router.use('/user-binance-bounds', require('./user-binance-bounds'));

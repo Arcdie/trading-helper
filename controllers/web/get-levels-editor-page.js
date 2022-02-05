@@ -7,10 +7,10 @@ module.exports = async (req, res, next) => {
     } = req;
 
     if (!user) {
-      return res.redirect('/login');
+      return res.redirect('/');
     }
 
-    res.render('web/profile-page');
+    res.render('web/levels-editor-page');
   } catch (error) {
     log.warn(error.message);
 

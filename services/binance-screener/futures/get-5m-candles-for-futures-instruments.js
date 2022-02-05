@@ -17,10 +17,6 @@ const {
 } = require('../../../controllers/candles/utils/update-candles-in-redis');
 
 const {
-  checkUserLevelBounds,
-} = require('../../../controllers/user-level-bounds/utils/check-user-level-bounds');
-
-const {
   calculateTrendFor5mTimeframe,
 } = require('../../../controllers/instrument-trends/utils/calculate-trend-for-5m-timeframe');
 
@@ -82,18 +78,6 @@ class InstrumentQueue extends QueueHandler {
     */
 
     return this.nextStep();
-
-    /*
-    const resultCheck = await checkUserLevelBounds({
-      instrumentId: step.instrumentId,
-      instrumentName: step.instrumentName,
-      instrumentPrice: parseFloat(step.close),
-    });
-
-    if (!resultCheck || !resultCheck.status) {
-      log.warn(resultCheck.message || 'Cant checkUserLevelBounds');
-    }
-    */
   }
 }
 

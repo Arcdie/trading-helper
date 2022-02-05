@@ -1,6 +1,4 @@
-const {
-  isUndefined,
-} = require('lodash');
+// DEPRECATED
 
 const {
   isMongoId,
@@ -10,9 +8,8 @@ const log = require('../../../libs/logger')(module);
 
 const UserLevelBound = require('../../../models/UserLevelBound');
 
-const getUserLevelBounds = async ({
+const removeAllLevelsForUser = async ({
   userId,
-  isWorked,
 }) => {
   try {
     if (!userId || !isMongoId(userId.toString())) {
@@ -22,19 +19,12 @@ const getUserLevelBounds = async ({
       };
     }
 
-    const searchObj = {
+    await UserLevelBound.deleteMany({
       user_id: userId,
-    };
-
-    if (!isUndefined(isWorked)) {
-      searchObj.is_worked = isWorked;
-    }
-
-    const userLevelBounds = await UserLevelBound.find(searchObj).exec();
+    });
 
     return {
       status: true,
-      result: userLevelBounds.map(bound => bound._doc),
     };
   } catch (error) {
     log.warn(error.message);
@@ -47,5 +37,5 @@ const getUserLevelBounds = async ({
 };
 
 module.exports = {
-  getUserLevelBounds,
+  removeAllLevelsForUser,
 };
