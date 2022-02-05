@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const {
   isMongoId,
 } = require('validator');
@@ -50,7 +48,7 @@ const createUserFigureLevelBound = async ({
       };
     }
 
-    if (!levelStartCandleTime || !moment(levelStartCandleTime).isValid()) {
+    if (!levelStartCandleTime) {
       return {
         status: false,
         message: 'No or invalid levelStartCandleTime',

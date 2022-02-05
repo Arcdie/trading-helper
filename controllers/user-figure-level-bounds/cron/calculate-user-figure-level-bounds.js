@@ -73,6 +73,8 @@ module.exports = async (req, res, next) => {
     }
 
     for await (const instrumentDoc of instrumentsDocs) {
+      console.log('started', instrumentDoc.name);
+
       const resultGet1hCandles = await getValidCandles({
         interval: INTERVALS.get('1h'),
         instrumentId: instrumentDoc._id,
@@ -198,7 +200,7 @@ const getValidCandles = async ({
   const candles = resultGetCandles.result;
 
   candles.forEach(candle => {
-    candle.timeUnix = getUnix(candle.time);
+    candle.originalTimeUnix = getUnix(candle.time);
 
     candle.open = candle.data[0];
     candle.close = candle.data[1];
