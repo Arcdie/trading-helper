@@ -40,7 +40,7 @@ const createUserFigureLevelBound = async ({
       };
     }
 
-    if (!levelTimeframe || !INTERVALS.includes(levelTimeframe)) {
+    if (!levelTimeframe || !INTERVALS.get(levelTimeframe)) {
       return {
         status: false,
         message: 'No or invalid levelTimeframe',
