@@ -1,3 +1,5 @@
+const moment = require('moment');
+
 const {
   isMongoId,
 } = require('validator');
@@ -7,7 +9,6 @@ const log = require('../../../libs/logger')(module);
 const {
   addLevelsToRedis,
 } = require('./add-levels-to-redis');
-
 
 const {
   INTERVALS,
@@ -45,6 +46,13 @@ const createUserFigureLevelBound = async ({
       return {
         status: false,
         message: 'No or invalid levelTimeframe',
+      };
+    }
+
+    if (!levelStartCandleTime || !moment(levelStartCandleTime).isValid()) {
+      return {
+        status: false,
+        message: 'No or invalid levelStartCandleTime',
       };
     }
 

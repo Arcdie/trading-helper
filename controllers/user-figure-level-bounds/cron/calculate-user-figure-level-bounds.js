@@ -66,15 +66,14 @@ module.exports = async (req, res, next) => {
       return false;
     }
 
-    const instrumentsDocs = resultGetInstruments.result;
+    const instrumentsDocs = resultGetInstruments.result
+      .filter(d => d.name === 'IOTXUSDTPERP');
 
     if (!instrumentsDocs || !instrumentsDocs.length) {
       return true;
     }
 
     for await (const instrumentDoc of instrumentsDocs) {
-      console.log('started', instrumentDoc.name);
-
       const resultGet1hCandles = await getValidCandles({
         interval: INTERVALS.get('1h'),
         instrumentId: instrumentDoc._id,
@@ -137,7 +136,7 @@ module.exports = async (req, res, next) => {
             newLevels.push({
               levelPrice: level.levelPrice,
               levelTimeframe: INTERVALS.get('1h'),
-              levelStartCandleTime: level.startOfLevelUnix,
+              levelStartCandleTime: level.levelStartCandleTime,
             });
           }
         });
@@ -197,7 +196,7 @@ const getValidCandles = async ({
     };
   }
 
-  const candles = resultGetCandles.result;
+  let candles = resultGetCandles.result;
 
   candles.forEach(candle => {
     candle.originalTimeUnix = getUnix(candle.time);
@@ -207,6 +206,8 @@ const getValidCandles = async ({
     candle.low = candle.data[2];
     candle.high = candle.data[3];
   });
+
+  candles = candles.sort((a, b) => a.originalTimeUnix < b.originalTimeUnix ? -1 : 1);
 
   return {
     status: true,

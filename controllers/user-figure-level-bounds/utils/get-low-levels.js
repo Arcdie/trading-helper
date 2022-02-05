@@ -48,7 +48,7 @@ const getLowLevels = ({
       if (!isLowCrossed && isLowest) {
         levels.push({
           levelPrice: candle.low,
-          startOfLevelUnix: candle.originalTimeUnix,
+          levelStartCandleTime: candle.time,
         });
       }
     });

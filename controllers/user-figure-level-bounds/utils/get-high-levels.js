@@ -48,7 +48,7 @@ const getHighLevels = ({
       if (!isHighCrossed && isHighest) {
         levels.push({
           levelPrice: candle.high,
-          startOfLevelUnix: candle.originalTimeUnix,
+          levelStartCandleTime: candle.time,
         });
       }
     });
