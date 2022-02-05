@@ -66,8 +66,7 @@ module.exports = async (req, res, next) => {
       return false;
     }
 
-    const instrumentsDocs = resultGetInstruments.result
-      .filter(d => d.name === 'IOTXUSDTPERP');
+    const instrumentsDocs = resultGetInstruments.result;
 
     if (!instrumentsDocs || !instrumentsDocs.length) {
       return true;

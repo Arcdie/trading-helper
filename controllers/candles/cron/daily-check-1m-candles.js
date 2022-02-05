@@ -198,8 +198,6 @@ module.exports = async (req, res, next) => {
 
       removeFolder(pathToFolder);
     }
-
-    log.info('Process check-1m-candles was finished');
   } catch (error) {
     log.warn(error.message);
 

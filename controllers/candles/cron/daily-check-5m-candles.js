@@ -15,14 +15,6 @@ const {
 } = require('../utils/create-5m-candles');
 
 const {
-  create4hCandle,
-} = require('../utils/create-4h-candle');
-
-const {
-  create1dCandle,
-} = require('../utils/create-1d-candle');
-
-const {
   parseCSVToJSON,
 } = require('../../files/utils/parse-csv-to-json');
 
@@ -31,8 +23,6 @@ const {
 } = require('../../instruments/utils/get-active-instruments');
 
 const Candle5m = require('../../../models/Candle-5m');
-const Candle4h = require('../../../models/Candle-4h');
-const Candle1d = require('../../../models/Candle-1d');
 
 module.exports = async (req, res, next) => {
   try {
@@ -207,87 +197,7 @@ module.exports = async (req, res, next) => {
       }
 
       removeFolder(pathToFolder);
-
-      for await (const date of datesToDownload) {
-        log.info(`Started calculating candles, date ${date.startOfDay.utc().format()}`);
-
-        const targetStartDate = date.startOfDay;
-        const targetEndDate = moment(targetStartDate).endOf('day').utc();
-
-        const deleteMatch = {
-          $and: [{
-            time: { $gte: targetStartDate },
-          }, {
-            time: { $lt: targetEndDate },
-          }],
-        };
-
-        const fetchPromises = [
-          Candle4h.deleteMany(deleteMatch).exec(),
-          Candle1d.deleteMany(deleteMatch).exec(),
-        ];
-
-        await Promise.all(fetchPromises);
-
-        const targetCandle5msDocs = await Candle5m.find({
-          instrument_id: instrumentDoc._id,
-
-          $and: [{
-            time: { $gte: targetStartDate },
-          }, {
-            time: { $lt: targetEndDate },
-          }],
-        }).sort({ time: 1 }).exec();
-
-        const preparedCandles = targetCandle5msDocs.map(candle => ({
-          open: candle.data[0],
-          close: candle.data[1],
-          low: candle.data[2],
-          high: candle.data[3],
-          volume: candle.volume,
-          time: candle.time,
-        }));
-
-        const fourHourCandles = calculateFourHoursTimeFrameData(preparedCandles);
-        const dayCandles = calculateDayTimeFrameData(preparedCandles);
-
-        await Promise.all(fourHourCandles.map(async candle => {
-          const resultCreateCandle = await create4hCandle({
-            instrumentId: instrumentDoc._id,
-            startTime: candle.time,
-            open: candle.open,
-            close: candle.close,
-            high: candle.high,
-            low: candle.low,
-            volume: candle.volume,
-          });
-
-          if (!resultCreateCandle || !resultCreateCandle.status) {
-            log.warn(resultCreateCandle.message || 'Cant create4hCandle');
-            return null;
-          }
-        }));
-
-        await Promise.all(dayCandles.map(async candle => {
-          const resultCreateCandle = await create1dCandle({
-            instrumentId: instrumentDoc._id,
-            startTime: candle.time,
-            open: candle.open,
-            close: candle.close,
-            high: candle.high,
-            low: candle.low,
-            volume: candle.volume,
-          });
-
-          if (!resultCreateCandle || !resultCreateCandle.status) {
-            log.warn(resultCreateCandle.message || 'Cant create1dCandle');
-            return null;
-          }
-        }));
-      }
     }
-
-    log.info('Process check-5m-candles was finished');
   } catch (error) {
     log.warn(error.message);
 

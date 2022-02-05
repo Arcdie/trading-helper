@@ -192,8 +192,6 @@ module.exports = async (req, res, next) => {
 
       await sleep(1000);
     }
-
-    log.info('Process hourly-check-1m-candles was finished');
   } catch (error) {
     log.warn(error.message);
 

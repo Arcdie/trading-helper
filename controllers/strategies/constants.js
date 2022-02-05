@@ -14,6 +14,7 @@ const STRATEGIES = new Map([
   ['btcPriceJumps', 'btcPriceJumps'],
 
   ['levelRebounds', 'levelRebounds'],
+  ['figureLevelRebound', 'figureLevelRebound'],
 
   ['trendTrading', 'trendTrading'],
 
