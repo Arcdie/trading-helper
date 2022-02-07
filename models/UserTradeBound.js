@@ -5,8 +5,14 @@ const {
   TYPES_TRADES,
 } = require('../controllers/user-trade-bounds/constants');
 
+const {
+  STRATEGIES,
+} = require('../controllers/strategies/constants');
+
 const typesExit = [...TYPES_EXIT.values()];
 const typesTrades = [...TYPES_TRADES.values()];
+
+const strategies = [...STRATEGIES.values()];
 
 const modelSchema = {
   user_id: {
@@ -26,6 +32,12 @@ const modelSchema = {
     required: true,
   },
 
+  strategy_name: {
+    type: String,
+    required: true,
+    enum: strategies,
+  },
+
   strategy_target_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
@@ -42,18 +54,14 @@ const modelSchema = {
     enum: typesExit,
   },
 
-  my_binance_trade_id: {
-    unique: true,
-    type: String,
-    required: true,
-  },
-
   binance_trade_id: {
     type: String,
   },
 
-  binance_stoploss_trade_id: {
+  my_binance_trade_id: {
+    unique: true,
     type: String,
+    required: true,
   },
 
   buy_price: {
@@ -62,11 +70,6 @@ const modelSchema = {
 
   sell_price: {
     type: Number,
-  },
-
-  quantity: {
-    type: Number,
-    required: true,
   },
 
   stoploss_price: {
@@ -85,12 +88,18 @@ const modelSchema = {
     type: Number,
   },
 
-  profit_step_size: {
+  sum_commission: {
     type: Number,
   },
 
-  commission: {
+  quantity: {
     type: Number,
+    required: true,
+  },
+
+  number_trades: {
+    type: Number,
+    default: 1,
   },
 
   is_long: {

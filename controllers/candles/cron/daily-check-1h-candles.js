@@ -202,11 +202,7 @@ module.exports = async (req, res, next) => {
     }
   } catch (error) {
     log.warn(error.message);
-
-    res.json({
-      status: false,
-      message: error.message,
-    });
+    return false;
   }
 };
 

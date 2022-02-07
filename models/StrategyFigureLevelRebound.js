@@ -12,6 +12,11 @@ const modelSchema = {
     required: true,
   },
 
+  is_active: {
+    type: Boolean,
+    default: true,
+  },
+
   created_at: {
     type: Date,
     required: true,

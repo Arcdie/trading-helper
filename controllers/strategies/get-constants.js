@@ -4,7 +4,7 @@ const constants = require('./constants');
 
 module.exports = async (req, res, next) => {
   try {
-    // constants.STRATEGIES = [...constants.STRATEGIES];
+    constants.STRATEGIES = [...constants.STRATEGIES.values()];
 
     return res.json({
       status: true,
