@@ -32,6 +32,11 @@ const modelSchema = {
     required: true,
   },
 
+  is_initiator: {
+    type: Boolean,
+    default: false,
+  },
+
   strategy_name: {
     type: String,
     required: true,
