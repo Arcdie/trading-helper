@@ -72,6 +72,10 @@ const modelSchema = {
     type: Number,
   },
 
+  trigger_price: {
+    type: Number,
+  },
+
   stoploss_price: {
     type: Number,
   },
@@ -97,10 +101,12 @@ const modelSchema = {
     required: true,
   },
 
+  /*
   number_trades: {
     type: Number,
     default: 1,
   },
+  */
 
   is_long: {
     type: Boolean,

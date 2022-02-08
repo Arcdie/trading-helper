@@ -29,7 +29,6 @@ if (process.env.NODE_ENV !== 'localhost') {
           telegram_user_id: msg.from.id,
         }],
       }, {
-        settings: 1,
         telegram_user_id: 1,
       }).exec();
 
@@ -38,17 +37,7 @@ if (process.env.NODE_ENV !== 'localhost') {
         return true;
       }
 
-      if (!userDoc.settings) {
-        userDoc.settings = {};
-      }
-
-      if (userDoc && userDoc.settings.is_bounded_telegram) {
-        sendMessage(msg.from.id, 'Аккаунт уже привязан. Больше мне нечего предложить 🙂');
-        return true;
-      }
-
       userDoc.telegram_user_id = msg.from.id;
-      userDoc.settings.is_bounded_telegram = true;
 
       await userDoc.save();
 

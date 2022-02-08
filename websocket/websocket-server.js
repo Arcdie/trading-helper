@@ -21,7 +21,7 @@ const {
 
 const WebSocketRoom = require('./websocket-room');
 
-const pathToFolder = '/etc/letsencrypt/live/trading-helper.ru';
+const pathToFolder = '/etc/letsencrypt/live/trading-helper.ru-0001';
 
 const wsSettings = {};
 
