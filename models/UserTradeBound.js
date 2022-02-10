@@ -106,6 +106,10 @@ const modelSchema = {
     required: true,
   },
 
+  remark: {
+    type: String,
+  },
+
   /*
   number_trades: {
     type: Number,
