@@ -50,6 +50,8 @@ const modelSchema = {
     },
   },
 
+  // figure_lines_settings: {},
+
   created_at: {
     type: Date,
     required: true,

@@ -25,6 +25,10 @@ const {
 } = require('../../../controllers/user-notifications/utils/check-user-notifications');
 
 const {
+  checkUserFigureLineBounds,
+} = require('../../../controllers/user-figure-line-bounds/utils/check-user-figure-line-bounds');
+
+const {
   checkUserFigureLevelBounds,
 } = require('../../../controllers/user-figure-level-bounds/utils/check-user-figure-level-bounds');
 
@@ -107,12 +111,19 @@ class InstrumentQueueWithDelay extends QueueHandler {
   async nextTick() {
     const [
       resultCheckNotifications,
+      resultCheckUserFigureLineBounds,
       resultCheckUserFigureLevelBounds,
     ] = await Promise.all([
       checkUserNotifications({
         instrumentId: this.lastTick.instrumentId,
         instrumentName: this.lastTick.instrumentName,
         price: this.lastTick.close,
+      }),
+
+      checkUserFigureLineBounds({
+        instrumentId: this.lastTick.instrumentId,
+        instrumentName: this.lastTick.instrumentName,
+        instrumentPrice: this.lastTick.close,
       }),
 
       checkUserFigureLevelBounds({
@@ -124,6 +135,10 @@ class InstrumentQueueWithDelay extends QueueHandler {
 
     if (!resultCheckNotifications || !resultCheckNotifications.status) {
       log.warn(resultCheckNotifications.message || 'Cant checkUserNotifications');
+    }
+
+    if (!resultCheckUserFigureLineBounds || !resultCheckUserFigureLineBounds.status) {
+      log.warn(resultCheckUserFigureLineBounds.message || 'Cant checkUserFigureLineBounds');
     }
 
     if (!resultCheckUserFigureLevelBounds || !resultCheckUserFigureLevelBounds.status) {

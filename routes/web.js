@@ -20,8 +20,11 @@ router.get('/profile', extendedMiddlewares, webControllers.getProfilePage);
 router.get('/utilities', extendedMiddlewares, webControllers.getUtilitiesPage);
 router.get('/volume-monitoring', extendedMiddlewares, webControllers.getVolumeMonitoringPage);
 
-router.get('/levels-editor', extendedMiddlewares, webControllers.getLevelsEditorPage);
+router.get('/figure-lines-editor', extendedMiddlewares, webControllers.getFigureLinesEditorPage);
+router.get('/figure-levels-editor', extendedMiddlewares, webControllers.getFigureLevelsEditorPage);
+
 router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
+router.get('/figure-lines-monitoring', extendedMiddlewares, webControllers.getFigureLinesMonitoringPage);
 
 router.get('/monitoring', extendedMiddlewares, webControllers.getMonitoringPage);
 router.get('/monitoring-correlation', extendedMiddlewares, webControllers.getMonitoringCorrelationPage);

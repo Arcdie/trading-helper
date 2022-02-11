@@ -10,7 +10,7 @@ module.exports = async (req, res, next) => {
       return res.redirect('/');
     }
 
-    res.render('web/levels-editor-page');
+    res.render('web/figure-lines-editor-page');
   } catch (error) {
     log.warn(error.message);
 
