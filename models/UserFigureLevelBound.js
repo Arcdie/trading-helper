@@ -38,6 +38,11 @@ const modelSchema = {
     default: true,
   },
 
+  is_moderated: {
+    type: Boolean,
+    default: false,
+  },
+
   is_worked: {
     type: Boolean,
     default: false,

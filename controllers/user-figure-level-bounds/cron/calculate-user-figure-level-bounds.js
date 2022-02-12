@@ -9,8 +9,8 @@ const {
 } = require('../../candles/utils/get-candles');
 
 const {
-  clearLevelsInRedis,
-} = require('../utils/clear-levels-in-redis');
+  clearFigureLevelsInRedis,
+} = require('../utils/clear-figure-levels-in-redis');
 
 const {
   getLowLevels,
@@ -21,8 +21,8 @@ const {
 } = require('../utils/get-high-levels');
 
 const {
-  addLevelsToRedis,
-} = require('../utils/add-levels-to-redis');
+  addFigureLevelsToRedis,
+} = require('../utils/add-figure-levels-to-redis');
 
 const {
   getActiveInstruments,
@@ -45,7 +45,7 @@ module.exports = async (req, res, next) => {
       status: true,
     });
 
-    await clearLevelsInRedis();
+    await clearFigureLevelsInRedis();
 
     const usersDocs = await User.find({
       _id: '6176a452ef4c0005812a9729',
@@ -106,8 +106,10 @@ module.exports = async (req, res, next) => {
 
           is_worked: false,
         }, {
-          is_long: 1,
           level_price: 1,
+
+          is_long: 1,
+          is_moderated: 1,
         }).exec();
 
         const highLevels = getHighLevels({
@@ -161,14 +163,16 @@ module.exports = async (req, res, next) => {
           }));
         }
 
-        await addLevelsToRedis({
+        await addFigureLevelsToRedis({
           userId: userDoc._id,
           instrumentName: instrumentDoc.name,
 
           levels: userLevelBounds.map(bound => ({
             boundId: bound._id,
-            isLong: bound.is_long,
             levelPrice: bound.level_price,
+
+            isLong: bound.is_long,
+            isModerated: bound.is_moderated,
           })),
         });
       }

@@ -1,4 +1,8 @@
 const {
+  isUndefined,
+} = require('lodash');
+
+const {
   isMongoId,
 } = require('validator');
 
@@ -14,6 +18,8 @@ module.exports = async (req, res, next) => {
       query: {
         userId,
         isWorked,
+        isActive,
+        isModerated,
       },
     } = req;
 
@@ -30,6 +36,18 @@ module.exports = async (req, res, next) => {
 
     if (isWorked) {
       funcObj.isWorked = isWorked === 'true';
+    }
+
+    if (!isUndefined(isWorked)) {
+      funcObj.isWorked = isWorked === 'true';
+    }
+
+    if (!isUndefined(isActive)) {
+      funcObj.isActive = isActive === 'true';
+    }
+
+    if (!isUndefined(isModerated)) {
+      funcObj.isModerated = isModerated === 'true';
     }
 
     const resultGetBounds = await getUserFigureLineBounds(funcObj);

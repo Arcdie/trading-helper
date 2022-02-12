@@ -1,7 +1,7 @@
 const redis = require('../../../libs/redis');
 const log = require('../../../libs/logger')(module);
 
-const clearLevelsInRedis = async () => {
+const clearFigureLevelsInRedis = async () => {
   try {
     const key = 'INSTRUMENT:*:FIGURE_LEVEL_BOUNDS';
     const targetKeys = await redis.keysAsync(key);
@@ -24,5 +24,5 @@ const clearLevelsInRedis = async () => {
 };
 
 module.exports = {
-  clearLevelsInRedis,
+  clearFigureLevelsInRedis,
 };

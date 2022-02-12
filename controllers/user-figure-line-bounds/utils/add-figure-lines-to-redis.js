@@ -57,11 +57,13 @@ const addFigureLinesToRedis = async ({
     cacheInstrumentLineBounds.push(...newFigureLines.map(newFigureLine => ({
       // user_id: userId,
       bound_id: newFigureLine.boundId,
-      is_long: newFigureLine.isLong,
       price_angle: newFigureLine.priceAngle,
       timeframe: newFigureLine.lineTimeframe,
       candle_extremum: newFigureLine.lineStartCandleExtremum,
       candle_time: getUnix(newFigureLine.lineStartCandleTime),
+
+      is_long: newFigureLine.isLong,
+      is_moderated: newFigureLine.isModerated,
     })));
 
     await redis.setAsync([keyInstrumentLineBounds, JSON.stringify(cacheInstrumentLineBounds)]);

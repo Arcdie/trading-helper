@@ -7,8 +7,8 @@ const {
 const log = require('../../../libs/logger')(module);
 
 const {
-  addLevelsToRedis,
-} = require('./add-levels-to-redis');
+  addFigureLevelsToRedis,
+} = require('./add-figure-levels-to-redis');
 
 const {
   INTERVALS,
@@ -109,6 +109,7 @@ const createUserFigureLevelBound = async ({
       instrument_id: instrumentId,
 
       is_long: isLong,
+      is_moderated: isLong,
 
       level_price: levelPrice,
       level_timeframe: levelTimeframe,
@@ -117,14 +118,16 @@ const createUserFigureLevelBound = async ({
 
     await newLevel.save();
 
-    await addLevelsToRedis({
+    await addFigureLevelsToRedis({
       userId,
       instrumentName,
 
       levels: [{
         boundId: newLevel._id,
-        isLong: newLevel.is_long,
         levelPrice: newLevel.level_price,
+
+        isLong: newLevel.is_long,
+        isModerated: newLevel.is_moderated,
       }],
     });
 

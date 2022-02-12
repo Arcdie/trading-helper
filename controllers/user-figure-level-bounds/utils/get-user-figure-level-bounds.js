@@ -12,7 +12,9 @@ const UserFigureLevelBound = require('../../../models/UserFigureLevelBound');
 
 const getUserFigureLevelBounds = async ({
   userId,
+  isActive,
   isWorked,
+  isModerated,
 }) => {
   try {
     if (!userId || !isMongoId(userId.toString())) {
@@ -28,6 +30,14 @@ const getUserFigureLevelBounds = async ({
 
     if (!isUndefined(isWorked)) {
       searchObj.is_worked = isWorked;
+    }
+
+    if (!isUndefined(isActive)) {
+      searchObj.is_active = isActive;
+    }
+
+    if (!isUndefined(isModerated)) {
+      searchObj.is_moderated = isModerated;
     }
 
     const userLevelBounds = await UserFigureLevelBound.find(searchObj).exec();

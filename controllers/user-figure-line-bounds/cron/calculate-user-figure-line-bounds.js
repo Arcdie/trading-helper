@@ -165,6 +165,8 @@ module.exports = async (req, res, next) => {
 
             figureLines: newBounds.map(newBound => ({
               isLong: newBound.is_long,
+              isModerated: newBound.is_moderated,
+
               priceAngle: newBound.price_angle,
               boundId: newBound._id.toString(),
               lineTimeframe: newBound.line_timeframe,

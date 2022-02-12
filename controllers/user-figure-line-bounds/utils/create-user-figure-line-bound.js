@@ -129,9 +129,11 @@ const createUserFigureLineBound = async ({
 
       figureLines: [{
         lineStartCandleTimeUnix,
-        isLong: newFigureLine.is_long,
         priceAngle: newFigureLine.price_angle,
         boundId: newFigureLine._id.toString(),
+
+        isLong: newFigureLine.is_long,
+        isModerated: newFigureLine.is_moderated,
       }],
     });
     */

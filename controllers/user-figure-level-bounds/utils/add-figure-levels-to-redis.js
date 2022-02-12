@@ -5,7 +5,7 @@ const {
 const redis = require('../../../libs/redis');
 const log = require('../../../libs/logger')(module);
 
-const addLevelsToRedis = async ({
+const addFigureLevelsToRedis = async ({
   userId,
   instrumentName,
 
@@ -44,8 +44,10 @@ const addLevelsToRedis = async ({
 
     await Promise.all(levels.map(async ({
       boundId,
-      isLong,
       levelPrice,
+
+      isLong,
+      isModerated,
     }) => {
       const prefix = isLong ? 'long' : 'short';
       const instrumentLevelBoundKey = `${levelPrice}_${prefix}`;
@@ -70,6 +72,7 @@ const addLevelsToRedis = async ({
         cacheInstrumentLevelBounds.push({
           user_id: userId,
           bound_id: boundId,
+          is_moderated: isModerated,
         });
       }
 
@@ -98,5 +101,5 @@ const addLevelsToRedis = async ({
 };
 
 module.exports = {
-  addLevelsToRedis,
+  addFigureLevelsToRedis,
 };
