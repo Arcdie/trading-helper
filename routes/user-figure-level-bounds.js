@@ -12,7 +12,7 @@ const commonMiddlewares = [
 ];
 
 router.get('/', userFigureLevelBoundControllers.getUserFigureLevelBounds);
-router.put('/:boundId', commonMiddlewares, userFigureLevelBoundControllers.changeUserFigureLineBound);
+router.put('/:boundId', commonMiddlewares, userFigureLevelBoundControllers.changeUserFigureLevelBound);
 
 // cron
 router.get('/cron/calculate', userFigureLevelBoundCronControllers.calculateUserFigureLevelBounds);
