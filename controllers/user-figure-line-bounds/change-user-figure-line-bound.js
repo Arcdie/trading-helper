@@ -61,36 +61,42 @@ module.exports = async (req, res, next) => {
       });
     }
 
+    const instrumentDoc = await InstrumentNew.findById(boundDoc.instrument_id, {
+      name: 1,
+    });
+
+    if (!instrumentDoc) {
+      return res.json({
+        status: false,
+        message: 'No InstrumentNew',
+      });
+    }
+
+    const keyInstrumentLineBounds = `INSTRUMENT:${instrumentDoc.name}:FIGURE_LINE_BOUNDS`;
+    let cacheInstrumentLineBounds = await redis.getAsync(keyInstrumentLineBounds);
+
+    if (!cacheInstrumentLineBounds) {
+      cacheInstrumentLineBounds = [];
+    } else {
+      cacheInstrumentLineBounds = JSON.parse(cacheInstrumentLineBounds);
+    }
+
     if (!isUndefined(isModerated)) {
       boundDoc.is_moderated = isModerated;
+
+      const targetBound = cacheInstrumentLineBounds.find(
+        bound => bound.bound_id === boundId,
+      );
+
+      if (targetBound) {
+        targetBound.is_moderated = boundDoc.is_moderated;
+        await redis.setAsync([keyInstrumentLineBounds, JSON.stringify(cacheInstrumentLineBounds)]);
+      }
     }
 
     if (!isUndefined(isActive)) {
       boundDoc.is_active = isActive;
-
-      const instrumentDoc = await InstrumentNew.findById(boundDoc.instrument_id, {
-        name: 1,
-      });
-
-      if (!instrumentDoc) {
-        return res.json({
-          status: false,
-          message: 'No InstrumentNew',
-        });
-      }
-
       if (!boundDoc.is_active) {
-        const keyInstrumentLineBounds = `INSTRUMENT:${instrumentDoc.name}:FIGURE_LINE_BOUNDS`;
-        let cacheInstrumentLineBounds = await redis.getAsync(keyInstrumentLineBounds);
-
-        if (!cacheInstrumentLineBounds) {
-          cacheInstrumentLineBounds = [];
-        } else {
-          cacheInstrumentLineBounds = JSON.parse(cacheInstrumentLineBounds);
-        }
-
-        const boundId = boundDoc._id.toString();
-
         cacheInstrumentLineBounds = cacheInstrumentLineBounds
           .filter(figureLine => figureLine.bound_id !== boundId);
 

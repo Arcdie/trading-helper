@@ -61,31 +61,59 @@ module.exports = async (req, res, next) => {
       });
     }
 
+    const instrumentDoc = await InstrumentNew.findById(boundDoc.instrument_id, {
+      name: 1,
+    });
+
+    if (!instrumentDoc) {
+      return res.json({
+        status: false,
+        message: 'No InstrumentNew',
+      });
+    }
+
+    const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentDoc.name}:FIGURE_LEVEL_BOUNDS`;
+
+    const prefix = boundDoc.is_long ? 'long' : 'short';
+    const instrumentLevelBoundKey = `${boundDoc.level_price}_${prefix}`;
+
     if (!isUndefined(isModerated)) {
       boundDoc.is_moderated = isModerated;
+
+      let cacheInstrumentLevelBounds = [];
+
+      cacheInstrumentLevelBounds = await redis.hmgetAsync(
+        keyInstrumentLevelBounds, instrumentLevelBoundKey,
+      );
+
+      if (!cacheInstrumentLevelBounds || !cacheInstrumentLevelBounds.length) {
+        cacheInstrumentLevelBounds = [];
+      } else {
+        cacheInstrumentLevelBounds = JSON.parse(cacheInstrumentLevelBounds);
+      }
+
+      const targetBound = cacheInstrumentLevelBounds.find(
+        bound => bound.bound_id === boundId,
+      );
+
+      if (targetBound) {
+        targetBound.is_moderated = boundDoc.is_moderated;
+
+        await redis.hmsetAsync(
+          keyInstrumentLevelBounds,
+          instrumentLevelBoundKey,
+          JSON.stringify(cacheInstrumentLevelBounds),
+        );
+      }
     }
 
     if (!isUndefined(isActive)) {
       boundDoc.is_active = isActive;
 
-      const instrumentDoc = await InstrumentNew.findById(boundDoc.instrument_id, {
-        name: 1,
-      });
-
-      if (!instrumentDoc) {
-        return res.json({
-          status: false,
-          message: 'No InstrumentNew',
-        });
-      }
-
       if (!boundDoc.is_active) {
-        const prefix = boundDoc.is_long ? 'long' : 'short';
-        const keyInstrumentLevelBounds = `INSTRUMENT:${instrumentDoc.name}:FIGURE_LEVEL_BOUNDS`;
-
         await redis.hdelAsync(
           keyInstrumentLevelBounds,
-          [`${boundDoc.level_price}_${prefix}`],
+          [instrumentLevelBoundKey],
         );
       } else {
         const resultAddFigureLevel = await addFigureLevelsToRedis({
