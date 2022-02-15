@@ -62,18 +62,17 @@ const checkUserFigureLineBounds = async ({
     }
 
     const boundsIds = [];
-
-    const divider = 3600;
     const nowUnix = getUnix();
-    const startOfHourUnix = nowUnix - (nowUnix % divider);
-
-    const intervalSettings = INTERVALS_SETTINGS[INTERVALS.get('5m')];
 
     const newListBounds = cacheInstrumentLineBounds.filter(bound => {
-      const numberHoursBetweenDates = (startOfHourUnix - bound.candle_time) / divider;
+      const divider = bound.timeframe === INTERVALS.get('5m') ? 300 : 3600;
+      const startOfIntervalUnix = nowUnix - (nowUnix % divider);
+      const intervalSettings = INTERVALS_SETTINGS[bound.timeframe];
+
+      const numberCandlesBetweenDates = (startOfIntervalUnix - bound.candle_time) / divider;
 
       if (bound.is_long) {
-        const linePrice = bound.candle_extremum + (bound.price_angle * numberHoursBetweenDates);
+        const linePrice = bound.candle_extremum + (bound.price_angle * numberCandlesBetweenDates);
         const allowedBreakdown = linePrice - (linePrice * (intervalSettings.ALLOWED_PERCENT / 100));
 
         if (instrumentPrice < allowedBreakdown) {
@@ -81,7 +80,7 @@ const checkUserFigureLineBounds = async ({
           return false;
         }
       } else {
-        const linePrice = bound.candle_extremum - (bound.price_angle * numberHoursBetweenDates);
+        const linePrice = bound.candle_extremum - (bound.price_angle * numberCandlesBetweenDates);
         const allowedBreakdown = linePrice + (linePrice * (intervalSettings.ALLOWED_PERCENT / 100));
 
         if (instrumentPrice > allowedBreakdown) {
