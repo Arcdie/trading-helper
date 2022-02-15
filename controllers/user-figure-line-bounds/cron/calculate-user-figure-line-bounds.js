@@ -49,6 +49,19 @@ const UserFigureLineBound = require('../../../models/UserFigureLineBound');
 
 module.exports = async (req, res, next) => {
   try {
+    const {
+      query: {
+        interval,
+      },
+    } = req;
+
+    if (!interval || !INTERVALS.get(interval)) {
+      return res.json({
+        status: false,
+        message: 'No or invalid interval',
+      });
+    }
+
     res.json({
       status: true,
     });
@@ -79,24 +92,24 @@ module.exports = async (req, res, next) => {
       return true;
     }
 
+    const intervalSettings = INTERVALS_SETTINGS[INTERVALS.get(interval)];
+
     const startDate = moment().startOf('day')
-      .add(-INTERVALS_SETTINGS[INTERVALS.get('1h')].SUBTRACT_TIME, 'seconds');
+      .add(-intervalSettings.SUBTRACT_TIME, 'seconds');
 
     for await (const instrumentDoc of instrumentsDocs) {
-      const resultGet1hCandles = await getValidCandles({
-        interval: INTERVALS.get('1h'),
+      const resultGetCandles = await getValidCandles({
+        interval,
         instrumentId: instrumentDoc._id,
 
         startDate,
       });
 
-      if (!resultGet1hCandles || !resultGet1hCandles.status) {
-        log.warn(resultGet1hCandles.message || `Cant getCandles (${INTERVALS.get('1h')})`);
+      if (!resultGetCandles || !resultGetCandles.status) {
+        log.warn(resultGetCandles.message || `Cant getCandles (${interval})`);
       }
 
-      const candles1h = resultGet1hCandles.result || [];
-
-      const intervalSettings = INTERVALS_SETTINGS[INTERVALS.get('1h')];
+      const candlesData = resultGetCandles.result || [];
 
       for await (const userDoc of usersDocs) {
         if (!userDoc.figure_lines_settings) {
@@ -110,13 +123,15 @@ module.exports = async (req, res, next) => {
         const userLineBounds = await UserFigureLineBound.find({
           user_id: userDoc._id,
           instrument_id: instrumentDoc._id,
+
+          line_timeframe: interval,
         }, {
           price_angle: 1,
           line_start_candle_time: 1,
         }).exec();
 
-        const longFigureLines = getLongFigureLines(candles1h, intervalSettings);
-        const shortFigureLines = getShortFigureLines(candles1h, intervalSettings);
+        const longFigureLines = getLongFigureLines(candlesData, intervalSettings);
+        const shortFigureLines = getShortFigureLines(candlesData, intervalSettings);
 
         [...longFigureLines, ...shortFigureLines].forEach(figureLine => {
           // const doesExistDublicate = newFigureLines.some(
@@ -133,7 +148,7 @@ module.exports = async (req, res, next) => {
           if (!doesExistDublicateInBounds) {
             newFigureLines.push({
               ...figureLine,
-              lineTimeframe: INTERVALS.get('1h'),
+              lineTimeframe: interval,
             });
           }
         });
@@ -178,7 +193,7 @@ module.exports = async (req, res, next) => {
       }
     }
 
-    // log.info('Finished calculate user-figure-line-bounds');
+    log.info('Finished calculate user-figure-line-bounds');
   } catch (error) {
     log.warn(error.message);
     return false;

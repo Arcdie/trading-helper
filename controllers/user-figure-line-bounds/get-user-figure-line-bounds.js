@@ -12,6 +12,10 @@ const {
   getUserFigureLineBounds,
 } = require('./utils/get-user-figure-line-bounds');
 
+const {
+  INTERVALS,
+} = require('../candles/constants');
+
 module.exports = async (req, res, next) => {
   try {
     const {
@@ -20,6 +24,8 @@ module.exports = async (req, res, next) => {
         isWorked,
         isActive,
         isModerated,
+
+        timeframe,
       },
     } = req;
 
@@ -27,6 +33,13 @@ module.exports = async (req, res, next) => {
       return res.json({
         status: false,
         message: 'No or invalid userId',
+      });
+    }
+
+    if (timeframe && !INTERVALS.get(timeframe)) {
+      return res.json({
+        status: false,
+        message: 'Invalid timeframe',
       });
     }
 
@@ -48,6 +61,10 @@ module.exports = async (req, res, next) => {
 
     if (!isUndefined(isModerated)) {
       funcObj.isModerated = isModerated === 'true';
+    }
+
+    if (timeframe) {
+      funcObj.timeframe = timeframe;
     }
 
     const resultGetBounds = await getUserFigureLineBounds(funcObj);

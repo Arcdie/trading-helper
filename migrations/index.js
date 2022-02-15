@@ -1,9 +1,11 @@
 // const loadDailyKlines = require('./load-daily-klines');
 
+const renewFigureLinesInRedis = require('./renew-figure-lines-in-redis');
 const removeCandlesForPeriod = require('./remove-candles-for-period');
 const loadAndSaveKlinesHistory = require('./load-and-save-klines-history');
 const loadAndSaveFuturesKlinesHistory = require('./load-and-save-futures-klines-history');
 const calculateElderCandlesForInstruments = require('./calculate-elder-candles-for-instruments');
+
 
 // aggTrades
 const saveAggTrades = require('./save-aggTrades');
@@ -32,4 +34,6 @@ module.exports = () => {
   // loadAggTradesHistory();
   // saveAggTrades();
   // loadWeeklyAggTradesHistory();
+
+  // renewFigureLinesInRedis();
 };

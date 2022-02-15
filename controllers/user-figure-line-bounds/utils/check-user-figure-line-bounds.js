@@ -67,7 +67,7 @@ const checkUserFigureLineBounds = async ({
     const nowUnix = getUnix();
     const startOfHourUnix = nowUnix - (nowUnix % divider);
 
-    const intervalSettings = INTERVALS_SETTINGS[INTERVALS.get('1h')];
+    const intervalSettings = INTERVALS_SETTINGS[INTERVALS.get('5m')];
 
     const newListBounds = cacheInstrumentLineBounds.filter(bound => {
       const numberHoursBetweenDates = (startOfHourUnix - bound.candle_time) / divider;

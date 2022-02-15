@@ -8,6 +8,10 @@ const {
 
 const log = require('../../../libs/logger')(module);
 
+const {
+  INTERVALS,
+} = require('../../candles/constants');
+
 const UserFigureLineBound = require('../../../models/UserFigureLineBound');
 
 const getUserFigureLineBounds = async ({
@@ -15,12 +19,21 @@ const getUserFigureLineBounds = async ({
   isActive,
   isWorked,
   isModerated,
+
+  timeframe,
 }) => {
   try {
     if (!userId || !isMongoId(userId.toString())) {
       return {
         status: false,
         message: 'No or invalid userId',
+      };
+    }
+
+    if (timeframe && !INTERVALS.get(timeframe)) {
+      return {
+        status: false,
+        message: 'No or invalid timeframe',
       };
     }
 
@@ -38,6 +51,10 @@ const getUserFigureLineBounds = async ({
 
     if (!isUndefined(isModerated)) {
       searchObj.is_moderated = isModerated;
+    }
+
+    if (timeframe) {
+      searchObj.line_timeframe = timeframe;
     }
 
     const userLineBounds = await UserFigureLineBound.find(searchObj).exec();
