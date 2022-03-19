@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+const {
+  INTERVALS,
+} = require('../controllers/candles/constants');
+
 const modelSchema = {
   instrument_id: {
     type: mongoose.Schema.ObjectId,
@@ -17,6 +21,12 @@ const modelSchema = {
   figure_line_bound_id: {
     type: mongoose.Schema.ObjectId,
     required: true,
+  },
+
+  timeframe: {
+    type: String,
+    required: true,
+    enum: [...INTERVALS.values()],
   },
 
   number_trades: {
