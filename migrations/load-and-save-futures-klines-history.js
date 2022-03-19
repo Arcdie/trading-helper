@@ -28,7 +28,6 @@ xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
 module.exports = async () => {
   return;
-  // todo: replace create1hCandle to create1hCandles
   console.time('migration');
   console.log('Migration started');
 
@@ -47,7 +46,7 @@ module.exports = async () => {
 
   const incrementProcessedInstruments = processedInstrumentsCounter(instrumentsDocs.length);
 
-  for (const instrumentDoc of instrumentsDocs) {
+  for await (const instrumentDoc of instrumentsDocs) {
     console.log(`Started ${instrumentDoc.name}`);
 
     const instrumentName = instrumentDoc.name.replace('PERP', '');
@@ -89,7 +88,7 @@ module.exports = async () => {
 
     console.log(`${instrumentDoc.name}: ${links.length} files`);
 
-    for (const link of links) {
+    for await (const link of links) {
       console.log(`${instrumentDoc.name}: started load file ${link.link}`);
 
       const resultGetFile = await axios({
@@ -110,7 +109,7 @@ module.exports = async () => {
         filesNames.push(fileName);
       });
 
-    for (const fileName of filesNames) {
+    for await (const fileName of filesNames) {
       const pathToFile = `${pathToFolder}/${fileName}`;
       const period = pathToFile.split('-')[1];
 
@@ -123,7 +122,7 @@ module.exports = async () => {
         continue;
       }
 
-      await Promise.all(resultGetFile.result.map(async data => {
+      const newCandles = resultGetFile.result.map(candleData => {
         const [
           openTime,
           open,
@@ -132,9 +131,9 @@ module.exports = async () => {
           close,
           volume,
           closeTime,
-        ] = data;
+        ] = candleData;
 
-        const resultCreateCandle = await create1hCandle({
+        return {
           instrumentId: instrumentDoc._id,
           startTime: new Date(parseInt(openTime, 10)),
           open,
@@ -142,12 +141,17 @@ module.exports = async () => {
           high,
           low,
           volume,
-        });
+        };
+      });
 
-        if (!resultCreateCandle || !resultCreateCandle.status) {
-          log.warn(resultCreateCandle.message || 'Cant create1hCandle');
-        }
-      }));
+      const resultCreateCandles = await create1hCandles({
+        isFutures: instrumentDoc.is_futures,
+        newCandles,
+      });
+
+      if (!resultCreateCandles || !resultCreateCandles.status) {
+        log.warn(resultCreateCandles.message || 'Cant createCandles');
+      }
     }
 
     incrementProcessedInstruments();

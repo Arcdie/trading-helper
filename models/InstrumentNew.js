@@ -47,15 +47,15 @@ const modelSchema = {
     default: 0,
   },
 
-  does_exist_robot: {
-    type: Boolean,
-    default: false,
-  },
+  // does_exist_robot: {
+  //   type: Boolean,
+  //   default: false,
+  // },
 
-  does_ignore_volume: {
-    type: Boolean,
-    default: true,
-  },
+  // does_ignore_volume: {
+  //   type: Boolean,
+  //   default: true,
+  // },
 
   created_at: {
     type: Date,

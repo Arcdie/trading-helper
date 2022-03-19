@@ -7,6 +7,10 @@ const createInstrument = async ({
   name,
   price,
 
+  tickSize,
+  stepSize,
+  pricePrecision,
+
   isFutures,
 }) => {
   try {
@@ -21,6 +25,20 @@ const createInstrument = async ({
       return {
         status: false,
         message: 'No price',
+      };
+    }
+
+    if (!stepSize) {
+      return {
+        status: false,
+        message: 'No stepSize',
+      };
+    }
+
+    if (!tickSize) {
+      return {
+        status: false,
+        message: 'No tickSize',
       };
     }
 
@@ -40,17 +58,26 @@ const createInstrument = async ({
       name,
       price,
 
+      tick_size: tickSize,
+      step_size: stepSize,
+
       is_active: true,
       is_futures: isFutures || false,
     });
 
+    if (pricePrecision) {
+      newInstrument.price_precision = parseFloat(pricePrecision);
+    }
+
     await newInstrument.save();
 
+    /*
     const newInstrumentTrend = new InstrumentTrend({
       instrument_id: newInstrument._id,
     });
 
     await newInstrumentTrend.save();
+    */
 
     return {
       status: true,

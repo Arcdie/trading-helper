@@ -15,6 +15,10 @@ module.exports = async (req, res, next) => {
         name,
         price,
 
+        stepSize,
+        tickSize,
+        pricePrecision,
+
         isFutures,
       },
     } = req;
@@ -33,6 +37,20 @@ module.exports = async (req, res, next) => {
       });
     }
 
+    if (!stepSize) {
+      return res.json({
+        status: false,
+        message: 'No stepSize',
+      });
+    }
+
+    if (!tickSize) {
+      return res.json({
+        status: false,
+        message: 'No tickSize',
+      });
+    }
+
     if (isUndefined(isFutures)) {
       return res.json({
         status: false,
@@ -40,12 +58,21 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    const resultCreate = await createInstrument({
+    const funcObj = {
       name,
       price,
 
+      stepSize,
+      tickSize,
+
       isFutures,
-    });
+    };
+
+    if (pricePrecision) {
+      funcObj.pricePrecision = parseFloat(pricePrecision);
+    }
+
+    const resultCreate = await createInstrument(funcObj);
 
     if (!resultCreate) {
       return res.json({

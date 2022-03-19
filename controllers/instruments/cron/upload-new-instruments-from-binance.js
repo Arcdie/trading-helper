@@ -1,3 +1,7 @@
+const {
+  isUndefined,
+} = require('lodash');
+
 const log = require('../../../libs/logger')(module);
 
 const {
@@ -5,52 +9,67 @@ const {
 } = require('../utils/create-instrument');
 
 const {
-  getSpotInstruments,
-} = require('../../binance/utils/spot/get-spot-instruments');
+  getSpotExchangeInfo,
+} = require('../../binance/utils/spot/get-spot-exchange-info');
 
 const {
-  getFuturesInstruments,
-} = require('../../binance/utils/futures/get-futures-instruments');
+  getFuturesExchangeInfo,
+} = require('../../binance/utils/futures/get-futures-exchange-info');
 
 module.exports = async (req, res, next) => {
   try {
-    res.json({
-      status: true,
-    });
-
-    const resultGetSpotInstruments = await getSpotInstruments();
+    const resultGetSpotInstruments = await getSpotExchangeInfo();
 
     if (!resultGetSpotInstruments || !resultGetSpotInstruments.status) {
       return res.json({
         status: false,
-        message: resultGetSpotInstruments.message || 'Cant getSpotInstruments',
+        message: resultGetSpotInstruments.message || 'Cant getSpotExchangeInfo',
       });
     }
 
-    const resultGetFuturesInstruments = await getFuturesInstruments();
+    const resultGetFuturesInstruments = await getFuturesExchangeInfo();
 
     if (!resultGetFuturesInstruments || !resultGetFuturesInstruments.status) {
       return res.json({
         status: false,
-        message: resultGetFuturesInstruments.message || 'Cant getFuturesInstruments',
+        message: resultGetFuturesInstruments.message || 'Cant getFuturesExchangeInfo',
       });
     }
 
     let countNewSpotInstuments = 0;
     let countNewFuturesInstruments = 0;
 
-    const filteredSpotInstruments = resultGetSpotInstruments.result.filter(
+    const spotInstruments = resultGetSpotInstruments.result.symbols;
+    const futuresInstruments = resultGetFuturesInstruments.result.symbols;
+
+    const filteredSpotInstruments = spotInstruments.filter(
       ({ symbol }) => symbol.includes('USDT'),
     );
 
-    const filteredFuturesInstruments = resultGetFuturesInstruments.result.filter(
+    const filteredFuturesInstruments = futuresInstruments.filter(
       ({ symbol }) => symbol.includes('USDT'),
     );
 
     await Promise.all(filteredSpotInstruments.map(async instrument => {
+      const { tickSize } = instrument.filters[0];
+      const { stepSize } = instrument.filters[2];
+
+      if (!tickSize) {
+        log.warn(`No tickSize, ${instrument.symbol}`);
+        return null;
+      }
+
+      if (!stepSize) {
+        log.warn(`No stepSize, ${instrument.symbol}`);
+        return null;
+      }
+
       const resultCreate = await createInstrument({
         name: instrument.symbol,
-        price: parseFloat(instrument.price),
+        price: 1,
+
+        tickSize: parseFloat(tickSize),
+        stepSize: parseFloat(stepSize),
 
         isFutures: false,
       });
@@ -66,9 +85,32 @@ module.exports = async (req, res, next) => {
     }));
 
     await Promise.all(filteredFuturesInstruments.map(async instrument => {
+      const { pricePrecision } = instrument;
+      const { tickSize } = instrument.filters[0];
+      const { stepSize } = instrument.filters[2];
+
+      if (!tickSize) {
+        log.warn(`No tickSize, ${instrument.symbol}`);
+        return null;
+      }
+
+      if (!stepSize) {
+        log.warn(`No stepSize, ${instrument.symbol}`);
+        return null;
+      }
+
+      if (isUndefined(pricePrecision)) {
+        log.warn(`No pricePrecision, ${instrument.symbol}`);
+        return null;
+      }
+
       const resultCreate = await createInstrument({
         name: `${instrument.symbol}PERP`,
-        price: parseFloat(instrument.price),
+        price: 1,
+
+        tickSize: parseFloat(tickSize),
+        stepSize: parseFloat(stepSize),
+        pricePrecision: parseFloat(pricePrecision),
 
         isFutures: true,
       });
