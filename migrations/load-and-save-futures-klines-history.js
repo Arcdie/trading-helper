@@ -152,6 +152,8 @@ module.exports = async () => {
       if (!resultCreateCandles || !resultCreateCandles.status) {
         log.warn(resultCreateCandles.message || 'Cant createCandles');
       }
+
+      fs.unlinkSync(pathToFile);
     }
 
     incrementProcessedInstruments();

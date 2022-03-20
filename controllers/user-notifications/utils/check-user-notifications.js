@@ -134,7 +134,7 @@ const checkUserNotifications = async ({
       if (userDoc.telegram_user_id) {
         const message = `Level:${instrumentName}
 https://ru.tradingview.com/chart/?symbol=${instrumentName}&interval=60
-https://trading-helper.ru/monitoring?symbol=${instrumentName}&interval=5m`;
+https://trading-helper.fun/monitoring?symbol=${instrumentName}&interval=5m`;
 
         sendMessage(userDoc.telegram_user_id, message);
       }

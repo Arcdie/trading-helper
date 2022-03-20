@@ -22,11 +22,15 @@ const {
   create5mCandles,
 } = require('../controllers/candles/utils/create-5m-candles');
 
+const {
+  create1hCandles,
+} = require('../controllers/candles/utils/create-1h-candles');
+
 const log = require('../libs/logger')(module);
 
 const InstrumentNew = require('../models/InstrumentNew');
 
-const LOAD_PERIOD = '1m';
+const LOAD_PERIOD = '1h';
 
 xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
@@ -34,6 +38,30 @@ module.exports = async () => {
   return;
   console.time('migration');
   console.log('Migration started');
+
+  let createCandlesFunc;
+
+  switch (LOAD_PERIOD) {
+    case '1m': {
+      createCandlesFunc = create1mCandles;
+      break;
+    }
+
+    case '5m': {
+      createCandlesFunc = create5mCandles;
+      break;
+    }
+
+    case '1h': {
+      createCandlesFunc = create1hCandles;
+      break;
+    }
+
+    default: {
+      console.timeEnd('migration');
+      return true;
+    }
+  }
 
   const instrumentsDocs = await InstrumentNew
     .find({
@@ -48,19 +76,14 @@ module.exports = async () => {
     return true;
   }
 
-  let processedInstruments = 0;
-  const totalInstruments = instrumentsDocs.length;
-
-  const checkInterval = setInterval(() => {
-    log.info(`${processedInstruments} / ${totalInstruments}`);
-  }, 10 * 1000);
+  const incrementProcessedInstruments = processedInstrumentsCounter(instrumentsDocs.length);
 
   const targetDates = [];
 
-  const startToday = moment().utc().startOf('day');
-  const monthAgo = moment(startToday).utc().add(-1, 'months').startOf('day');
+  const startDate = moment().startOf('month').add(1, 'days').utc();
+  const endDate = moment().startOf('day').utc();
 
-  const tmpDate = moment(monthAgo);
+  const tmpDate = moment(startDate);
 
   while (1) {
     targetDates.push({
@@ -71,12 +94,12 @@ module.exports = async () => {
 
     tmpDate.add(1, 'days');
 
-    if (tmpDate.unix() === startToday.unix()) {
+    if (tmpDate.unix() === endDate.unix()) {
       break;
     }
   }
 
-  for (const instrumentDoc of instrumentsDocs) {
+  for await (const instrumentDoc of instrumentsDocs) {
     console.log(`Started ${instrumentDoc.name}`);
 
     let typeInstrument = 'spot';
@@ -85,7 +108,7 @@ module.exports = async () => {
     if (!instrumentDoc.is_futures) {
 
     } else {
-      typeInstrument = 'futures/um'
+      typeInstrument = 'futures/um';
       instrumentName = instrumentDoc.name.replace('PERP', '');
     }
 
@@ -101,7 +124,7 @@ module.exports = async () => {
     //   link: `data/${typeInstrument}/daily/klines/${instrumentName}/${LOAD_PERIOD}/${instrumentName}-${LOAD_PERIOD}-2021-11-04.zip`,
     // }];
 
-    for (const link of links) {
+    for await (const link of links) {
       console.log(`${instrumentDoc.name}: started load file ${link}`);
 
       try {
@@ -128,7 +151,7 @@ module.exports = async () => {
         filesNames.push(fileName);
       });
 
-    for (const fileName of filesNames) {
+    for await (const fileName of filesNames) {
       const pathToFile = `${pathToFolder}/${fileName}`;
 
       const resultGetFile = await parseCSVToJSON({
@@ -162,20 +185,28 @@ module.exports = async () => {
         };
       });
 
-      const resultCreateCandles = await create1mCandles({
+      const resultCreateCandles = await createCandlesFunc({
         isFutures: instrumentDoc.is_futures,
         newCandles,
       });
 
       if (!resultCreateCandles || !resultCreateCandles.status) {
-        log.warn(resultCreateCandles.message || 'Cant create1mCandles');
+        log.warn(resultCreateCandles.message || 'Cant createCandlesFunc');
       }
     }
 
-    processedInstruments += 1;
+    incrementProcessedInstruments();
     console.log(`Ended ${instrumentDoc.name}`);
   }
 
-  clearInterval(checkInterval);
   console.timeEnd('migration');
+};
+
+const processedInstrumentsCounter = function (numberInstruments = 0) {
+  let processedInstruments = 0;
+
+  return function () {
+    processedInstruments += 1;
+    log.info(`${processedInstruments} / ${numberInstruments}`);
+  };
 };

@@ -16,12 +16,15 @@ const {
 } = require('./constants');
 
 const {
-  app: { websocketPort },
+  app: {
+    websocketPort,
+    url: appDomain,
+  },
 } = require('../config');
 
 const WebSocketRoom = require('./websocket-room');
 
-const pathToFolder = '/etc/letsencrypt/live/trading-helper.ru-0001';
+const pathToFolder = `/etc/letsencrypt/live/${appDomain}`;
 
 const wsSettings = {};
 
