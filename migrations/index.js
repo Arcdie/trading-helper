@@ -16,6 +16,8 @@ const changeDoesIgnoreVolume = require('./change-does-ignore-volume');
 const createInstrumentsTrends = require('./create-instrument-trends');
 const removeCandlesDublicates = require('./remove-candles-dublicates');
 
+const loadingMissingCandles = require('./loading-missing-candles');
+
 module.exports = () => {
   // removeCandlesDublicates();
   // removeCandlesForPeriod();
@@ -36,4 +38,5 @@ module.exports = () => {
   // loadWeeklyAggTradesHistory();
 
   // renewFigureLinesInRedis();
+  // loadingMissingCandles();
 };

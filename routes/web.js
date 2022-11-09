@@ -20,6 +20,9 @@ router.get('/profile', extendedMiddlewares, webControllers.getProfilePage);
 router.get('/utilities', extendedMiddlewares, webControllers.getUtilitiesPage);
 router.get('/volume-monitoring', extendedMiddlewares, webControllers.getVolumeMonitoringPage);
 
+router.get('/averaging', extendedMiddlewares, webControllers.getAveragingPage);
+
+router.get('/editor', extendedMiddlewares, webControllers.getEditorPage);
 router.get('/figure-lines-editor', extendedMiddlewares, webControllers.getFigureLinesEditorPage);
 router.get('/figure-levels-editor', extendedMiddlewares, webControllers.getFigureLevelsEditorPage);
 

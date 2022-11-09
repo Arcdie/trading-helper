@@ -26,6 +26,8 @@ const createUserFigureLevelBound = async ({
   levelPrice,
   levelTimeframe,
   levelStartCandleTime,
+
+  isModerated,
 }) => {
   try {
     if (!userId || !isMongoId(userId.toString())) {
@@ -50,13 +52,6 @@ const createUserFigureLevelBound = async ({
     }
 
     if (!levelStartCandleTime || !moment(levelStartCandleTime).isValid()) {
-      return {
-        status: false,
-        message: 'No or invalid levelStartCandleTime',
-      };
-    }
-
-    if (!levelStartCandleTime) {
       return {
         status: false,
         message: 'No or invalid levelStartCandleTime',
@@ -109,7 +104,7 @@ const createUserFigureLevelBound = async ({
       instrument_id: instrumentId,
 
       is_long: isLong,
-      is_moderated: isLong,
+      is_moderated: isModerated,
 
       level_price: levelPrice,
       level_timeframe: levelTimeframe,

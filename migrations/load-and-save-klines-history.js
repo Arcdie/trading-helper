@@ -80,7 +80,7 @@ module.exports = async () => {
 
   const targetDates = [];
 
-  const startDate = moment().startOf('month').add(1, 'days').utc();
+  const startDate = moment().startOf('month').utc();
   const endDate = moment().startOf('day').utc();
 
   const tmpDate = moment(startDate);

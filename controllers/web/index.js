@@ -1,7 +1,9 @@
 const getMainPage = require('./get-main-page');
 const getLogsPage = require('./get-logs-page');
+const getEditorPage = require('./get-editor-page');
 const getProfilePage = require('./get-profile-page');
 const getUtilitiesPage = require('./get-utilities-page');
+const getAveragingPage = require('./get-averaging-page');
 const getExperimentPage = require('./get-experiment-page');
 const getMonitoringPage = require('./get-monitoring-page');
 const getTradesViewerPage = require('./get-trades-viewer-page');
@@ -27,6 +29,8 @@ module.exports = {
   getMonitoringPage,
   getTradesViewerPage,
 
+  getEditorPage,
+  getAveragingPage,
   getVolumeMonitoringPage,
   getVolumeStatisticsPage,
   getRobotsStatisticsPage,

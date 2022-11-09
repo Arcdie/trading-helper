@@ -49,6 +49,8 @@ module.exports = async (req, res, next) => {
     const instrumentsDocs = resultGetInstruments.result;
 
     for await (const instrumentDoc of instrumentsDocs) {
+      console.log('Started', instrumentDoc.name);
+
       const candles1hDocs = await Candle1h.find({
         instrument_id: instrumentDoc._id,
 
@@ -111,7 +113,7 @@ module.exports = async (req, res, next) => {
 
       const links = datesToDownload.map(date => ({
         startOfDayUnix: date.startOfDayUnix,
-        link: `data/${typeInstrument}/daily/klines/${instrumentName}/1m/${instrumentName}-1h-${date.year}-${date.month}-${date.day}.zip`,
+        link: `data/${typeInstrument}/daily/klines/${instrumentName}/1h/${instrumentName}-1h-${date.year}-${date.month}-${date.day}.zip`,
       }));
 
       for await (const link of links) {
@@ -201,6 +203,7 @@ module.exports = async (req, res, next) => {
       removeFolder(pathToFolder);
     }
   } catch (error) {
+    console.log(error);
     log.warn(error.message);
     return false;
   }
