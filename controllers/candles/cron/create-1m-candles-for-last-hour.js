@@ -26,7 +26,7 @@ const {
   getActiveInstruments,
 } = require('../../instruments/utils/get-active-instruments');
 
-module.exports = async (req, res, next) => {
+module.exports = async (req, res) => {
   try {
     res.json({
       status: true,
@@ -96,7 +96,7 @@ module.exports = async (req, res, next) => {
           low,
           close,
           volume,
-          closeTime,
+          // closeTime,
         ] = candleData;
 
         const validDate = moment.unix(startTimeBinance / 1000);

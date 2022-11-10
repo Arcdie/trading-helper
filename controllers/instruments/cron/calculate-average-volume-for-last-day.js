@@ -10,7 +10,7 @@ const {
 
 const {
   getActiveInstruments,
-} = require('../../instruments/utils/get-active-instruments');
+} = require('../utils/get-active-instruments');
 
 const {
   sendData,

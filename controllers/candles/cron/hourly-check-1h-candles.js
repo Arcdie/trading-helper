@@ -37,7 +37,7 @@ const {
 
 const Candle1h = require('../../../models/Candle-1h');
 
-module.exports = async (req, res, next) => {
+module.exports = async (req, res) => {
   try {
     res.json({
       status: true,
@@ -151,7 +151,7 @@ module.exports = async (req, res, next) => {
           low,
           close,
           volume,
-          closeTime,
+          // closeTime,
         ] = candleData;
 
         const binanceStartTimeUnix = startTimeBinance / 1000;

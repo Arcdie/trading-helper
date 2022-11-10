@@ -26,7 +26,7 @@ const Candle1h = require('../../../models/Candle-1h');
 
 // todo: need test
 
-module.exports = async (req, res, next) => {
+module.exports = async (req, res) => {
   try {
     res.json({
       status: true,

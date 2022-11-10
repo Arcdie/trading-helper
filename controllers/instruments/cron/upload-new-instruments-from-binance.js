@@ -1,136 +1,21 @@
 const {
-  isUndefined,
-} = require('lodash');
-
-const log = require('../../../libs/logger')(module);
-
-const {
-  createInstrument,
-} = require('../utils/create-instrument');
-
-const {
-  getSpotExchangeInfo,
-} = require('../../binance/utils/spot/get-spot-exchange-info');
-
-const {
-  getFuturesExchangeInfo,
-} = require('../../binance/utils/futures/get-futures-exchange-info');
+  uploadNewInstrumentsFromBinance,
+} = require('./utils/upload-new-instruments-from-binance');
 
 module.exports = async (req, res, next) => {
   try {
-    const resultGetSpotInstruments = await getSpotExchangeInfo();
+    const resultUpload = await uploadNewInstrumentsFromBinance();
 
-    if (!resultGetSpotInstruments || !resultGetSpotInstruments.status) {
+    if (!resultUpload || !resultUpload.status) {
       return res.json({
         status: false,
-        message: resultGetSpotInstruments.message || 'Cant getSpotExchangeInfo',
+        message: resultUpload.message || 'Cant uploadNewInstrumentsFromBinance',
       });
     }
-
-    const resultGetFuturesInstruments = await getFuturesExchangeInfo();
-
-    if (!resultGetFuturesInstruments || !resultGetFuturesInstruments.status) {
-      return res.json({
-        status: false,
-        message: resultGetFuturesInstruments.message || 'Cant getFuturesExchangeInfo',
-      });
-    }
-
-    let countNewSpotInstuments = 0;
-    let countNewFuturesInstruments = 0;
-
-    const spotInstruments = resultGetSpotInstruments.result.symbols;
-    const futuresInstruments = resultGetFuturesInstruments.result.symbols;
-
-    const filteredSpotInstruments = spotInstruments.filter(
-      ({ symbol }) => symbol.includes('USDT'),
-    );
-
-    const filteredFuturesInstruments = futuresInstruments.filter(
-      ({ symbol }) => symbol.includes('USDT'),
-    );
-
-    await Promise.all(filteredSpotInstruments.map(async instrument => {
-      const { tickSize } = instrument.filters[0];
-      const { stepSize } = instrument.filters[2];
-
-      if (!tickSize) {
-        log.warn(`No tickSize, ${instrument.symbol}`);
-        return null;
-      }
-
-      if (!stepSize) {
-        log.warn(`No stepSize, ${instrument.symbol}`);
-        return null;
-      }
-
-      const resultCreate = await createInstrument({
-        name: instrument.symbol,
-        price: 1,
-
-        tickSize: parseFloat(tickSize),
-        stepSize: parseFloat(stepSize),
-
-        isFutures: false,
-      });
-
-      if (!resultCreate || !resultCreate.status) {
-        log.warn(resultCreate.message || 'Cant createInstrument');
-        return null;
-      }
-
-      if (resultCreate.isCreated) {
-        countNewSpotInstuments += 1;
-      }
-    }));
-
-    await Promise.all(filteredFuturesInstruments.map(async instrument => {
-      const { pricePrecision } = instrument;
-      const { tickSize } = instrument.filters[0];
-      const { stepSize } = instrument.filters[2];
-
-      if (!tickSize) {
-        log.warn(`No tickSize, ${instrument.symbol}`);
-        return null;
-      }
-
-      if (!stepSize) {
-        log.warn(`No stepSize, ${instrument.symbol}`);
-        return null;
-      }
-
-      if (isUndefined(pricePrecision)) {
-        log.warn(`No pricePrecision, ${instrument.symbol}`);
-        return null;
-      }
-
-      const resultCreate = await createInstrument({
-        name: `${instrument.symbol}PERP`,
-        price: 1,
-
-        tickSize: parseFloat(tickSize),
-        stepSize: parseFloat(stepSize),
-        pricePrecision: parseFloat(pricePrecision),
-
-        isFutures: true,
-      });
-
-      if (!resultCreate || !resultCreate.status) {
-        log.warn(resultCreate.message || 'Cant createInstrument');
-        return null;
-      }
-
-      if (resultCreate.isCreated) {
-        countNewFuturesInstruments += 1;
-      }
-    }));
 
     return res.json({
       status: true,
-      result: {
-        countNewSpotInstuments,
-        countNewFuturesInstruments,
-      },
+      result: resultUpload.result,
     });
   } catch (error) {
     log.warn(error.message);

@@ -149,7 +149,7 @@ module.exports = async (req, res, next) => {
           low,
           close,
           volume,
-          closeTime,
+          // closeTime,
         ] = candleData;
 
         const binanceStartTimeUnix = startTimeBinance / 1000;
