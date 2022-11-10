@@ -1,6 +1,20 @@
-const log = require('../../../libs/logger')(module);
+const {
+  isUndefined,
+} = require('lodash');
 
-const InstrumentNew = require('../../../models/InstrumentNew');
+const log = require('../../../../libs/logger')(module);
+
+const {
+  createInstrument,
+} = require('../../utils/create-instrument');
+
+const {
+  getSpotExchangeInfo,
+} = require('../../../binance/utils/spot/get-spot-exchange-info');
+
+const {
+  getFuturesExchangeInfo,
+} = require('../../../binance/utils/futures/get-futures-exchange-info');
 
 const uploadNewInstrumentsFromBinance = async () => {
   try {
@@ -117,7 +131,7 @@ const uploadNewInstrumentsFromBinance = async () => {
         countNewSpotInstuments,
         countNewFuturesInstruments,
       },
-    });
+    };
   } catch (error) {
     log.warn(error.message);
 

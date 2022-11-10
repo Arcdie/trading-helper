@@ -1,3 +1,5 @@
+const log = require('../../../libs/logger')(module);
+
 const {
   uploadNewInstrumentsFromBinance,
 } = require('./utils/upload-new-instruments-from-binance');
