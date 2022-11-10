@@ -1,3 +1,6 @@
+const updateCandles = require('./update-candles');
+const updateInstruments = require('./update-instruments');
+
 // const loadDailyKlines = require('./load-daily-klines');
 
 const renewFigureLinesInRedis = require('./renew-figure-lines-in-redis');
@@ -19,6 +22,8 @@ const removeCandlesDublicates = require('./remove-candles-dublicates');
 const loadingMissingCandles = require('./loading-missing-candles');
 
 module.exports = () => {
+  // updateCandles();
+  // updateInstruments();
   // removeCandlesDublicates();
   // removeCandlesForPeriod();
   // calculateElderCandlesForInstruments();

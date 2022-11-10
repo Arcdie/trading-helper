@@ -4,6 +4,7 @@
   "description": "Helper for trading",
   "main": "server.js",
   "scripts": {
+    "start": "node app",
     "dev": "nodemon app",
     "production": "pm2 start ./app.js"
   },

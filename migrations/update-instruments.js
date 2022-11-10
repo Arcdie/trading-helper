@@ -4,8 +4,6 @@ const {
   uploadNewInstrumentsFromBinance,
 } = require('../controllers/instruments/cron/utils/upload-new-instruments-from-binance');
 
-const InstrumentNew = require('../models/InstrumentNew');
-
 module.exports = async () => {
   // settings
   return;

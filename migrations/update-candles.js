@@ -1,5 +1,7 @@
 // # migration for primary downloading / updating candles for all of timeframes
 
+/* Should be inited when previous month is made in binance */
+
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
@@ -47,9 +49,9 @@ xml2js.parseStringPromise = util.promisify(xml2js.parseString);
 
 module.exports = async () => {
   // settings
-  // return;
+  return;
 
-  const timeframe = INTERVALS.get('5m');
+  const timeframe = INTERVALS.get('1h');
   const targetInstrumentsIds = [];
   const targetInstrumentsNames = [];
 
@@ -61,6 +63,7 @@ module.exports = async () => {
 
   let findCondition = {
     is_active: true,
+    is_futures: true,
   };
 
   if (targetInstrumentsIds.length) {
@@ -79,13 +82,7 @@ module.exports = async () => {
   for await (const instrumentDoc of instrumentsDocs) {
     const candles = await Candle.find({
       instrument_id: instrumentDoc.id,
-    }).sort({ time: 1 }).exec();
-
-    const pathToFolder = path.join(__dirname, `../files/klines/daily/${timeframe}/${instrumentDoc.name}`);
-
-    if (!fs.existsSync(pathToFolder)) {
-      fs.mkdirSync(pathToFolder);
-    }
+    }).sort({ time: 1 }).limit(10).exec();
 
     if (candles.length) {
       // const startTime = moment(candles[0].time).unix();
@@ -94,14 +91,46 @@ module.exports = async () => {
       continue;
     }
 
-    let links = await getLinks(timeframe, instrumentDoc);
+    let links = [];
+    let pathToFolder;
     const timeframeLifetime = getTimeframeLifetime(timeframe);
     const createCandles = getCreateCandlesFunction(timeframe);
 
     if (timeframeLifetime) {
+      links = await getDailyLinks(timeframe, instrumentDoc);
       const startOfTodayUnix = moment().startOf('day').unix();
       const startDownloadingDateUnix = startOfTodayUnix - timeframeLifetime;
       links = links.filter(link => getUnix(link.date) > startDownloadingDateUnix);
+      pathToFolder = path.join(__dirname, `../files/klines/daily/${timeframe}/${instrumentDoc.name}`);
+    } else {
+      links = await getMonthlyLinks(timeframe, instrumentDoc);
+      pathToFolder = path.join(__dirname, `../files/klines/monthly/${timeframe}/${instrumentDoc.name}`);
+
+      let marker = '';
+      const dailyLinks = [];
+      const currentYear = moment().year();
+      const currentMonth = moment().month();
+
+      for await (const l of links) {
+        const queueLinks = await getDailyLinks(timeframe, instrumentDoc, marker);
+        dailyLinks.push(...queueLinks);
+
+        if (queueLinks.length === 500) {
+          marker = queueLinks[queueLinks.length - 1].link;
+        } else {
+          break;
+        }
+      }
+
+      links.push(
+        ...dailyLinks
+          .filter(link => currentMonth === link.date.getMonth())
+          .filter(link => currentYear === link.date.getFullYear()),
+      );
+    }
+
+    if (!fs.existsSync(pathToFolder)) {
+      fs.mkdirSync(pathToFolder);
     }
 
     for await (const link of links) {
@@ -137,27 +166,33 @@ module.exports = async () => {
         continue;
       }
 
-      const newCandles = resultGetFile.result.map(candleData => {
-        const [
-          openTime,
-          open,
-          high,
-          low,
-          close,
-          volume,
-          // closeTime,
-        ] = candleData;
+      const newCandles = resultGetFile.result
+        .map(candleData => {
+          const [
+            openTime,
+            open,
+            high,
+            low,
+            close,
+            volume,
+            // closeTime,
+          ] = candleData;
 
-        return {
-          instrumentId: instrumentDoc._id,
-          startTime: new Date(parseInt(openTime, 10)),
-          open,
-          close,
-          high,
-          low,
-          volume,
-        };
-      });
+          if (isNaN(parseFloat(open))) {
+            return false;
+          }
+
+          return {
+            instrumentId: instrumentDoc._id,
+            startTime: new Date(parseInt(openTime, 10)),
+            open,
+            close,
+            high,
+            low,
+            volume,
+          };
+        })
+        .filter(e => e !== false);
 
       const resultCreateCandles = await createCandles({
         isFutures: instrumentDoc.is_futures,
@@ -166,9 +201,9 @@ module.exports = async () => {
 
       if (!resultCreateCandles || !resultCreateCandles.status) {
         log.warn(resultCreateCandles.message || 'Cant createCandles');
+      } else {
+        fs.unlinkSync(pathToFile);
       }
-
-      fs.unlinkSync(pathToFile);
     }
 
     incrementProcessedInstruments();
@@ -208,13 +243,20 @@ const getTimeframeLifetime = (timeframe) => {
   }
 };
 
-const getLinks = async (timeframe, instrumentDoc) => {
+const getDailyLinks = async (timeframe, instrumentDoc, marker) => {
   const instrumentName = instrumentDoc.name.replace('PERP', '');
-  const typeInstrument = instrumentDoc.is_futures ? 'futures' : 'spot';
+
+  let url = instrumentDoc.is_futures
+    ? `https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/futures/um/daily/klines/${instrumentName}/${timeframe}/`
+    : `https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/spot/daily/klines/${instrumentName}/${timeframe}/`;
+
+  if (marker) {
+    url += `&marker=${marker}`;
+  }
 
   const responseGetPage = await axios({
     method: 'get',
-    url: `https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/${typeInstrument}/um/daily/klines/${instrumentName}/${timeframe}/`,
+    url,
   });
 
   const links = [];
@@ -234,13 +276,64 @@ const getLinks = async (timeframe, instrumentDoc) => {
 
     if (!Key[0].includes('CHECKSUM')) {
       const link = Key[0];
+      const splitLink = instrumentDoc.is_futures
+        ? `data/futures/um/daily/klines/${instrumentName}/${timeframe}/${instrumentName}-${timeframe}-`
+        : `data/spot/daily/klines/${instrumentName}/${timeframe}/${instrumentName}-${timeframe}-`;
+
       const date = link
-        .split(`data/${typeInstrument}/um/daily/klines/${instrumentName}/${timeframe}/${instrumentName}-${timeframe}-`)[1]
+        .split(splitLink)[1]
         .split('.zip')[0];
 
       links.push({
         link,
         date: new Date(date),
+      });
+    }
+  });
+
+  return links;
+};
+
+const getMonthlyLinks = async (timeframe, instrumentDoc) => {
+  const instrumentName = instrumentDoc.name.replace('PERP', '');
+
+  const url = instrumentDoc.is_futures
+    ? `https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/futures/um/monthly/klines/${instrumentName}/${timeframe}/`
+    : `https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/spot/monthly/klines/${instrumentName}/${timeframe}/`;
+
+  const responseGetPage = await axios({
+    method: 'get',
+    url,
+  });
+
+  const links = [];
+  const parsedXml = await xml2js.parseStringPromise(responseGetPage.data);
+
+  if (!parsedXml.ListBucketResult
+    || !parsedXml.ListBucketResult.Contents
+    || !parsedXml.ListBucketResult.Contents.length) {
+    log.warn('No ListBucketResult.Contents');
+    return [];
+  }
+
+  parsedXml.ListBucketResult.Contents.forEach(content => {
+    const {
+      Key,
+    } = content;
+
+    if (!Key[0].includes('CHECKSUM')) {
+      const link = Key[0];
+      const splitLink = instrumentDoc.is_futures
+        ? `data/futures/um/monthly/klines/${instrumentName}/${timeframe}/${instrumentName}-${timeframe}-`
+        : `data/spot/monthly/klines/${instrumentName}/${timeframe}/${instrumentName}-${timeframe}-`;
+
+      const date = link
+        .split(splitLink)[1]
+        .split('.zip')[0];
+
+      links.push({
+        link,
+        date: new Date(`${date}-01`),
       });
     }
   });
