@@ -111,8 +111,8 @@ class InstrumentQueueWithDelay extends QueueHandler {
   async nextTick() {
     const [
       resultCheckNotifications,
-      resultCheckUserFigureLineBounds,
-      resultCheckUserFigureLevelBounds,
+      // resultCheckUserFigureLineBounds,
+      // resultCheckUserFigureLevelBounds,
     ] = await Promise.all([
       checkUserNotifications({
         instrumentId: this.lastTick.instrumentId,
@@ -120,6 +120,7 @@ class InstrumentQueueWithDelay extends QueueHandler {
         price: this.lastTick.close,
       }),
 
+      /*
       checkUserFigureLineBounds({
         instrumentId: this.lastTick.instrumentId,
         instrumentName: this.lastTick.instrumentName,
@@ -131,12 +132,14 @@ class InstrumentQueueWithDelay extends QueueHandler {
         instrumentName: this.lastTick.instrumentName,
         instrumentPrice: this.lastTick.close,
       }),
+      */
     ]);
 
     if (!resultCheckNotifications || !resultCheckNotifications.status) {
       log.warn(resultCheckNotifications.message || 'Cant checkUserNotifications');
     }
 
+    /*
     if (!resultCheckUserFigureLineBounds || !resultCheckUserFigureLineBounds.status) {
       log.warn(resultCheckUserFigureLineBounds.message || 'Cant checkUserFigureLineBounds');
     }
@@ -144,6 +147,7 @@ class InstrumentQueueWithDelay extends QueueHandler {
     if (!resultCheckUserFigureLevelBounds || !resultCheckUserFigureLevelBounds.status) {
       log.warn(resultCheckUserFigureLevelBounds.message || 'Cant checkUserFigureLevelBounds');
     }
+    */
 
     setTimeout(() => { this.nextTick(); }, 1 * 1000);
   }

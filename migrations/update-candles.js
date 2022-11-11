@@ -51,7 +51,7 @@ module.exports = async () => {
   // settings
   return;
 
-  const timeframe = INTERVALS.get('1h');
+  const timeframe = INTERVALS.get('5m');
   const targetInstrumentsIds = [];
   const targetInstrumentsNames = [];
 
@@ -106,21 +106,9 @@ module.exports = async () => {
       links = await getMonthlyLinks(timeframe, instrumentDoc);
       pathToFolder = path.join(__dirname, `../files/klines/monthly/${timeframe}/${instrumentDoc.name}`);
 
-      let marker = '';
-      const dailyLinks = [];
       const currentYear = moment().year();
       const currentMonth = moment().month();
-
-      for await (const l of links) {
-        const queueLinks = await getDailyLinks(timeframe, instrumentDoc, marker);
-        dailyLinks.push(...queueLinks);
-
-        if (queueLinks.length === 500) {
-          marker = queueLinks[queueLinks.length - 1].link;
-        } else {
-          break;
-        }
-      }
+      const dailyLinks = await getDailyLinks(timeframe, instrumentDoc);
 
       links.push(
         ...dailyLinks
@@ -243,7 +231,7 @@ const getTimeframeLifetime = (timeframe) => {
   }
 };
 
-const getDailyLinks = async (timeframe, instrumentDoc, marker) => {
+const getDailyLinks = async (timeframe, instrumentDoc, marker = '', links = []) => {
   const instrumentName = instrumentDoc.name.replace('PERP', '');
 
   let url = instrumentDoc.is_futures
@@ -259,7 +247,6 @@ const getDailyLinks = async (timeframe, instrumentDoc, marker) => {
     url,
   });
 
-  const links = [];
   const parsedXml = await xml2js.parseStringPromise(responseGetPage.data);
 
   if (!parsedXml.ListBucketResult
@@ -290,6 +277,11 @@ const getDailyLinks = async (timeframe, instrumentDoc, marker) => {
       });
     }
   });
+
+  if (parsedXml.ListBucketResult.Contents.length === 1000) {
+    const marker = links[links.length - 1].link;
+    return getDailyLinks(timeframe, instrumentDoc, marker, links);
+  }
 
   return links;
 };
