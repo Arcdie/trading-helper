@@ -1,4 +1,4 @@
-// # migration for primary downloading / updating candles for all of timeframes
+// # migration for primary downloading / updating candles for all timeframes
 
 /* Should be inited when previous month is made in binance */
 

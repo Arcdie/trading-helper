@@ -33,7 +33,8 @@
     "no-continue": 0,
     "arrow-parens": 0,
     "function-paren-newline": 0,
-    "no-unused-expressions": 0
+    "no-unused-expressions": 0,
+    "max-classes-per-file": 0
   },
   "parserOptions": {
     "ecmaVersion": 2018,

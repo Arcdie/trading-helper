@@ -30,7 +30,9 @@ module.exports = async (req, res, next) => {
       status: true,
     });
 
-    const resultGetInstruments = await getActiveInstruments({});
+    const resultGetInstruments = await getActiveInstruments({
+      isOnlyFutures: true, // tmp
+    });
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
       log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');
@@ -52,6 +54,10 @@ module.exports = async (req, res, next) => {
 
         time: { $lt: startDate },
       }, { time: 1 }).sort({ time: 1 }).exec();
+
+      if (!candles5mDocs.length) {
+        continue;
+      }
 
       let datesToDownload = [];
       const candlesTimeToCreate = [];
@@ -169,7 +175,7 @@ module.exports = async (req, res, next) => {
               low,
               close,
               volume,
-              closeTime,
+              // closeTime,
             ] = data;
 
             newCandles.push({
