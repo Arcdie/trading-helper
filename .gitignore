@@ -13,6 +13,7 @@ Thumbs.db
 /*.bat
 atom-sftp-sync.json
 off-atom-sftp-sync.json
+settings.txt
 
 /logs
 /files

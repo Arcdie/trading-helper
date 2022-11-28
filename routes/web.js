@@ -29,6 +29,7 @@ router.get('/figure-levels-editor', extendedMiddlewares, webControllers.getFigur
 router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 router.get('/figure-lines-monitoring', extendedMiddlewares, webControllers.getFigureLinesMonitoringPage);
 
+router.get('/demo', extendedMiddlewares, webControllers.getDemoPage);
 router.get('/monitoring', extendedMiddlewares, webControllers.getMonitoringPage);
 router.get('/monitoring-correlation', extendedMiddlewares, webControllers.getMonitoringCorrelationPage);
 

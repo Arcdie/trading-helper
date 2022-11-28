@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app",
     "dev": "nodemon app",
-    "production": "pm2 start ./app.js"
+    "production": "pm2 start ./app.js",
+    "localhost": "nodemon app isLocal"
   },
   "dependencies": {
     "adm-zip": "^0.5.7",
