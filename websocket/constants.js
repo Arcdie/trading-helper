@@ -8,12 +8,14 @@ const ACTION_NAMES = new Map([
 
   ['updateAverageVolume', 'updateAverageVolume'],
 
+  ['spotLimitOrders', 'spotLimitOrders'],
   ['spotCandle1mData', 'spotCandle1mData'],
   ['spotCandle5mData', 'spotCandle5mData'],
   ['spotCandle1hData', 'spotCandle1hData'],
   ['spotCandle4hData', 'spotCandle4hData'],
   ['spotCandle1dData', 'spotCandle1dData'],
 
+  ['futuresLimitOrders', 'futuresLimitOrders'],
   ['futuresCandle1mData', 'futuresCandle1mData'],
   ['futuresCandle5mData', 'futuresCandle5mData'],
   ['futuresCandle1hData', 'futuresCandle1hData'],

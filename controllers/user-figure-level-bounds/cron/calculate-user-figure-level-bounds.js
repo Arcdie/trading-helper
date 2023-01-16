@@ -1,7 +1,10 @@
+const moment = require('moment');
+
 const log = require('../../../libs/logger')(module);
 
 const {
   getUnix,
+  processedInstrumentsCounter,
 } = require('../../../libs/support');
 
 const {
@@ -41,14 +44,25 @@ const UserFigureLevelBound = require('../../../models/UserFigureLevelBound');
 
 module.exports = async (req, res, next) => {
   try {
-    res.json({
-      status: true,
-    });
+    const {
+      query: {
+        endTime,
+      },
+    } = req;
 
-    await clearFigureLevelsInRedis();
+    // res.json({
+    //   status: true,
+    // });
+
+    if (endTime && !moment(endTime).isValid()) {
+      log.warn('Invalid endTime');
+      return false;
+    }
+
+    // await clearFigureLevelsInRedis();
 
     const usersDocs = await User.find({
-      _id: '6176a452ef4c0005812a9729',
+      _id: '637c59fc495c08c436641a1e',
     }, {
       figure_levels_settings: 1,
     }).exec();
@@ -72,8 +86,11 @@ module.exports = async (req, res, next) => {
       return true;
     }
 
+    const incrementProcessedInstruments = processedInstrumentsCounter(instrumentsDocs.length);
+
     for await (const instrumentDoc of instrumentsDocs) {
       const resultGet1hCandles = await getValidCandles({
+        endTime,
         interval: INTERVALS.get('1h'),
         instrumentId: instrumentDoc._id,
       });
@@ -118,11 +135,12 @@ module.exports = async (req, res, next) => {
           distanceFromRightSide,
         });
 
-        const lowLevels = getLowLevels({
-          candles: candles1h,
-          distanceFromLeftSide,
-          distanceFromRightSide,
-        });
+        const lowLevels = [];
+        // const lowLevels = getLowLevels({
+        //   candles: candles1h,
+        //   distanceFromLeftSide,
+        //   distanceFromRightSide,
+        // });
 
         [...highLevels, ...lowLevels].forEach(level => {
           const levelWithThisPrice = newLevels.some(
@@ -163,6 +181,9 @@ module.exports = async (req, res, next) => {
           }));
         }
 
+        incrementProcessedInstruments();
+
+        /*
         await addFigureLevelsToRedis({
           userId: userDoc._id,
           instrumentName: instrumentDoc.name,
@@ -175,8 +196,15 @@ module.exports = async (req, res, next) => {
             isModerated: bound.is_moderated,
           })),
         });
+        */
       }
     }
+
+    res.json({
+      status: true,
+    });
+
+    console.log('finished');
   } catch (error) {
     log.warn(error.message);
     return false;
@@ -184,10 +212,12 @@ module.exports = async (req, res, next) => {
 };
 
 const getValidCandles = async ({
+  endTime,
   interval,
   instrumentId,
 }) => {
   const resultGetCandles = await getCandles({
+    endTime,
     interval,
     instrumentId,
   });

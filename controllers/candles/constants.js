@@ -1,7 +1,7 @@
 const LIFETIME_1M_CANDLES = 7 * 24 * 60 * 60; // 7 days, in seconds
 const LIFETIME_5M_CANDLES = 30 * 24 * 60 * 60; // 1 month, in seconds
 
-const LIMIT_CANDLES = 320;
+const LIMIT_CANDLES = 1000;
 
 const INTERVALS = new Map([
   ['1m', '1m'],

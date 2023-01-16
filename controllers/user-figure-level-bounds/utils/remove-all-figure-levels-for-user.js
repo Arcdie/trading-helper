@@ -1,14 +1,12 @@
-// DEPRECATED
-
 const {
   isMongoId,
 } = require('validator');
 
 const log = require('../../../libs/logger')(module);
 
-const UserLevelBound = require('../../../models/UserLevelBound');
+const UserFigureLevelBound = require('../../../models/UserFigureLevelBound');
 
-const removeAllLevelsForUser = async ({
+const removeAllFigureLevelsForUser = async ({
   userId,
 }) => {
   try {
@@ -19,7 +17,7 @@ const removeAllLevelsForUser = async ({
       };
     }
 
-    await UserLevelBound.deleteMany({
+    await UserFigureLevelBound.deleteMany({
       user_id: userId,
     });
 
@@ -37,5 +35,5 @@ const removeAllLevelsForUser = async ({
 };
 
 module.exports = {
-  removeAllLevelsForUser,
+  removeAllFigureLevelsForUser,
 };

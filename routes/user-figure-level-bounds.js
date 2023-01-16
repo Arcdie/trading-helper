@@ -13,6 +13,7 @@ const commonMiddlewares = [
 
 router.get('/', userFigureLevelBoundControllers.getUserFigureLevelBounds);
 router.post('/', commonMiddlewares, userFigureLevelBoundControllers.createUserFigureLevelBound);
+router.post('/remove', commonMiddlewares, userFigureLevelBoundControllers.removeUserFigureLevelBounds);
 router.put('/:boundId', commonMiddlewares, userFigureLevelBoundControllers.changeUserFigureLevelBound);
 
 // cron

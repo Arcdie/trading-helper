@@ -9,8 +9,8 @@ const {
 } = require('../controllers/candles/utils/create-4h-candle');
 
 const {
-  create1dCandle,
-} = require('../controllers/candles/utils/create-1d-candle');
+  create1dCandles,
+} = require('../controllers/candles/utils/create-1d-candles');
 
 const log = require('../libs/logger')(module);
 
@@ -105,22 +105,22 @@ module.exports = async () => {
     // const dayCandles = [];
     const dayCandles = calculateDayTimeFrameData(preparedCandles);
 
-    await Promise.all(dayCandles.map(async candle => {
-      const resultCreateCandle = await create1dCandle({
+    const resultCreateCandles = await create1dCandles({
+      isFutures: instrumentDoc.is_futures,
+      newCandles: dayCandles.map(c => ({
         instrumentId: instrumentDoc._id,
-        startTime: candle.time,
-        open: candle.open,
-        close: candle.close,
-        high: candle.high,
-        low: candle.low,
-        volume: candle.volume,
-      });
+        startTime: c.time,
+        open: c.open,
+        close: c.close,
+        high: c.high,
+        low: c.low,
+        volume: c.volume,
+      })),
+    });
 
-      if (!resultCreateCandle || !resultCreateCandle.status) {
-        log.warn(resultCreateCandle.message || 'Cant create1dCandle');
-        return null;
-      }
-    }));
+    if (!resultCreateCandles || !resultCreateCandles.status) {
+      log.warn(resultCreateCandles.message || 'Cant create1dCandles');
+    }
 
     incrementProcessedInstruments();
     console.log(`Ended ${instrumentDoc.name}`);

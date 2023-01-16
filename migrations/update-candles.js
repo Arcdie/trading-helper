@@ -33,9 +33,13 @@ const {
 } = require('../controllers/candles/utils/create-1h-candles');
 
 const {
+  create1dCandles,
+} = require('../controllers/candles/utils/create-1d-candles');
+
+const {
   INTERVALS,
   LIFETIME_1M_CANDLES,
-  LIFETIME_5M_CANDLES,
+  // LIFETIME_5M_CANDLES,
 } = require('../controllers/candles/constants');
 
 const Candle1m = require('../models/Candle-1m');
@@ -51,7 +55,7 @@ module.exports = async () => {
   // settings
   return;
 
-  const timeframe = INTERVALS.get('5m');
+  const timeframe = INTERVALS.get('1d');
   const targetInstrumentsIds = [];
   const targetInstrumentsNames = [];
 
@@ -82,12 +86,13 @@ module.exports = async () => {
   for await (const instrumentDoc of instrumentsDocs) {
     const candles = await Candle.find({
       instrument_id: instrumentDoc.id,
-    }).sort({ time: 1 }).limit(10).exec();
+    }).limit(2).exec();
 
     if (candles.length) {
       // const startTime = moment(candles[0].time).unix();
       // ...
 
+      incrementProcessedInstruments();
       continue;
     }
 
@@ -206,6 +211,7 @@ const getCreateCandlesFunction = (timeframe) => {
     case INTERVALS.get('1m'): return create1mCandles;
     case INTERVALS.get('5m'): return create5mCandles;
     case INTERVALS.get('1h'): return create1hCandles;
+    case INTERVALS.get('1d'): return create1dCandles;
     default:
       throw new Error('No candle model for this timeframe');
   }
@@ -226,7 +232,7 @@ const getCandelModelByTimeframe = (timeframe) => {
 const getTimeframeLifetime = (timeframe) => {
   switch (timeframe) {
     case INTERVALS.get('1m'): return LIFETIME_1M_CANDLES;
-    case INTERVALS.get('5m'): return LIFETIME_5M_CANDLES;
+    // case INTERVALS.get('5m'): return LIFETIME_5M_CANDLES;
     default: return 0;
   }
 };

@@ -7,8 +7,8 @@ const {
 const log = require('../../../libs/logger')(module);
 
 const {
-  create1dCandle,
-} = require('./create-1d-candle');
+  create1dCandles,
+} = require('./create-1d-candles');
 
 const {
   updateCandlesInRedis,
@@ -77,14 +77,18 @@ const calculate1dCandle = async ({
       sumVolume += candle.volume;
     });
 
-    const resultCreateCandle = await create1dCandle({
-      instrumentId,
-      startTime: startOfDay,
-      open,
-      close,
-      high,
-      low,
-      volume: parseInt(sumVolume, 10),
+    const resultCreateCandle = await create1dCandles({
+      // todo: fix
+      isFutures: true,
+      newCandles: [{
+        instrumentId,
+        startTime: startOfDay,
+        open,
+        close,
+        high,
+        low,
+        volume: parseInt(sumVolume, 10),
+      }],
     });
 
     if (!resultCreateCandle || !resultCreateCandle.status) {

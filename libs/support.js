@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const mongodb = require('mongodb');
 
+const log = require('./logger')(module);
+
 const getUnix = targetDate =>
   parseInt((targetDate ? new Date(targetDate) : new Date()).getTime() / 1000, 10);
 
@@ -52,6 +54,15 @@ const getPrecision = (price) => {
   return dividedPrice[1].length;
 };
 
+const processedInstrumentsCounter = function (numberInstruments = 0) {
+  let processedInstruments = 0;
+
+  return function () {
+    processedInstruments += 1;
+    log.info(`${processedInstruments} / ${numberInstruments}`);
+  };
+};
+
 module.exports = {
   sleep,
   getUnix,
@@ -59,4 +70,5 @@ module.exports = {
   getQueue,
   getPrecision,
   generateMongoId,
+  processedInstrumentsCounter,
 };

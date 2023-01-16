@@ -94,7 +94,7 @@ module.exports = async (req, res, next) => {
 
     if (!resultCreateBound || !resultCreateBound.status) {
       return res.json({
-        status: true,
+        status: false,
         message: resultCreateBound.message || 'Cant createUserFigureLevelBound',
       });
     }
