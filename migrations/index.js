@@ -20,6 +20,7 @@ const createInstrumentsTrends = require('./create-instrument-trends');
 const removeCandlesDublicates = require('./remove-candles-dublicates');
 
 const loadingMissingCandles = require('./loading-missing-candles');
+const disableInstruments = require('./disable-instruments');
 
 module.exports = () => {
   // updateCandles();
@@ -44,4 +45,5 @@ module.exports = () => {
 
   // renewFigureLinesInRedis();
   // loadingMissingCandles();
+  // disableInstruments();
 };

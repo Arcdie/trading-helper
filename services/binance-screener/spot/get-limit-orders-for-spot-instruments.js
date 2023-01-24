@@ -35,7 +35,7 @@ class InstrumentQueue extends QueueHandler {
       return true;
     }
 
-    const [asks, bids] = this.queue.shift();
+    const [asks, bids] = step;
 
     await checkInstrumentVolumeBounds({
       asks,

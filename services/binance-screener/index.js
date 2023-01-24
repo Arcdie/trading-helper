@@ -12,7 +12,7 @@ module.exports = async () => {
   await get1mCandlesForSpotInstruments();
   // await get5mCandlesForSpotInstruments();
   // await get1hCandlesForSpotInstruments();
-  // await getLimitOrdersForSpotInstruments();
+  await getLimitOrdersForSpotInstruments();
 
   await get1mCandlesForFuturesInstruments();
   await get5mCandlesForFuturesInstruments();

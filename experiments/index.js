@@ -4,10 +4,14 @@
 const analyzeUsingTrades = require('./analyze-using-trades');
 const analyzeUsingCandles = require('./analyze-using-candles');
 
-module.exports = () => {
+const getLimitOrder = require('./get-limit-orders');
+
+module.exports = (() => {
   // analyzeAggTrades();
   // analyzeAggTrades2();
 
   // analyzeUsingTrades();
   // analyzeUsingCandles();
-};
+
+  // getLimitOrder();
+});

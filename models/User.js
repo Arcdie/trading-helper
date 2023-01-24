@@ -38,6 +38,28 @@ const modelSchema = {
     default: false,
   },
 
+  volume_monitoring_settings: {
+    do_spot_sort_by_distace_to_price: {
+      type: Boolean,
+      default: true,
+    },
+
+    do_spot_sort_by_lifetime: {
+      type: Boolean,
+      default: false,
+    },
+
+    do_futures_sort_by_distace_to_price: {
+      type: Boolean,
+      default: true,
+    },
+
+    do_futures_sort_by_lifetime: {
+      type: Boolean,
+      default: false,
+    },
+  },
+
   figure_levels_settings: {
     distance_from_left_side: {
       type: Number,
