@@ -9,18 +9,17 @@ const {
 } = require('./utils/update-instrument');
 
 const {
-  getActiveInstruments,
-} = require('./utils/get-active-instruments');
-
-const {
   renewInstrumentsInRedis,
 } = require('./utils/renew-instruments-in-redis');
+
+const InstrumentNew = require('../../models/InstrumentNew');
 
 module.exports = async (req, res, next) => {
   try {
     const {
       body: {
         instrumentsIds,
+        doesIgnoreVolume,
       },
 
       user,
@@ -58,24 +57,10 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    const resultGetInstruments = await getActiveInstruments({});
-
-    if (!resultGetInstruments || !resultGetInstruments.status) {
-      const message = resultGetInstruments.message || 'Cant getActiveInstruments';
-      log.warn(message);
-
-      return res.json({
-        status: false,
-        message,
-      });
-    }
-
-    await Promise.all(resultGetInstruments.result.map(async doc => {
-      const doesIgnoreVolume = !instrumentsIds.includes(doc._id.toString());
-
+    await Promise.all(instrumentsIds.map(async instrumentId => {
       const resultUpdate = await updateInstrument({
-        instrumentId: doc._id,
-        doesIgnoreVolume,
+        instrumentId,
+        doesIgnoreVolume: Boolean(doesIgnoreVolume),
       });
 
       if (!resultUpdate) {

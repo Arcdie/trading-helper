@@ -52,10 +52,10 @@ const modelSchema = {
   //   default: false,
   // },
 
-  // does_ignore_volume: {
-  //   type: Boolean,
-  //   default: true,
-  // },
+  does_ignore_volume: {
+    type: Boolean,
+    default: false,
+  },
 
   created_at: {
     type: Date,

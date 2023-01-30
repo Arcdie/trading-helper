@@ -117,12 +117,10 @@ module.exports = async () => {
       client.on('message', async bufferData => {
         const parsedData = JSON.parse(bufferData.toString());
 
-        /*
         sendData({
           actionName: ACTION_NAMES.get('spotCandle5mData'),
           data: parsedData.data,
         });
-        */
 
         if (parsedData.data.isClosed) {
           instrumentQueue.addIteration(parsedData.data);

@@ -30,6 +30,8 @@ router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMo
 router.get('/figure-lines-monitoring', extendedMiddlewares, webControllers.getFigureLinesMonitoringPage);
 
 router.get('/demo', extendedMiddlewares, webControllers.getDemoPage);
+router.get('/demo-online', extendedMiddlewares, webControllers.getDemoOnlinePage);
+
 router.get('/monitoring', extendedMiddlewares, webControllers.getMonitoringPage);
 router.get('/monitoring-correlation', extendedMiddlewares, webControllers.getMonitoringCorrelationPage);
 

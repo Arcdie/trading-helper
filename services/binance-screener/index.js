@@ -10,7 +10,7 @@ const getLimitOrdersForFuturesInstruments = require('./futures/get-limit-orders-
 
 module.exports = async () => {
   await get1mCandlesForSpotInstruments();
-  // await get5mCandlesForSpotInstruments();
+  await get5mCandlesForSpotInstruments();
   // await get1hCandlesForSpotInstruments();
   await getLimitOrdersForSpotInstruments();
 

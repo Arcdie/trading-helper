@@ -9,7 +9,9 @@ module.exports = async () => {
   console.time('migration');
   console.log('Migration started');
 
-  const instrumentsDocs = await InstrumentNew.find({}, {
+  const instrumentsDocs = await InstrumentNew.find({
+    is_futures: false,
+  }, {
     name: 1,
     does_ignore_volume: 1,
   }).exec();

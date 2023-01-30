@@ -81,7 +81,6 @@ const getInstrumentVolumeBounds = async ({
     // .limit(10)
     .exec();
 
-
   return {
     status: true,
     result: instrumentVolumeBounds.map(bound => bound._doc),

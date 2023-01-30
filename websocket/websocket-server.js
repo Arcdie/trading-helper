@@ -112,7 +112,7 @@ const createWebsocketRooms = (instrumentsDocs = []) => {
     const targetRoom = rooms.find(room => room.roomName === actionName);
 
     instrumentsDocs
-      .filter(doc => doc.is_futures)
+      // .filter(doc => doc.is_futures)
       .forEach(doc => {
         const newRoom = new WebSocketRoom(doc._id.toString());
         targetRoom.addRoom(newRoom);
@@ -138,7 +138,7 @@ const sendData = obj => {
     );
 
     if (!targetInstrumentRoom) {
-      log.warn('No targetInstrumentRoom');
+      log.warn(`No targetInstrumentRoom ${instrumentId}`);
       return false;
     }
 
@@ -274,7 +274,7 @@ const subscribe = async ({
       );
 
       if (!targetInstrumentRoom) {
-        log.warn('No targetInstrumentRoom');
+        log.warn(`No targetInstrumentRoom ${data.instrumentId}`);
         return false;
       }
 
