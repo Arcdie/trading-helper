@@ -50,9 +50,9 @@ module.exports = async (req, res, next) => {
       },
     } = req;
 
-    // res.json({
-    //   status: true,
-    // });
+    res.json({
+      status: true,
+    });
 
     if (endTime && !moment(endTime).isValid()) {
       log.warn('Invalid endTime');
@@ -200,9 +200,9 @@ module.exports = async (req, res, next) => {
       }
     }
 
-    res.json({
-      status: true,
-    });
+    // res.json({
+    //   status: true,
+    // });
 
     console.log('finished');
   } catch (error) {

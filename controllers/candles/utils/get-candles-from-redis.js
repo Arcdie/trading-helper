@@ -11,7 +11,7 @@ const log = require('../../../libs/logger')(module);
 
 const {
   INTERVALS,
-  LIMIT_CANDLES,
+  LIMIT_CANDLES_STORAGE_IN_REDIS,
 } = require('../constants');
 
 const getCandlesFromRedis = async ({
@@ -64,7 +64,7 @@ const getCandlesFromRedis = async ({
     const resultGetCandles = await getCandles({
       interval,
       instrumentId,
-      limit: LIMIT_CANDLES,
+      limit: LIMIT_CANDLES_STORAGE_IN_REDIS,
       endTime: new Date().toISOString(),
     });
 

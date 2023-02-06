@@ -19,7 +19,7 @@ const {
 
 const {
   INTERVALS,
-  LIMIT_CANDLES,
+  LIMIT_CANDLES_STORAGE_IN_REDIS,
 } = require('../constants');
 
 const updateCandlesInRedis = async ({
@@ -103,8 +103,8 @@ const updateCandlesInRedis = async ({
 
     const lCandles = candlesDocs.length;
 
-    if (lCandles > LIMIT_CANDLES) {
-      for (let i = 0; i < lCandles - LIMIT_CANDLES; i += 1) {
+    if (lCandles > LIMIT_CANDLES_STORAGE_IN_REDIS) {
+      for (let i = 0; i < lCandles - LIMIT_CANDLES_STORAGE_IN_REDIS; i += 1) {
         candlesDocs.pop();
       }
     }
