@@ -135,12 +135,12 @@ module.exports = async (req, res, next) => {
           distanceFromRightSide,
         });
 
-        const lowLevels = [];
-        // const lowLevels = getLowLevels({
-        //   candles: candles1h,
-        //   distanceFromLeftSide,
-        //   distanceFromRightSide,
-        // });
+        // const lowLevels = [];
+        const lowLevels = getLowLevels({
+          candles: candles1h,
+          distanceFromLeftSide,
+          distanceFromRightSide,
+        });
 
         [...highLevels, ...lowLevels].forEach(level => {
           const levelWithThisPrice = newLevels.some(
