@@ -29,8 +29,8 @@ router.get('/figure-levels-editor', extendedMiddlewares, webControllers.getFigur
 router.get('/levels-monitoring', extendedMiddlewares, webControllers.getLevelsMonitoringPage);
 router.get('/figure-lines-monitoring', extendedMiddlewares, webControllers.getFigureLinesMonitoringPage);
 
-router.get('/demo', extendedMiddlewares, webControllers.getDemoPage);
-router.get('/demo-online', extendedMiddlewares, webControllers.getDemoOnlinePage);
+router.get('/demo', extendedMiddlewares, webControllers.getTradingDemoPage);
+router.get('/trading', extendedMiddlewares, webControllers.getTradingOnlinePage);
 
 router.get('/monitoring', extendedMiddlewares, webControllers.getMonitoringPage);
 router.get('/monitoring-correlation', extendedMiddlewares, webControllers.getMonitoringCorrelationPage);
