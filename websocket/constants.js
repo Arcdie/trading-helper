@@ -1,4 +1,6 @@
 const ACTION_NAMES = new Map([
+  ['nextTick', 'nextTick'],
+
   ['newSpotInstrumentPrice', 'newSpotInstrumentPrice'],
   ['newFuturesInstrumentPrice', 'newFuturesInstrumentPrice'],
 

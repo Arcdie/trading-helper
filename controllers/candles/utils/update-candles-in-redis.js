@@ -6,6 +6,14 @@ const redis = require('../../../libs/redis');
 const log = require('../../../libs/logger')(module);
 
 const {
+  getUnix,
+} = require('../../../libs/support');
+
+const {
+  getCandlesFromRedis,
+} = require('./get-candles-from-redis');
+
+const {
   getInstrumentName,
 } = require('../../instruments/utils/get-instrument-name');
 
@@ -63,26 +71,52 @@ const updateCandlesInRedis = async ({
 
     const lCandles = await redis.llenAsync(keyInstrumentCandles);
 
-    if (lCandles > LIMIT_CANDLES_STORAGE_IN_REDIS) {
-      const iterations = [...Array(lCandles - LIMIT_CANDLES_STORAGE_IN_REDIS).keys()];
+    if (!lCandles) {
+      const resultGetCandles = await getCandlesFromRedis({
+        interval,
+        instrumentId,
+        instrumentName,
+      });
 
-      for await (const i of iterations) {
-        await redis.lpopAsync(keyInstrumentCandles);
+      if (!resultGetCandles || !resultGetCandles.status) {
+        const message = resultGetCandles.message || 'Cant getCandlesFromRedis';
+        log.warn(message);
+
+        return {
+          status: false,
+          message,
+        };
       }
+    } else {
+      let lastCandle = await redis.lindexAsync(keyInstrumentCandles, -1);
+
+      if (lastCandle) {
+        lastCandle = JSON.parse(lastCandle);
+
+        if (getUnix(lastCandle.time) === getUnix(newCandle.time)) {
+          return { status: true };
+        }
+      }
+
+      if (lCandles > LIMIT_CANDLES_STORAGE_IN_REDIS) {
+        const iterations = [...Array(lCandles - LIMIT_CANDLES_STORAGE_IN_REDIS).keys()];
+
+        for await (const i of iterations) {
+          await redis.lpopAsync(keyInstrumentCandles);
+        }
+      }
+
+      await redis.rpushAsync(
+        keyInstrumentCandles,
+        [JSON.stringify({
+          data: newCandle.data,
+          volume: newCandle.volume,
+          time: newCandle.time,
+        })],
+      );
     }
 
-    await redis.lpushAsync(
-      keyInstrumentCandles,
-      [JSON.stringify({
-        data: newCandle.data,
-        volume: newCandle.volume,
-        time: newCandle.time,
-      })],
-    );
-
-    return {
-      status: true,
-    };
+    return { status: true };
   } catch (error) {
     log.error(error.message);
 

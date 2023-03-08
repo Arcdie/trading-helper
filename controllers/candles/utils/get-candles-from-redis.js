@@ -42,7 +42,7 @@ const getCandlesFromRedis = async ({
     }
 
     const intervalWithUpperCase = interval.toUpperCase();
-    const keyInstrumentCandles = `INSTRUMENT:${instrumentName}:CANDLES_${intervalWithUpperCase}_NEW`;
+    const keyInstrumentCandles = `INSTRUMENT:${instrumentName}:CANDLES_${intervalWithUpperCase}`;
 
     const data = await redis.lrangeAsync(keyInstrumentCandles, 0, 9999);
     let candles = data.map(e => JSON.parse(e));

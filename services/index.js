@@ -69,10 +69,10 @@ module.exports = async () => {
 
       // update price for instrument in database
       await intervalUpdateInstrument(instrumentsDocs, 5 * 60 * 1000); // 5 minutes
-
-      await createWebsocketRooms(instrumentsDocs);
       await binanceScreenerProcesses();
     }
+
+    await createWebsocketRooms(instrumentsDocs);
 
     // check memory
     /*

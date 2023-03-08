@@ -22,9 +22,9 @@ router.get('/cron/hourly/check-candles/5m', candleCronControllers.hourlyCheck5mC
 router.get('/cron/hourly/check-candles/1h', candleCronControllers.hourlyCheck1hCandles); // *:15
 
 router.get('/cron/calculate-candles', candleCronControllers.calculateCandles);
-
-
 router.get('/clear-candles-in-redis', commonMiddlewares, candleControllers.clearCandlesInRedis);
+
+router.post('/next-tick', commonMiddlewares, candleControllers.nextTick);
 
 router.get('/:interval', commonMiddlewares, candleControllers.getCandles);
 

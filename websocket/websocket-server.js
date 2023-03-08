@@ -112,7 +112,7 @@ const createWebsocketRooms = (instrumentsDocs = []) => {
     const targetRoom = rooms.find(room => room.roomName === actionName);
 
     instrumentsDocs
-      // .filter(doc => doc.is_futures)
+      .filter(doc => doc.is_futures)
       .forEach(doc => {
         const newRoom = new WebSocketRoom(doc._id.toString());
         targetRoom.addRoom(newRoom);
@@ -156,9 +156,9 @@ const sendData = obj => {
   );
 
   targetClients.forEach(ws => {
-    if (ws.isAlive) {
-      ws.send(JSON.stringify(obj));
-    }
+    // if (ws.isAlive) {
+    ws.send(JSON.stringify(obj));
+    // }
   });
 };
 
