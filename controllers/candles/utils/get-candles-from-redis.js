@@ -42,14 +42,15 @@ const getCandlesFromRedis = async ({
     }
 
     const intervalWithUpperCase = interval.toUpperCase();
+    const keyInstrumentCandles = `INSTRUMENT:${instrumentName}:CANDLES_${intervalWithUpperCase}_NEW`;
 
-    const keyInstrumentCandles = `INSTRUMENT:${instrumentName}:CANDLES_${intervalWithUpperCase}`;
-    let candlesDocs = await redis.getAsync(keyInstrumentCandles);
+    const data = await redis.lrangeAsync(keyInstrumentCandles, 0, 9999);
+    let candles = data.map(e => JSON.parse(e));
 
-    if (candlesDocs) {
+    if (candles.length) {
       return {
         status: true,
-        result: JSON.parse(candlesDocs),
+        result: candles,
       };
 
       // return {
@@ -75,29 +76,27 @@ const getCandlesFromRedis = async ({
       };
     }
 
-    candlesDocs = resultGetCandles.result;
-
-    if (!candlesDocs || !candlesDocs.length) {
+    if (!resultGetCandles.result || !resultGetCandles.result.length) {
       return {
         status: true,
         result: [],
       };
     }
 
-    candlesDocs = candlesDocs.map(candleDoc => ({
+    candles = resultGetCandles.result.map(candleDoc => ({
       data: candleDoc.data,
       volume: candleDoc.volume,
       time: candleDoc.time,
     }));
 
-    await redis.setAsync([
+    await redis.lpushAsync(
       keyInstrumentCandles,
-      JSON.stringify(candlesDocs),
-    ]);
+      candles.map(candle => JSON.stringify(candle)),
+    );
 
     return {
       status: true,
-      result: candlesDocs,
+      result: candles,
     };
   } catch (error) {
     log.error(error.message);

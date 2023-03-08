@@ -61,9 +61,7 @@ module.exports = async (req, res, next) => {
 
     await clearFigureLevelsInRedis();
 
-    const usersDocs = await User.find({
-      _id: '637c59fc495c08c436641a1e',
-    }, {
+    const usersDocs = await User.find({}, {
       figure_levels_settings: 1,
     }).exec();
 
@@ -71,7 +69,9 @@ module.exports = async (req, res, next) => {
       return true;
     }
 
-    const resultGetInstruments = await getActiveInstruments({});
+    const resultGetInstruments = await getActiveInstruments({
+      isOnlyFutures: true,
+    });
 
     if (!resultGetInstruments || !resultGetInstruments.status) {
       log.warn(resultGetInstruments.message || 'Cant getActiveInstruments');

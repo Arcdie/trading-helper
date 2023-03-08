@@ -6,14 +6,6 @@ const redis = require('../../../libs/redis');
 const log = require('../../../libs/logger')(module);
 
 const {
-  getUnix,
-} = require('../../../libs/support');
-
-const {
-  getCandlesFromRedis,
-} = require('./get-candles-from-redis');
-
-const {
   getInstrumentName,
 } = require('../../instruments/utils/get-instrument-name');
 
@@ -66,56 +58,27 @@ const updateCandlesInRedis = async ({
       instrumentName = resultGetName.result;
     }
 
-    const resultGetCandles = await getCandlesFromRedis({
-      interval,
-      instrumentId,
-      instrumentName,
-    });
-
-    if (!resultGetCandles || !resultGetCandles.status) {
-      const message = resultGetCandles.message || 'Cant getCandlesFromRedis';
-      log.warn(message);
-
-      return {
-        status: false,
-        message,
-      };
-    }
-
-    const candlesDocs = resultGetCandles.result;
-
-    const newCandleUnix = getUnix(newCandle.time);
-
-    const doesExistDublicate = candlesDocs.some(candle => {
-      const candleUnix = getUnix(candle.time);
-      return newCandleUnix === candleUnix;
-    });
-
-    if (doesExistDublicate) {
-      return { status: true };
-    }
-
-    candlesDocs.unshift({
-      data: newCandle.data,
-      volume: newCandle.volume,
-      time: newCandle.time,
-    });
-
-    const lCandles = candlesDocs.length;
-
-    if (lCandles > LIMIT_CANDLES_STORAGE_IN_REDIS) {
-      for (let i = 0; i < lCandles - LIMIT_CANDLES_STORAGE_IN_REDIS; i += 1) {
-        candlesDocs.pop();
-      }
-    }
-
     const intervalWithUpperCase = interval.toUpperCase();
     const keyInstrumentCandles = `INSTRUMENT:${instrumentName}:CANDLES_${intervalWithUpperCase}`;
 
-    await redis.setAsync([
+    const lCandles = await redis.llenAsync(keyInstrumentCandles);
+
+    if (lCandles > LIMIT_CANDLES_STORAGE_IN_REDIS) {
+      const iterations = [...Array(lCandles - LIMIT_CANDLES_STORAGE_IN_REDIS).keys()];
+
+      for await (const i of iterations) {
+        await redis.lpopAsync(keyInstrumentCandles);
+      }
+    }
+
+    await redis.lpushAsync(
       keyInstrumentCandles,
-      JSON.stringify(candlesDocs),
-    ]);
+      [JSON.stringify({
+        data: newCandle.data,
+        volume: newCandle.volume,
+        time: newCandle.time,
+      })],
+    );
 
     return {
       status: true,

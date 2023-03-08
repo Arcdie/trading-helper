@@ -101,6 +101,7 @@ module.exports = async (req, res, next) => {
 
     return res.json({
       status: true,
+      result: resultCreateBound.result,
     });
   } catch (error) {
     log.warn(error.message);
