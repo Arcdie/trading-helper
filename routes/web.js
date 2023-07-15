@@ -22,6 +22,8 @@ router.get('/volume-monitoring', extendedMiddlewares, webControllers.getVolumeMo
 
 router.get('/averaging', extendedMiddlewares, webControllers.getAveragingPage);
 
+router.get('/live', extendedMiddlewares, webControllers.getLiveTradingPage);
+
 router.get('/editor', extendedMiddlewares, webControllers.getEditorPage);
 router.get('/figure-lines-editor', extendedMiddlewares, webControllers.getFigureLinesEditorPage);
 router.get('/figure-levels-editor', extendedMiddlewares, webControllers.getFigureLevelsEditorPage);

@@ -34,10 +34,14 @@
     "arrow-parens": 0,
     "function-paren-newline": 0,
     "no-unused-expressions": 0,
-    "max-classes-per-file": 0
+    "max-classes-per-file": 0,
+    "max-len": 0,
+    "no-nested-ternary": 0,
+    "no-lonely-if": 0,
+    "no-unreachable-loop": 0
   },
   "parserOptions": {
     "ecmaVersion": 2018,
-    "sourceType": 'module',
-  },
+    "sourceType": "module"
+  }
 }

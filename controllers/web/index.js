@@ -7,9 +7,10 @@ const getUtilitiesPage = require('./get-utilities-page');
 const getAveragingPage = require('./get-averaging-page');
 const getExperimentPage = require('./get-experiment-page');
 const getMonitoringPage = require('./get-monitoring-page');
+const getLiveTradingPage = require('./get-live-trading-page');
 const getTradingDemoPage = require('./get-trading-demo-page');
-const getTradingOnlinePage = require('./get-trading-online-page');
 const getTradesViewerPage = require('./get-trades-viewer-page');
+const getTradingOnlinePage = require('./get-trading-online-page');
 const getVolumeMonitoringPage = require('./get-volume-monitoring-page');
 const getVolumeStatisticsPage = require('./get-volume-statistics-page');
 const getRobotsStatisticsPage = require('./get-robots-statistics-page');
@@ -30,8 +31,9 @@ module.exports = {
   getUtilitiesPage,
   getExperimentPage,
   getMonitoringPage,
-  getTradesViewerPage,
+  getLiveTradingPage,
   getTradingDemoPage,
+  getTradesViewerPage,
   getTradingOnlinePage,
 
   getEditorPage,

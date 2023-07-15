@@ -5,8 +5,11 @@ const analyzeUsingTrades = require('./analyze-using-trades');
 const analyzeUsingCandles = require('./analyze-using-candles');
 
 const getLimitOrder = require('./get-limit-orders');
+const runRobotTrading = require('./run-robot-trading');
 
 module.exports = (() => {
+  // runRobotTrading();
+
   // analyzeAggTrades();
   // analyzeAggTrades2();
 
